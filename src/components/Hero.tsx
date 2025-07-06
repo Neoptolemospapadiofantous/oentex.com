@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TrendingUp, Shield, Zap, ArrowRight, Star } from 'lucide-react'
-import Hero3D from './Hero3D'
 
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -27,9 +26,11 @@ const Hero = () => {
     { value: '99.9%', label: 'Uptime' }
   ]
 
+  const cryptoSymbols = ['BTC', 'ETH', 'ADA', 'DOT', 'SOL', 'AVAX', 'LINK', 'BNB']
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* 3D Background */}
+      {/* Dynamic Background */}
       <div 
         className="absolute inset-0"
         style={{
@@ -46,10 +47,26 @@ const Hero = () => {
         }} />
       </div>
 
-      <Hero3D />
-
-      {/* Animated Background Elements */}
+      {/* Animated Crypto Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Floating Crypto Coins */}
+        {cryptoSymbols.map((symbol, index) => (
+          <div
+            key={symbol}
+            className="absolute animate-float"
+            style={{
+              left: `${10 + (index * 12)}%`,
+              top: `${20 + (index % 3) * 25}%`,
+              animationDelay: `${index * 0.5}s`,
+              animationDuration: `${4 + (index % 3)}s`
+            }}
+          >
+            <div className="w-16 h-16 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full border border-primary/30 flex items-center justify-center backdrop-blur-sm animate-glow">
+              <span className="text-primary font-bold text-sm">{symbol}</span>
+            </div>
+          </div>
+        ))}
+
         {/* Gradient Orbs */}
         <div 
           className="absolute w-96 h-96 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-float"
@@ -67,11 +84,38 @@ const Hero = () => {
           }}
         />
         
-        {/* Floating Elements */}
+        {/* Floating Geometric Shapes */}
         <div className="absolute top-20 left-10 w-4 h-4 bg-primary/30 rounded-full animate-bounce-subtle" />
         <div className="absolute top-40 right-20 w-6 h-6 bg-secondary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '1s' }} />
         <div className="absolute bottom-40 left-20 w-3 h-3 bg-accent/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '3s' }} />
         <div className="absolute bottom-20 right-10 w-5 h-5 bg-primary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '2s' }} />
+
+        {/* Animated Lines */}
+        <div className="absolute top-1/4 left-1/4 w-32 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-pulse-slow" />
+        <div className="absolute bottom-1/3 right-1/4 w-24 h-px bg-gradient-to-r from-transparent via-secondary/50 to-transparent animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        
+        {/* Trading Chart Lines */}
+        <div className="absolute top-1/3 right-1/3">
+          <svg width="100" height="60" className="animate-pulse-slow">
+            <polyline
+              fill="none"
+              stroke="rgba(158, 127, 255, 0.3)"
+              strokeWidth="2"
+              points="0,50 20,30 40,40 60,20 80,25 100,10"
+            />
+          </svg>
+        </div>
+        
+        <div className="absolute bottom-1/4 left-1/3">
+          <svg width="80" height="50" className="animate-pulse-slow" style={{ animationDelay: '2s' }}>
+            <polyline
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.3)"
+              strokeWidth="2"
+              points="0,40 15,25 30,35 45,15 60,20 80,5"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

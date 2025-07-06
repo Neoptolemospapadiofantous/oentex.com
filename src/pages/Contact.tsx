@@ -1,40 +1,92 @@
 import React, { useState } from 'react'
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
-const schema = yup.object({
-  first_name: yup.string().required('First name is required'),
-  last_name: yup.string().required('Last name is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
-  subject: yup.string().required('Subject is required'),
-  message: yup.string().required('Message is required').min(10, 'Message must be at least 10 characters')
-})
-
-type FormData = yup.InferType<typeof schema>
+interface FormData {
+  first_name: string
+  last_name: string
+  email: string
+  subject: string
+  message: string
+}
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    resolver: yupResolver(schema)
+  const [formData, setFormData] = useState<FormData>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    subject: '',
+    message: ''
   })
+  const [errors, setErrors] = useState<Partial<FormData>>({})
 
-  const onSubmit = async (data: FormData) => {
+  const validateForm = (): boolean => {
+    const newErrors: Partial<FormData> = {}
+
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required'
+    }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = 'Last name is required'
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format'
+    }
+
+    if (!formData.subject.trim()) {
+      newErrors.subject = 'Subject is required'
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required'
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof FormData]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+
     setIsSubmitting(true)
     
     try {
       const { error } = await supabase
         .from('contact_messages')
-        .insert([data])
+        .insert([formData])
 
       if (error) throw error
 
       toast.success('Message sent successfully! We\'ll get back to you soon.')
-      reset()
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        subject: '',
+        message: ''
+      })
     } catch (error) {
       console.error('Error sending message:', error)
       toast.error('Failed to send message. Please try again.')
@@ -62,30 +114,34 @@ const Contact = () => {
           {/* Contact Form */}
           <div className="bg-surface/50 rounded-3xl p-8 border border-border">
             <h2 className="text-2xl font-bold text-text mb-6">Send us a Message</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-text font-medium mb-2">First Name</label>
                   <input
-                    {...register('first_name')}
+                    name="first_name"
                     type="text"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
                     placeholder="John"
                   />
                   {errors.first_name && (
-                    <p className="text-error text-sm mt-1">{errors.first_name.message}</p>
+                    <p className="text-error text-sm mt-1">{errors.first_name}</p>
                   )}
                 </div>
                 <div>
                   <label className="block text-text font-medium mb-2">Last Name</label>
                   <input
-                    {...register('last_name')}
+                    name="last_name"
                     type="text"
+                    value={formData.last_name}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
                     placeholder="Doe"
                   />
                   {errors.last_name && (
-                    <p className="text-error text-sm mt-1">{errors.last_name.message}</p>
+                    <p className="text-error text-sm mt-1">{errors.last_name}</p>
                   )}
                 </div>
               </div>
@@ -93,20 +149,24 @@ const Contact = () => {
               <div>
                 <label className="block text-text font-medium mb-2">Email</label>
                 <input
-                  {...register('email')}
+                  name="email"
                   type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
                   placeholder="john@example.com"
                 />
                 {errors.email && (
-                  <p className="text-error text-sm mt-1">{errors.email.message}</p>
+                  <p className="text-error text-sm mt-1">{errors.email}</p>
                 )}
               </div>
               
               <div>
                 <label className="block text-text font-medium mb-2">Subject</label>
                 <select 
-                  {...register('subject')}
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text focus:outline-none focus:border-primary"
                 >
                   <option value="">Select a subject</option>
@@ -117,20 +177,22 @@ const Contact = () => {
                   <option value="Technical Support">Technical Support</option>
                 </select>
                 {errors.subject && (
-                  <p className="text-error text-sm mt-1">{errors.subject.message}</p>
+                  <p className="text-error text-sm mt-1">{errors.subject}</p>
                 )}
               </div>
               
               <div>
                 <label className="block text-text font-medium mb-2">Message</label>
                 <textarea
-                  {...register('message')}
+                  name="message"
                   rows={5}
+                  value={formData.message}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary resize-none"
                   placeholder="Tell us how we can help you..."
                 ></textarea>
                 {errors.message && (
-                  <p className="text-error text-sm mt-1">{errors.message.message}</p>
+                  <p className="text-error text-sm mt-1">{errors.message}</p>
                 )}
               </div>
               

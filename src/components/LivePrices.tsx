@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 interface CryptoPrice {
   symbol: string
