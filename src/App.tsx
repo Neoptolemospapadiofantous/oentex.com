@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
@@ -32,6 +33,29 @@ function App() {
           </Routes>
         </PageTransition>
         <Footer />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#262626',
+              color: '#FFFFFF',
+              border: '1px solid #2F2F2F',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#FFFFFF',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#FFFFFF',
+              },
+            },
+          }}
+        />
       </div>
     </Router>
   )

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { TrendingUp, Shield, Zap, ArrowRight, Star } from 'lucide-react'
+import Hero3D from './Hero3D'
 
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -27,9 +28,28 @@ const Hero = () => {
   ]
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-surface/20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* 3D Background */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(circle at 20% 80%, rgba(158, 127, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(244, 114, 182, 0.1) 0%, transparent 50%),
+            linear-gradient(135deg, #0A0F1C 0%, #1A237E 100%)
+          `
+        }}
+      >
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+        }} />
+      </div>
+
+      <Hero3D />
+
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Gradient Orbs */}
         <div 
           className="absolute w-96 h-96 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-float"
@@ -58,7 +78,7 @@ const Hero = () => {
         {/* Main Content */}
         <div className="animate-slide-up">
           {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 bg-surface/50 border border-border rounded-full text-sm text-textSecondary mb-8 animate-glow">
+          <div className="inline-flex items-center px-4 py-2 bg-surface/50 border border-border rounded-full text-sm text-textSecondary mb-8 animate-glow backdrop-blur-sm">
             <Star className="w-4 h-4 mr-2 text-warning" />
             Trusted by 500,000+ traders worldwide
           </div>
@@ -81,14 +101,14 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: '0.6s' }}>
             <Link
               to="/deals"
-              className="group bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center"
+              className="group bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center backdrop-blur-sm"
             >
               Explore Deals
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             <Link
               to="/about"
-              className="px-8 py-4 border border-border rounded-full text-text font-semibold text-lg hover:bg-surface/50 transition-all duration-300 transform hover:scale-105"
+              className="px-8 py-4 border border-border rounded-full text-text font-semibold text-lg hover:bg-surface/50 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
             >
               Learn More
             </Link>
@@ -98,7 +118,7 @@ const Hero = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 mb-16 animate-fade-in" style={{ animationDelay: '0.8s' }}>
             {features.map((feature, index) => (
               <div key={index} className="flex items-center text-textSecondary hover:text-primary transition-colors duration-300">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mr-3 backdrop-blur-sm">
                   <feature.icon className="w-4 h-4" />
                 </div>
                 <span className="text-sm font-medium">{feature.text}</span>

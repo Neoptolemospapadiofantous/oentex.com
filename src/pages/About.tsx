@@ -1,5 +1,5 @@
 import React from 'react'
-import { Shield, Users, TrendingUp, Award } from 'lucide-react'
+import { Shield, Users, TrendingUp, Award, Target, Eye, Heart } from 'lucide-react'
 
 const About = () => {
   const stats = [
@@ -7,6 +7,75 @@ const About = () => {
     { icon: TrendingUp, value: '$2.5B+', label: 'Trading Volume' },
     { icon: Shield, value: '99.9%', label: 'Uptime' },
     { icon: Award, value: '5+', label: 'Years Experience' }
+  ]
+
+  const team = [
+    {
+      name: 'Sarah Johnson',
+      role: 'CEO & Co-Founder',
+      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Former Goldman Sachs executive with 15+ years in financial technology.'
+    },
+    {
+      name: 'Michael Chen',
+      role: 'CTO & Co-Founder',
+      image: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Ex-Google engineer specializing in high-frequency trading systems.'
+    },
+    {
+      name: 'Emily Rodriguez',
+      role: 'Head of Security',
+      image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Cybersecurity expert with experience at major financial institutions.'
+    },
+    {
+      name: 'David Kim',
+      role: 'Head of Product',
+      image: 'https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=400',
+      bio: 'Product strategist focused on user experience and market innovation.'
+    }
+  ]
+
+  const values = [
+    {
+      icon: Shield,
+      title: 'Security First',
+      description: 'Your assets and data are protected by industry-leading security measures and encryption.'
+    },
+    {
+      icon: Users,
+      title: 'User-Centric',
+      description: 'Every feature is designed with our users in mind, ensuring the best possible experience.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Innovation',
+      description: 'We continuously innovate to bring you the latest tools and features in trading technology.'
+    },
+    {
+      icon: Target,
+      title: 'Transparency',
+      description: 'We believe in complete transparency in our operations, fees, and business practices.'
+    },
+    {
+      icon: Eye,
+      title: 'Accessibility',
+      description: 'Making advanced trading tools accessible to everyone, regardless of experience level.'
+    },
+    {
+      icon: Heart,
+      title: 'Community',
+      description: 'Building a supportive community of traders who learn and grow together.'
+    }
+  ]
+
+  const certifications = [
+    'SEC Registered',
+    'FINRA Member',
+    'SIPC Protected',
+    'SOC 2 Certified',
+    'ISO 27001 Compliant',
+    'PCI DSS Level 1'
   ]
 
   return (
@@ -62,37 +131,79 @@ const About = () => {
           </div>
         </div>
 
+        {/* Team Section */}
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-text mb-4">Meet Our Team</h2>
+            <p className="text-textSecondary max-w-2xl mx-auto">
+              Our experienced team combines expertise from top financial institutions and technology companies.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {team.map((member, index) => (
+              <div key={index} className="bg-surface/50 rounded-2xl p-6 border border-border hover:bg-surface/70 transition-all duration-300 text-center">
+                <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-4">
+                  <img 
+                    src={member.image} 
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="text-lg font-semibold text-text mb-1">{member.name}</h3>
+                <p className="text-primary font-medium mb-3">{member.role}</p>
+                <p className="text-textSecondary text-sm">{member.bio}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Values Section */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-text mb-12">Our Values</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
+        <div className="mb-16">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-text mb-4">Our Values</h2>
+            <p className="text-textSecondary max-w-2xl mx-auto">
+              These core values guide everything we do and shape our commitment to our users.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {values.map((value, index) => (
+              <div key={index} className="p-6 bg-surface/50 rounded-2xl border border-border hover:bg-surface/70 transition-all duration-300">
+                <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center mb-4">
+                  <value.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-text mb-3">{value.title}</h3>
+                <p className="text-textSecondary leading-relaxed">{value.description}</p>
               </div>
-              <h3 className="text-xl font-semibold text-text mb-4">Security First</h3>
-              <p className="text-textSecondary">
-                Your assets and data are protected by industry-leading security measures and encryption.
-              </p>
-            </div>
-            <div className="p-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-secondary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-white" />
+            ))}
+          </div>
+        </div>
+
+        {/* Regulatory Compliance */}
+        <div className="bg-surface/30 rounded-3xl p-8 lg:p-12">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-text mb-4">Regulatory Compliance</h2>
+            <p className="text-textSecondary max-w-2xl mx-auto">
+              We maintain the highest standards of regulatory compliance and security certifications.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {certifications.map((cert, index) => (
+              <div key={index} className="bg-background/50 rounded-xl p-4 text-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-success to-primary rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <p className="text-textSecondary text-sm font-medium">{cert}</p>
               </div>
-              <h3 className="text-xl font-semibold text-text mb-4">User-Centric</h3>
-              <p className="text-textSecondary">
-                Every feature is designed with our users in mind, ensuring the best possible experience.
-              </p>
-            </div>
-            <div className="p-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-text mb-4">Innovation</h3>
-              <p className="text-textSecondary">
-                We continuously innovate to bring you the latest tools and features in trading technology.
-              </p>
-            </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-textSecondary text-sm">
+              All investments involve risk and may result in loss. Past performance does not guarantee future results.
+            </p>
           </div>
         </div>
       </div>
