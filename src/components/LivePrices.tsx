@@ -283,7 +283,7 @@ const LivePrices = () => {
     const connectBinance = () => {
       updateDebugInfo('binance', 'connecting')
       const symbols = Object.keys(cryptoConfig).map(s => `${s.toLowerCase()}@ticker`).join('/')
-      const binanceWs = new WebSocket(`wss://data-stream.binance.vision/ws/${symbols}`)
+      const binanceWs = new WebSocket(`wss://stream.binance.com:9443/ws/${symbols}`)
       connections.push(binanceWs)
 
       binanceWs.onopen = () => {
@@ -366,10 +366,7 @@ const LivePrices = () => {
           "type": "subscribe",
           "product_ids": ["BTC-USD", "ETH-USD", "ADA-USD", "DOT-USD", "SOL-USD", "AVAX-USD"],
           "channels": [
-            {
-              "name": "ticker",
-              "product_ids": ["BTC-USD", "ETH-USD", "ADA-USD", "DOT-USD", "SOL-USD", "AVAX-USD"]
-            }
+            "ticker"
           ]
         }))
       }
