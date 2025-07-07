@@ -211,7 +211,7 @@ const LivePrices = () => {
       volume: priceData.volume,
       logo: exchangeConfig.logo,
       affiliateUrl: exchangeConfig.affiliateUrl,
-      isConnected: connectionStatus[exchangeKey] || false,
+      isConnected: true, // Always true when we receive data
       lastUpdate: new Date(),
       fees: exchangeConfig.fees,
       bonus: exchangeConfig.bonus
@@ -220,8 +220,23 @@ const LivePrices = () => {
     setComparisons(prev => {
       const existing = prev.find(c => c.symbol === symbol)
       if (existing) {
-        const updatedExchanges = existing.exchanges.filter(e => e.exchange !== exchangeConfig.name)
-        updatedExchanges.push(exchangePrice)
+        // Keep stable order - don't re-sort exchanges
+        const updatedExchanges = [...existing.exchanges]
+        const exchangeIndex = updatedExchanges.findIndex(e => e.exchange === exchangeConfig.name)
+        
+        if (exchangeIndex >= 0) {
+          // Update existing exchange
+          updatedExchanges[exchangeIndex] = exchangePrice
+        } else {
+          // Add new exchange in predefined order
+          const exchangeOrder = ['Binance', 'Coinbase Advanced', 'Kraken', 'Bybit', 'OKX']
+          const insertIndex = exchangeOrder.indexOf(exchangeConfig.name)
+          if (insertIndex >= 0) {
+            updatedExchanges.splice(insertIndex, 0, exchangePrice)
+          } else {
+            updatedExchanges.push(exchangePrice)
+          }
+        }
         
         const updated = {
           ...existing,
@@ -233,6 +248,7 @@ const LivePrices = () => {
         
         return prev.map(c => c.symbol === symbol ? updated : c)
       } else {
+        // Create new comparison with stable order
         const newComparison: CryptoComparison = {
           symbol,
           name: cryptoInfo.name,
@@ -242,9 +258,12 @@ const LivePrices = () => {
           bestBuyPrice: exchangePrice,
           bestSellPrice: exchangePrice
         }
-        return [...prev, newComparison].sort((a, b) => {
-          const order = ['BTC', 'ETH', 'ADA', 'DOT', 'SOL', 'AVAX']
-          return order.indexOf(a.symbol) - order.indexOf(b.symbol)
+        
+        // Insert in correct position to maintain crypto order
+        const cryptoOrder = ['BTC', 'ETH', 'ADA', 'DOT', 'SOL', 'AVAX']
+        const newPrev = [...prev, newComparison]
+        return newPrev.sort((a, b) => {
+          return cryptoOrder.indexOf(a.symbol) - cryptoOrder.indexOf(b.symbol)
         })
       }
     })
