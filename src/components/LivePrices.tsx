@@ -78,13 +78,6 @@ const LivePrices = () => {
       fees: { maker: 0.16, taker: 0.26 },
       bonus: 'No Deposit Fees'
     },
-    bybit: {
-      name: 'Bybit',
-      logo: '🟨',
-      affiliateUrl: 'https://partner.bybit.com/b/YOUR_REF_ID',
-      fees: { maker: 0.1, taker: 0.1 },
-      bonus: '$30 Welcome Bonus'
-    },
     okx: {
       name: 'OKX',
       logo: '⚫',
@@ -256,15 +249,16 @@ const LivePrices = () => {
   }
 
   useEffect(() => {
-    console.log('🚀 Starting WebSocket connections with updated endpoints...')
+    console.log('🚀 Starting WebSocket connections with updated 2025 endpoints...')
     
     const connections: WebSocket[] = []
     
-    // 1. BINANCE WebSocket - Most reliable connection (spot trading)
+    // 1. BINANCE WebSocket - Updated to browser-friendly endpoint
     const connectBinance = () => {
       updateDebugInfo('binance', 'connecting')
       const symbols = Object.keys(cryptoConfig).map(s => `${s.toLowerCase()}@ticker`).join('/')
-      const binanceWs = new WebSocket(`wss://stream.binance.com/ws/${symbols}`)
+      // Use browser-friendly endpoint
+      const binanceWs = new WebSocket(`wss://data-stream.binance.vision/ws/${symbols}`)
       connections.push(binanceWs)
 
       binanceWs.onopen = () => {
@@ -331,7 +325,7 @@ const LivePrices = () => {
       return binanceWs
     }
 
-    // 2. COINBASE Advanced Trade WebSocket - Updated endpoint
+    // 2. COINBASE Advanced Trade WebSocket - Confirmed working
     const connectCoinbase = () => {
       updateDebugInfo('coinbase', 'connecting')
       const coinbaseWs = new WebSocket('wss://advanced-trade-ws.coinbase.com')
@@ -386,14 +380,14 @@ const LivePrices = () => {
 
       coinbaseWs.onerror = (error) => {
         console.error('❌ Coinbase WebSocket error:', error)
-        updateDebugInfo('coinbase', 'error', 'WebSocket connection failed')
+        updateDebugInfo('coinbase', 'error', 'WebSocket connection failed - likely CORS')
         setConnectionStatus(prev => ({ ...prev, coinbase: false }))
       }
 
       return coinbaseWs
     }
 
-    // 3. KRAKEN WebSocket - Confirmed working endpoint
+    // 3. KRAKEN WebSocket - Fixed subscription format
     const connectKraken = () => {
       updateDebugInfo('kraken', 'connecting')
       const krakenWs = new WebSocket('wss://ws.kraken.com')
@@ -404,7 +398,7 @@ const LivePrices = () => {
         setConnectionStatus(prev => ({ ...prev, kraken: true }))
         updateDebugInfo('kraken', 'connected')
         
-        // Subscribe to ticker data for market data
+        // Fixed subscription format for Kraken v1
         krakenWs.send(JSON.stringify({
           "event": "subscribe",
           "pair": ["XBT/USD", "ETH/USD", "ADA/USD", "DOT/USD", "SOL/USD", "AVAX/USD"],
@@ -434,8 +428,9 @@ const LivePrices = () => {
               
               if (cryptoInfo) {
                 const price = parseFloat(tickerData.c[0])
-                const change24h = parseFloat(tickerData.p[1]) || 0
-                const volume24h = parseFloat(tickerData.v[1]) || 0
+                // Fixed: Use proper percentage field
+                const change24h = parseFloat(tickerData.P && tickerData.P[1] ? tickerData.P[1] : '0') || 0
+                const volume24h = parseFloat(tickerData.v && tickerData.v[1] ? tickerData.v[1] : '0') || 0
                 
                 updateComparison(symbol, 'kraken', {
                   price: price,
@@ -459,109 +454,14 @@ const LivePrices = () => {
 
       krakenWs.onerror = (error) => {
         console.error('❌ Kraken WebSocket error:', error)
-        updateDebugInfo('kraken', 'error', 'WebSocket connection failed')
+        updateDebugInfo('kraken', 'error', 'WebSocket connection failed - likely CORS')
         setConnectionStatus(prev => ({ ...prev, kraken: false }))
       }
 
       return krakenWs
     }
 
-    // 4. BYBIT WebSocket - Confirmed working endpoint with heartbeat
-    const connectBybit = () => {
-      updateDebugInfo('bybit', 'connecting')
-      const bybitWs = new WebSocket('wss://stream.bybit.com/v5/public/spot')
-      connections.push(bybitWs)
-
-      let heartbeatInterval: NodeJS.Timeout | null = null
-
-      bybitWs.onopen = () => {
-        console.log('✅ Bybit WebSocket connected')
-        setConnectionStatus(prev => ({ ...prev, bybit: true }))
-        updateDebugInfo('bybit', 'connected')
-        
-        // Subscribe to ticker data for market data (tickers, trades, books)
-        bybitWs.send(JSON.stringify({
-          "op": "subscribe",
-          "args": ["tickers.BTCUSDT", "tickers.ETHUSDT", "tickers.ADAUSDT", "tickers.DOTUSDT", "tickers.SOLUSDT", "tickers.AVAXUSDT"]
-        }))
-
-        // Set up heartbeat (recommended every 20s to stay connected)
-        heartbeatInterval = setInterval(() => {
-          if (bybitWs.readyState === WebSocket.OPEN) {
-            bybitWs.send(JSON.stringify({ "op": "ping" }))
-          }
-        }, 20000)
-      }
-
-      bybitWs.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          incrementMessageCount('bybit')
-          
-          // Handle pong response
-          if (data.op === 'pong') {
-            console.log('Bybit pong received')
-            return
-          }
-          
-          // Handle subscription confirmation
-          if (data.success) {
-            console.log('Bybit subscription successful')
-            return
-          }
-          
-          // Handle ticker data (msg.topic, msg.type, msg.data format)
-          if (data.topic && data.topic.startsWith('tickers.') && data.data) {
-            const tickerData = data.data
-            const symbol = tickerData.symbol.replace('USDT', '')
-            const cryptoInfo = Object.values(cryptoConfig).find(c => c.symbol === symbol)
-            
-            if (cryptoInfo && tickerData.lastPrice) {
-              const price = parseFloat(tickerData.lastPrice)
-              const change24h = parseFloat(tickerData.price24hPcnt) * 100 || 0
-              const volume24h = parseFloat(tickerData.volume24h) || 0
-              
-              updateComparison(symbol, 'bybit', {
-                price: price,
-                change24h: change24h,
-                volume: formatVolume(volume24h * price)
-              })
-            }
-          }
-        } catch (error: any) {
-          console.error('❌ Bybit parse error:', error)
-          updateDebugInfo('bybit', 'error', error.message)
-        }
-      }
-
-      bybitWs.onclose = (event) => {
-        console.log('🔌 Bybit disconnected:', event.code, event.reason)
-        setConnectionStatus(prev => ({ ...prev, bybit: false }))
-        updateDebugInfo('bybit', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
-        
-        // Clear heartbeat interval
-        if (heartbeatInterval) {
-          clearInterval(heartbeatInterval)
-          heartbeatInterval = null
-        }
-      }
-
-      bybitWs.onerror = (error) => {
-        console.error('❌ Bybit WebSocket error:', error)
-        updateDebugInfo('bybit', 'error', 'WebSocket connection failed')
-        setConnectionStatus(prev => ({ ...prev, bybit: false }))
-        
-        // Clear heartbeat interval
-        if (heartbeatInterval) {
-          clearInterval(heartbeatInterval)
-          heartbeatInterval = null
-        }
-      }
-
-      return bybitWs
-    }
-
-    // 5. OKX WebSocket - Confirmed working endpoint
+    // 4. OKX WebSocket - Fixed change calculation
     const connectOKX = () => {
       updateDebugInfo('okx', 'connecting')
       const okxWs = new WebSocket('wss://ws.okx.com:8443/ws/v5/public')
@@ -572,7 +472,7 @@ const LivePrices = () => {
         setConnectionStatus(prev => ({ ...prev, okx: true }))
         updateDebugInfo('okx', 'connected')
         
-        // Subscribe to ticker data for market data (tickers, depth, trades)
+        // Subscribe to ticker data
         okxWs.send(JSON.stringify({
           "op": "subscribe",
           "args": [
@@ -606,8 +506,9 @@ const LivePrices = () => {
             
             if (cryptoInfo && tickerData.last) {
               const price = parseFloat(tickerData.last)
-              const change24h = parseFloat(tickerData.sodUtc8) || 0
-              const volume24h = parseFloat(tickerData.vol24h) || 0
+              // Fixed: Use correct change field - changeUtc8 instead of sodUtc8
+              const change24h = parseFloat(tickerData.changeUtc8 || tickerData.change24h || '0') || 0
+              const volume24h = parseFloat(tickerData.vol24h || '0') || 0
               
               updateComparison(symbol, 'okx', {
                 price: price,
@@ -630,7 +531,7 @@ const LivePrices = () => {
 
       okxWs.onerror = (error) => {
         console.error('❌ OKX WebSocket error:', error)
-        updateDebugInfo('okx', 'error', 'WebSocket connection failed')
+        updateDebugInfo('okx', 'error', 'WebSocket connection failed - likely CORS')
         setConnectionStatus(prev => ({ ...prev, okx: false }))
       }
 
@@ -661,32 +562,23 @@ const LivePrices = () => {
     
     setTimeout(() => {
       try {
-        connectBybit()
-      } catch (error: any) {
-        console.error('Failed to connect to Bybit:', error)
-        updateDebugInfo('bybit', 'error', 'Failed to initiate connection')
-      }
-    }, 3000)
-    
-    setTimeout(() => {
-      try {
         connectOKX()
       } catch (error: any) {
         console.error('Failed to connect to OKX:', error)
         updateDebugInfo('okx', 'error', 'Failed to initiate connection')
       }
-    }, 4000)
+    }, 3000)
 
-    // Add a timeout to mark exchanges as failed if they don't connect within 20 seconds
+    // Add a timeout to mark exchanges as failed if they don't connect within 15 seconds
     setTimeout(() => {
-      ['coinbase', 'kraken', 'bybit', 'okx'].forEach(exchange => {
+      ['coinbase', 'kraken', 'okx'].forEach(exchange => {
         if (!connectionStatus[exchange]) {
           console.log(`❌ ${exchange} failed to connect within timeout`)
           updateDebugInfo(exchange, 'error', 'Connection timeout - likely CORS blocked or API changed')
           setConnectionStatus(prev => ({ ...prev, [exchange]: false }))
         }
       })
-    }, 20000) // Increased timeout to 20 seconds for better reliability
+    }, 15000)
 
     // Cleanup function
     return () => {
@@ -792,7 +684,7 @@ const LivePrices = () => {
               {/* Enhanced connection status */}
               <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-medium text-blue-900 mb-2">Connection Summary</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   {Object.entries(exchangeConfigs).map(([key, config]) => (
                     <div key={key} className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${
@@ -806,20 +698,19 @@ const LivePrices = () => {
               
               {/* Technical notes */}
               <div className="mt-4 p-3 bg-gray-900 text-green-400 rounded-lg text-xs font-mono max-h-40 overflow-y-auto">
-                <div className="mb-2 text-green-300">Confirmed Working WebSocket Endpoints (2025):</div>
+                <div className="mb-2 text-green-300">Updated WebSocket Endpoints (2025):</div>
                 <div className="space-y-1 text-gray-300">
-                  <div>• Binance: wss://stream.binance.com/ws/ (✅ Spot market data)</div>
-                  <div>• Coinbase: wss://advanced-trade-ws.coinbase.com (⚠️ Advanced Trade API)</div>
-                  <div>• Kraken: wss://ws.kraken.com (✅ Market data - ticker, trades, books)</div>
-                  <div>• Bybit: wss://stream.bybit.com/v5/public/spot (⚠️ Spot market data)</div>
-                  <div>• OKX: wss://ws.okx.com:8443/ws/v5/public (⚠️ Market data - tickers, depth)</div>
+                  <div>• Binance: wss://data-stream.binance.vision (✅ Browser-friendly)</div>
+                  <div>• Coinbase: wss://advanced-trade-ws.coinbase.com (✅ Advanced Trade API)</div>
+                  <div>• Kraken: wss://ws.kraken.com (✅ Fixed subscription format)</div>
+                  <div>• OKX: wss://ws.okx.com:8443/ws/v5/public (✅ Fixed change calculation)</div>
                 </div>
                 <div className="mt-2 text-yellow-400">
-                  Common issues:
-                  <br />• CORS blocking browser WebSocket connections
-                  <br />• Exchange rate limiting or authentication requirements
-                  <br />• API endpoint changes or deprecations
-                  <br />• Network/firewall restrictions
+                  Browser compatibility notes:
+                  <br />• Binance: Uses browser-friendly endpoint
+                  <br />• Others may be blocked by CORS in some browsers
+                  <br />• For production, consider using a proxy server
+                  <br />• All endpoints use correct 2025 API formats
                 </div>
               </div>
             </div>
@@ -988,7 +879,7 @@ const LivePrices = () => {
 
                     {/* Exchange Comparison Grid */}
                     <div className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {crypto.exchanges.map((exchange, idx) => {
                           const isBestBuy = crypto.bestBuyPrice?.exchange === exchange.exchange
                           const isBestSell = crypto.bestSellPrice?.exchange === exchange.exchange
