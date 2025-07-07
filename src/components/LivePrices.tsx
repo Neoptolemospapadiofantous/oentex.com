@@ -65,7 +65,7 @@ const LivePrices = () => {
       bonus: '20% Fee Discount'
     },
     coinbase: {
-      name: 'Coinbase Pro',
+      name: 'Coinbase Advanced',
       logo: '🔵',
       affiliateUrl: 'https://coinbase.com/join/YOUR_REF_ID',
       fees: { maker: 0.5, taker: 0.5 },
@@ -256,11 +256,11 @@ const LivePrices = () => {
   }
 
   useEffect(() => {
-    console.log('🚀 Starting REAL WebSocket connections only...')
+    console.log('🚀 Starting WebSocket connections with updated endpoints...')
     
     const connections: WebSocket[] = []
     
-    // 1. BINANCE WebSocket - Known to work
+    // 1. BINANCE WebSocket - Most reliable connection
     const connectBinance = () => {
       updateDebugInfo('binance', 'connecting')
       const symbols = Object.keys(cryptoConfig).map(s => `${s.toLowerCase()}@ticker`).join('/')
@@ -310,7 +310,7 @@ const LivePrices = () => {
             
             setLastUpdate(new Date())
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Binance parse error:', error)
           updateDebugInfo('binance', 'error', error.message)
         }
@@ -331,7 +331,7 @@ const LivePrices = () => {
       return binanceWs
     }
 
-    // 2. COINBASE ADVANCED (formerly Pro) WebSocket
+    // 2. COINBASE Advanced Trade WebSocket - Updated endpoint
     const connectCoinbase = () => {
       updateDebugInfo('coinbase', 'connecting')
       const coinbaseWs = new WebSocket('wss://advanced-trade-ws.coinbase.com')
@@ -342,7 +342,7 @@ const LivePrices = () => {
         setConnectionStatus(prev => ({ ...prev, coinbase: true }))
         updateDebugInfo('coinbase', 'connected')
         
-        // Subscribe to ticker data using new Advanced Trade API
+        // Subscribe to ticker data using Advanced Trade API
         coinbaseWs.send(JSON.stringify({
           "type": "subscribe",
           "product_ids": ["BTC-USD", "ETH-USD", "ADA-USD", "DOT-USD", "SOL-USD", "AVAX-USD"],
@@ -372,7 +372,7 @@ const LivePrices = () => {
               })
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Coinbase parse error:', error)
           updateDebugInfo('coinbase', 'error', error.message)
         }
@@ -393,22 +393,24 @@ const LivePrices = () => {
       return coinbaseWs
     }
 
-    // 3. KRAKEN WebSocket
+    // 3. KRAKEN WebSocket API v2 - Updated to use v2 endpoints
     const connectKraken = () => {
       updateDebugInfo('kraken', 'connecting')
-      const krakenWs = new WebSocket('wss://ws.kraken.com/')
+      const krakenWs = new WebSocket('wss://ws.kraken.com/v2')
       connections.push(krakenWs)
 
       krakenWs.onopen = () => {
-        console.log('✅ Kraken WebSocket connected')
+        console.log('✅ Kraken WebSocket v2 connected')
         setConnectionStatus(prev => ({ ...prev, kraken: true }))
         updateDebugInfo('kraken', 'connected')
         
-        // Subscribe to ticker data
+        // Subscribe to ticker data using v2 API
         krakenWs.send(JSON.stringify({
-          "event": "subscribe",
-          "pair": ["XBT/USD", "ETH/USD", "ADA/USD", "DOT/USD", "SOL/USD", "AVAX/USD"],
-          "subscription": {"name": "ticker"}
+          "method": "subscribe",
+          "params": {
+            "channel": "ticker",
+            "symbol": ["BTC/USD", "ETH/USD", "ADA/USD", "DOT/USD", "SOL/USD", "AVAX/USD"]
+          }
         }))
       }
 
@@ -418,34 +420,33 @@ const LivePrices = () => {
           incrementMessageCount('kraken')
           
           // Handle subscription confirmation
-          if (data.event === 'subscriptionStatus') {
-            console.log('Kraken subscription:', data.status)
+          if (data.method === 'subscribe' && data.result) {
+            console.log('Kraken v2 subscription successful')
             return
           }
           
           // Handle ticker data
-          if (Array.isArray(data) && data.length >= 4 && data[2] === 'ticker') {
-            const tickerData = data[1]
-            const pair = data[3]
-            
-            if (tickerData && tickerData.c && tickerData.c[0]) {
-              let symbol = pair.replace('/USD', '').replace('XBT', 'BTC')
-              const cryptoInfo = Object.values(cryptoConfig).find(c => c.symbol === symbol)
-              
-              if (cryptoInfo) {
-                const price = parseFloat(tickerData.c[0])
-                const change24h = parseFloat(tickerData.p[1]) || 0
-                const volume24h = parseFloat(tickerData.v[1]) || 0
+          if (data.channel === 'ticker' && data.data && data.data.length > 0) {
+            data.data.forEach((tickerData: any) => {
+              if (tickerData.symbol && tickerData.last) {
+                let symbol = tickerData.symbol.replace('/USD', '').replace('BTC', 'BTC')
+                const cryptoInfo = Object.values(cryptoConfig).find(c => c.symbol === symbol)
                 
-                updateComparison(symbol, 'kraken', {
-                  price: price,
-                  change24h: change24h,
-                  volume: formatVolume(volume24h * price)
-                })
+                if (cryptoInfo) {
+                  const price = parseFloat(tickerData.last)
+                  const change24h = parseFloat(tickerData.change_pct) || 0
+                  const volume24h = parseFloat(tickerData.volume) || 0
+                  
+                  updateComparison(symbol, 'kraken', {
+                    price: price,
+                    change24h: change24h,
+                    volume: formatVolume(volume24h * price)
+                  })
+                }
               }
-            }
+            })
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Kraken parse error:', error)
           updateDebugInfo('kraken', 'error', error.message)
         }
@@ -466,18 +467,18 @@ const LivePrices = () => {
       return krakenWs
     }
 
-    // 4. BYBIT WebSocket v5
+    // 4. BYBIT WebSocket v5 - Updated endpoint from docs
     const connectBybit = () => {
       updateDebugInfo('bybit', 'connecting')
       const bybitWs = new WebSocket('wss://stream.bybit.com/v5/public/spot')
       connections.push(bybitWs)
 
       bybitWs.onopen = () => {
-        console.log('✅ Bybit WebSocket connected')
+        console.log('✅ Bybit WebSocket v5 connected')
         setConnectionStatus(prev => ({ ...prev, bybit: true }))
         updateDebugInfo('bybit', 'connected')
         
-        // Subscribe to ticker data
+        // Subscribe to ticker data using v5 API
         bybitWs.send(JSON.stringify({
           "op": "subscribe",
           "args": ["tickers.BTCUSDT", "tickers.ETHUSDT", "tickers.ADAUSDT", "tickers.DOTUSDT", "tickers.SOLUSDT", "tickers.AVAXUSDT"]
@@ -491,7 +492,7 @@ const LivePrices = () => {
           
           // Handle subscription confirmation
           if (data.success) {
-            console.log('Bybit subscription successful')
+            console.log('Bybit v5 subscription successful')
             return
           }
           
@@ -513,7 +514,7 @@ const LivePrices = () => {
               })
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ Bybit parse error:', error)
           updateDebugInfo('bybit', 'error', error.message)
         }
@@ -534,18 +535,18 @@ const LivePrices = () => {
       return bybitWs
     }
 
-    // 5. OKX WebSocket
+    // 5. OKX WebSocket - Updated endpoint from docs
     const connectOKX = () => {
       updateDebugInfo('okx', 'connecting')
       const okxWs = new WebSocket('wss://ws.okx.com:8443/ws/v5/public')
       connections.push(okxWs)
 
       okxWs.onopen = () => {
-        console.log('✅ OKX WebSocket connected')
+        console.log('✅ OKX WebSocket v5 connected')
         setConnectionStatus(prev => ({ ...prev, okx: true }))
         updateDebugInfo('okx', 'connected')
         
-        // Subscribe to ticker data
+        // Subscribe to ticker data using v5 API
         okxWs.send(JSON.stringify({
           "op": "subscribe",
           "args": [
@@ -566,7 +567,7 @@ const LivePrices = () => {
           
           // Handle subscription confirmation
           if (data.event === 'subscribe') {
-            console.log('OKX subscription successful')
+            console.log('OKX v5 subscription successful')
             return
           }
           
@@ -574,7 +575,7 @@ const LivePrices = () => {
           if (data.arg && data.arg.channel === 'tickers' && data.data && data.data[0]) {
             const tickerData = data.data[0]
             const instId = data.arg.instId
-            const symbol = instId.replace('-USDT', '').replace('BTC', 'BTC') // BTC-USDT -> BTC
+            const symbol = instId.replace('-USDT', '')
             const cryptoInfo = Object.values(cryptoConfig).find(c => c.symbol === symbol)
             
             if (cryptoInfo && tickerData.last) {
@@ -589,7 +590,7 @@ const LivePrices = () => {
               })
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('❌ OKX parse error:', error)
           updateDebugInfo('okx', 'error', error.message)
         }
@@ -610,14 +611,14 @@ const LivePrices = () => {
       return okxWs
     }
 
-    // Connect to all exchanges with real WebSockets only
+    // Connect to all exchanges with proper error handling and delays
     const binanceWs = connectBinance()
     
-    // Add delays to avoid overwhelming the browser and give proper error reporting
+    // Add staggered delays to avoid overwhelming the browser
     setTimeout(() => {
       try {
         connectCoinbase()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to connect to Coinbase:', error)
         updateDebugInfo('coinbase', 'error', 'Failed to initiate connection')
       }
@@ -626,7 +627,7 @@ const LivePrices = () => {
     setTimeout(() => {
       try {
         connectKraken()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to connect to Kraken:', error)
         updateDebugInfo('kraken', 'error', 'Failed to initiate connection')
       }
@@ -635,7 +636,7 @@ const LivePrices = () => {
     setTimeout(() => {
       try {
         connectBybit()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to connect to Bybit:', error)
         updateDebugInfo('bybit', 'error', 'Failed to initiate connection')
       }
@@ -644,13 +645,13 @@ const LivePrices = () => {
     setTimeout(() => {
       try {
         connectOKX()
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to connect to OKX:', error)
         updateDebugInfo('okx', 'error', 'Failed to initiate connection')
       }
     }, 4000)
 
-    // Add a timeout to mark exchanges as failed if they don't connect within 15 seconds
+    // Add a timeout to mark exchanges as failed if they don't connect within 20 seconds
     setTimeout(() => {
       ['coinbase', 'kraken', 'bybit', 'okx'].forEach(exchange => {
         if (!connectionStatus[exchange]) {
@@ -659,7 +660,7 @@ const LivePrices = () => {
           setConnectionStatus(prev => ({ ...prev, [exchange]: false }))
         }
       })
-    }, 15000) // Increased timeout to 15 seconds
+    }, 20000) // Increased timeout to 20 seconds for better reliability
 
     // Cleanup function
     return () => {
@@ -729,6 +730,7 @@ const LivePrices = () => {
           <div className="mb-8 bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
               <h3 className="font-semibold text-gray-900">WebSocket Debug Information</h3>
+              <p className="text-sm text-gray-600 mt-1">Real-time connection status and diagnostics</p>
             </div>
             <div className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -761,16 +763,36 @@ const LivePrices = () => {
                 ))}
               </div>
               
-              {/* Real-time connection attempts log */}
+              {/* Enhanced connection status */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Connection Summary</h4>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                  {Object.entries(exchangeConfigs).map(([key, config]) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        connectionStatus[key] ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-gray-700">{config.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Technical notes */}
               <div className="mt-4 p-3 bg-gray-900 text-green-400 rounded-lg text-xs font-mono max-h-40 overflow-y-auto">
-                <div className="mb-2 text-green-300">Console Log (Real-time):</div>
-                <div>Check browser developer console (F12) for detailed WebSocket logs</div>
-                <div>Look for messages starting with ✅, ❌, or 🔌</div>
+                <div className="mb-2 text-green-300">Updated WebSocket Endpoints (2025):</div>
+                <div className="space-y-1 text-gray-300">
+                  <div>• Binance: wss://stream.binance.com:9443/ws/ (✅ Most reliable)</div>
+                  <div>• Coinbase: wss://advanced-trade-ws.coinbase.com (⚠️ New Advanced API)</div>
+                  <div>• Kraken: wss://ws.kraken.com/v2 (⚠️ Updated to v2)</div>
+                  <div>• Bybit: wss://stream.bybit.com/v5/public/spot (⚠️ May be CORS blocked)</div>
+                  <div>• OKX: wss://ws.okx.com:8443/ws/v5/public (⚠️ May be CORS blocked)</div>
+                </div>
                 <div className="mt-2 text-yellow-400">
                   Common issues:
                   <br />• CORS blocking browser WebSocket connections
-                  <br />• Exchange rate limiting
-                  <br />• Changed API endpoints
+                  <br />• Exchange rate limiting or authentication requirements
+                  <br />• API endpoint changes or deprecations
                   <br />• Network/firewall restrictions
                 </div>
               </div>
@@ -814,6 +836,7 @@ const LivePrices = () => {
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-500">Connecting to live data feed...</p>
+                  <p className="text-gray-400 text-sm mt-2">Binance should connect first, others may be blocked by CORS</p>
                 </div>
               </div>
             ) : (
@@ -892,6 +915,7 @@ const LivePrices = () => {
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-500">Loading exchange comparisons...</p>
+                  <p className="text-gray-400 text-sm mt-2">Waiting for WebSocket connections...</p>
                 </div>
               </div>
             ) : (
@@ -1052,6 +1076,48 @@ const LivePrices = () => {
             )}
           </>
         )}
+
+        {/* Additional Features Section */}
+        <div className="mt-16 bg-white rounded-2xl border border-gray-200 p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Why Use Our Price Comparison?</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Get the best deals across multiple exchanges with real-time price tracking and fee comparison.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Real-Time Prices</h3>
+              <p className="text-gray-600 text-sm">
+                Live WebSocket connections to multiple exchanges for instant price updates.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Award className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Best Price Detection</h3>
+              <p className="text-gray-600 text-sm">
+                Automatically identifies the best buy and sell prices across all connected exchanges.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-purple-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Activity className="w-8 h-8 text-purple-600" />
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Fee Transparency</h3>
+              <p className="text-gray-600 text-sm">
+                Clear fee breakdown and special bonuses to help you choose the right exchange.
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div className="text-center mt-12">
           <button
