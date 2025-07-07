@@ -122,6 +122,42 @@ body {
   }
 }
 
+@keyframes parallax-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  25% {
+    transform: translateY(-5px);
+  }
+  50% {
+    transform: translateY(0px);
+  }
+  75% {
+    transform: translateY(5px);
+  }
+}
+
 /* Animation Classes */
 .animate-float {
   animation: float 6s ease-in-out infinite;
@@ -154,6 +190,37 @@ body {
 
 .animate-counter {
   animation: counter 1s ease-out;
+}
+
+.animate-parallax-float {
+  animation: parallax-float 8s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+}
+
+.animate-wave {
+  animation: wave 4s ease-in-out infinite;
+}
+
+/* Parallax-specific classes */
+.parallax-card {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.parallax-layer {
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* Smooth scrolling */
@@ -217,6 +284,20 @@ select:focus:not(:focus-visible) {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  
+  .animate-float,
+  .animate-bounce-subtle,
+  .animate-parallax-float,
+  .animate-pulse-slow,
+  .animate-shimmer,
+  .animate-wave {
+    animation: none !important;
+  }
+  
+  .parallax-card,
+  .parallax-layer {
+    transform: none !important;
+  }
 }
 
 /* Print styles */
@@ -239,6 +320,17 @@ select:focus:not(:focus-visible) {
   
   .text-7xl {
     font-size: 3.5rem;
+  }
+}
+
+/* Mobile parallax optimizations */
+@media (max-width: 768px) {
+  .parallax-card {
+    transform: none !important;
+  }
+  
+  .parallax-layer {
+    transform: none !important;
   }
 }
 
@@ -351,4 +443,57 @@ select:focus:not(:focus-visible) {
   background: var(--accent-muted);
   color: var(--accent);
   border: 1px solid var(--accent);
+}
+
+/* Parallax-specific styles */
+.parallax-container {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fallback styles for older browsers */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* Performance hints for browsers */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Intersection observer fade-in utilities */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
