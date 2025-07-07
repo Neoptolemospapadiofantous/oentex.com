@@ -1,305 +1,234 @@
 import React, { useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react'
+import { emailService } from '../lib/email'
 import toast from 'react-hot-toast'
 
-interface FormData {
-  first_name: string
-  last_name: string
-  email: string
-  subject: string
-  message: string
-}
-
 const Contact = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState<FormData>({
-    first_name: '',
-    last_name: '',
+  const [formData, setFormData] = useState({
+    name: '',
     email: '',
     subject: '',
     message: ''
   })
-  const [errors, setErrors] = useState<Partial<FormData>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<FormData> = {}
-
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required'
-    }
-
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = 'Last name is required'
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format'
-    }
-
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required'
-    }
-
-    if (!formData.message.trim()) {
-      newErrors.message = 'Message is required'
-    } else if (formData.message.trim().length < 10) {
-      newErrors.message = 'Message must be at least 10 characters'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
-    // Clear error when user starts typing
-    if (errors[name as keyof FormData]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
-    }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) {
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      toast.error('Please fill in all fields')
       return
     }
 
     setIsSubmitting(true)
-    
+
     try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([formData])
-
-      if (error) throw error
-
-      toast.success('Message sent successfully! We\'ll get back to you soon.')
-      setFormData({
-        first_name: '',
-        last_name: '',
-        email: '',
-        subject: '',
-        message: ''
-      })
+      await emailService.sendContactEmail(formData)
+      setIsSubmitted(true)
+      toast.success('Message sent successfully!')
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        })
+        setIsSubmitted(false)
+      }, 3000)
     } catch (error) {
-      console.error('Error sending message:', error)
+      console.error('Contact form error:', error)
       toast.error('Failed to send message. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  const contactInfo = [
+    {
+      icon: Mail,
+      title: 'Email',
+      content: 'contact@oentex.com',
+      link: 'mailto:contact@oentex.com'
+    },
+    {
+      icon: Phone,
+      title: 'Phone',
+      content: '+1 (555) 123-4567',
+      link: 'tel:+15551234567'
+    },
+    {
+      icon: MapPin,
+      title: 'Office',
+      content: 'San Francisco, CA',
+      link: '#'
+    }
+  ]
+
   return (
-    <div className="min-h-screen pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Get in Touch
-            </span>
+    <div className="min-h-screen pt-20 pb-12">
+      {/* Hero Section */}
+      <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold text-text mb-6">
+            Get in Touch
           </h1>
           <p className="text-xl text-textSecondary max-w-3xl mx-auto">
-            Have questions about trading or need help with our platform? We're here to help you succeed.
+            Have questions about our platform or need assistance? We're here to help you navigate your investment journey.
           </p>
         </div>
+      </section>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <div className="bg-surface/50 rounded-3xl p-8 border border-border">
-            <h2 className="text-2xl font-bold text-text mb-6">Send us a Message</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-text font-medium mb-2">First Name</label>
-                  <input
-                    name="first_name"
-                    type="text"
-                    value={formData.first_name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
-                    placeholder="John"
-                  />
-                  {errors.first_name && (
-                    <p className="text-error text-sm mt-1">{errors.first_name}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-text font-medium mb-2">Last Name</label>
-                  <input
-                    name="last_name"
-                    type="text"
-                    value={formData.last_name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
-                    placeholder="Doe"
-                  />
-                  {errors.last_name && (
-                    <p className="text-error text-sm mt-1">{errors.last_name}</p>
-                  )}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-text font-medium mb-2">Email</label>
-                <input
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary"
-                  placeholder="john@example.com"
-                />
-                {errors.email && (
-                  <p className="text-error text-sm mt-1">{errors.email}</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-text font-medium mb-2">Subject</label>
-                <select 
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text focus:outline-none focus:border-primary"
-                >
-                  <option value="">Select a subject</option>
-                  <option value="General Inquiry">General Inquiry</option>
-                  <option value="Trading Support">Trading Support</option>
-                  <option value="Platform Issues">Platform Issues</option>
-                  <option value="Partnership">Partnership</option>
-                  <option value="Technical Support">Technical Support</option>
-                </select>
-                {errors.subject && (
-                  <p className="text-error text-sm mt-1">{errors.subject}</p>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-text font-medium mb-2">Message</label>
-                <textarea
-                  name="message"
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary resize-none"
-                  placeholder="Tell us how we can help you..."
-                ></textarea>
-                {errors.message && (
-                  <p className="text-error text-sm mt-1">{errors.message}</p>
-                )}
-              </div>
-              
-              <button 
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-primary to-secondary px-6 py-4 rounded-xl text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5 mr-2" />
-                    Send Message
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div className="bg-surface/50 rounded-3xl p-8 border border-border">
+      {/* Contact Form and Info */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            {/* Contact Information */}
+            <div className="lg:col-span-1">
               <h2 className="text-2xl font-bold text-text mb-6">Contact Information</h2>
+              <p className="text-textSecondary mb-8">
+                Reach out to us through any of the following channels. We typically respond within 24 hours.
+              </p>
               
               <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <Mail className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-text font-semibold mb-1">Email</h3>
-                    <p className="text-textSecondary">support@cryptovault.com</p>
-                    <p className="text-textSecondary text-sm">We'll respond within 24 hours</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-gradient-to-r from-secondary to-accent rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <Phone className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-text font-semibold mb-1">Phone</h3>
-                    <p className="text-textSecondary">+1 (555) 123-4567</p>
-                    <p className="text-textSecondary text-sm">Mon-Fri, 9AM-6PM EST</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-gradient-to-r from-accent to-primary rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-text font-semibold mb-1">Office</h3>
-                    <p className="text-textSecondary">123 Financial District</p>
-                    <p className="text-textSecondary">San Francisco, CA 94105</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-text font-semibold mb-1">Business Hours</h3>
-                    <p className="text-textSecondary">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                    <p className="text-textSecondary">Saturday - Sunday: Closed</p>
-                  </div>
+                {contactInfo.map((item, index) => (
+                  <a
+                    key={index}
+                    href={item.link}
+                    className="flex items-start group"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+                      <item.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-text mb-1">{item.title}</h3>
+                      <p className="text-textSecondary group-hover:text-primary transition-colors duration-300">
+                        {item.content}
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              <div className="mt-12 p-6 bg-surface/50 rounded-2xl border border-border">
+                <h3 className="font-semibold text-text mb-3">Business Hours</h3>
+                <div className="space-y-2 text-textSecondary text-sm">
+                  <p>Monday - Friday: 9:00 AM - 6:00 PM PST</p>
+                  <p>Saturday: 10:00 AM - 4:00 PM PST</p>
+                  <p>Sunday: Closed</p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="bg-surface/50 rounded-3xl p-8 border border-border">
-              <h2 className="text-2xl font-bold text-text mb-6">Quick Help</h2>
-              <div className="space-y-4">
-                <a href="/faq" className="block p-4 bg-background/50 rounded-xl hover:bg-background/70 transition-all duration-300 group">
-                  <h3 className="text-text font-medium group-hover:text-primary transition-colors">FAQ</h3>
-                  <p className="text-textSecondary text-sm">Find answers to common questions</p>
-                </a>
-                <a href="/deals" className="block p-4 bg-background/50 rounded-xl hover:bg-background/70 transition-all duration-300 group">
-                  <h3 className="text-text font-medium group-hover:text-primary transition-colors">Trading Deals</h3>
-                  <p className="text-textSecondary text-sm">Explore exclusive offers and bonuses</p>
-                </a>
-                <a href="/about" className="block p-4 bg-background/50 rounded-xl hover:bg-background/70 transition-all duration-300 group">
-                  <h3 className="text-text font-medium group-hover:text-primary transition-colors">About Us</h3>
-                  <p className="text-textSecondary text-sm">Learn more about our platform</p>
-                </a>
+            {/* Contact Form */}
+            <div className="lg:col-span-2">
+              <div className="bg-surface/50 rounded-2xl p-8 border border-border">
+                <h2 className="text-2xl font-bold text-text mb-6">Send us a Message</h2>
+                
+                {isSubmitted ? (
+                  <div className="text-center py-12">
+                    <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-text mb-2">Message Sent!</h3>
+                    <p className="text-textSecondary">We'll get back to you as soon as possible.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-text mb-2">
+                          Your Name
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                          placeholder="John Doe"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                          placeholder="john@example.com"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="subject" className="block text-sm font-medium text-text mb-2">
+                        Subject
+                      </label>
+                      <input
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                        placeholder="How can we help?"
+                        required
+                      />
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
+                        Message
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleChange}
+                        rows={6}
+                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300 resize-none"
+                        placeholder="Tell us more about your inquiry..."
+                        required
+                      />
+                    </div>
+                    
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-lg text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {isSubmitting ? (
+                        'Sending...'
+                      ) : (
+                        <>
+                          Send Message
+                          <Send className="w-5 h-5 ml-2" />
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
               </div>
-            </div>
-
-            {/* Live Chat Widget Placeholder */}
-            <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl p-8 border border-primary/20">
-              <h2 className="text-2xl font-bold text-text mb-4">Need Immediate Help?</h2>
-              <p className="text-textSecondary mb-6">
-                Chat with our support team for instant assistance with your trading questions.
-              </p>
-              <button className="bg-gradient-to-r from-primary to-secondary px-6 py-3 rounded-full text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105">
-                Start Live Chat
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

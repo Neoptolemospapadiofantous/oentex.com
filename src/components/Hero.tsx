@@ -15,144 +15,207 @@ const Hero = () => {
   }, [])
 
   const features = [
-    { icon: Shield, text: 'Bank-Level Security' },
-    { icon: TrendingUp, text: 'Real-Time Analytics' },
-    { icon: Zap, text: 'Lightning Fast Trades' }
+    { icon: Shield, text: 'Regulated Partners' },
+    { icon: TrendingUp, text: 'Market Analysis' },
+    { icon: Zap, text: 'Exclusive Bonuses' }
   ]
 
   const stats = [
-    { value: '500K+', label: 'Active Traders' },
-    { value: '$2.5B+', label: 'Trading Volume' },
-    { value: '99.9%', label: 'Uptime' }
+    { value: '50+', label: 'Trusted Partners' },
+    { value: '$500M+', label: 'Member Savings' },
+    { value: '200K+', label: 'Active Members' }
   ]
 
-  const cryptoSymbols = ['BTC', 'ETH', 'ADA', 'DOT', 'SOL', 'AVAX', 'LINK', 'BNB']
+  const cryptoSymbols = [
+    { symbol: 'BTC', color: 'from-orange-400/20 to-orange-600/20', border: 'border-orange-400/30', text: 'text-orange-500' },
+    { symbol: 'ETH', color: 'from-blue-400/20 to-blue-600/20', border: 'border-blue-400/30', text: 'text-blue-500' },
+    { symbol: 'STOCKS', color: 'from-green-400/20 to-green-600/20', border: 'border-green-400/30', text: 'text-green-500' },
+    { symbol: 'BONDS', color: 'from-purple-400/20 to-purple-600/20', border: 'border-purple-400/30', text: 'text-purple-500' },
+    { symbol: 'FOREX', color: 'from-cyan-400/20 to-cyan-600/20', border: 'border-cyan-400/30', text: 'text-cyan-500' },
+    { symbol: 'BANK', color: 'from-indigo-400/20 to-indigo-600/20', border: 'border-indigo-400/30', text: 'text-indigo-500' },
+    { symbol: 'GOLD', color: 'from-yellow-400/20 to-yellow-600/20', border: 'border-yellow-400/30', text: 'text-yellow-600' },
+    { symbol: 'USD', color: 'from-gray-400/20 to-gray-600/20', border: 'border-gray-400/30', text: 'text-gray-500' },
+    { symbol: 'DEFI', color: 'from-violet-400/20 to-violet-600/20', border: 'border-violet-400/30', text: 'text-violet-500' },
+    { symbol: 'REIT', color: 'from-teal-400/20 to-teal-600/20', border: 'border-teal-400/30', text: 'text-teal-500' },
+    { symbol: 'NFT', color: 'from-rose-400/20 to-rose-600/20', border: 'border-rose-400/30', text: 'text-rose-500' },
+    { symbol: 'FUND', color: 'from-emerald-400/20 to-emerald-600/20', border: 'border-emerald-400/30', text: 'text-emerald-500' }
+  ]
+
+  const bubblePositions = [
+    { left: '5%', top: '15%', size: 'w-14 h-14', delay: '0s', duration: '4s' },
+    { right: '8%', top: '12%', size: 'w-14 h-14', delay: '0.5s', duration: '5s' },
+    { left: '3%', top: '35%', size: 'w-16 h-16', delay: '1s', duration: '6s' },
+    { right: '5%', top: '45%', size: 'w-14 h-14', delay: '1.5s', duration: '4.5s' },
+    { left: '12%', top: '65%', size: 'w-16 h-16', delay: '2s', duration: '5.5s' },
+    { right: '15%', bottom: '25%', size: 'w-14 h-14', delay: '2.5s', duration: '4s' },
+    { left: '8%', bottom: '15%', size: 'w-16 h-16', delay: '3s', duration: '6s' },
+    { right: '3%', bottom: '40%', size: 'w-14 h-14', delay: '3.5s', duration: '5s' },
+    { left: '15%', top: '25%', size: 'w-12 h-12', delay: '4s', duration: '4.5s' },
+    { right: '12%', top: '65%', size: 'w-14 h-14', delay: '4.5s', duration: '5.5s' },
+    { left: '6%', top: '50%', size: 'w-14 h-14', delay: '5s', duration: '4s' },
+    { right: '6%', bottom: '15%', size: 'w-16 h-16', delay: '5.5s', duration: '6s' }
+  ]
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 lg:pt-20 pb-12 lg:pb-16 bg-gradient-to-br from-primaryMuted via-background to-secondaryMuted">
       {/* Dynamic Background */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(circle at 20% 80%, rgba(158, 127, 255, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 40% 40%, rgba(244, 114, 182, 0.1) 0%, transparent 50%),
-            linear-gradient(135deg, #0A0F1C 0%, #1A237E 100%)
-          `
-        }}
-      >
+      <div className="absolute inset-0">
         <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e40af' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }} />
       </div>
 
-      {/* Animated Crypto Elements */}
+      {/* Animated Crypto Elements - Consistent Positioning */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating Crypto Coins */}
-        {cryptoSymbols.map((symbol, index) => (
-          <div
-            key={symbol}
-            className="absolute animate-float"
-            style={{
-              left: `${10 + (index * 12)}%`,
-              top: `${20 + (index % 3) * 25}%`,
-              animationDelay: `${index * 0.5}s`,
-              animationDuration: `${4 + (index % 3)}s`
-            }}
-          >
-            <div className="w-16 h-16 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full border border-primary/30 flex items-center justify-center backdrop-blur-sm animate-glow">
-              <span className="text-primary font-bold text-sm">{symbol}</span>
+        {/* Floating Crypto Coins - Consistent design */}
+        {cryptoSymbols.map((crypto, index) => {
+          const position = bubblePositions[index]
+          if (!position) return null
+          
+          return (
+            <div
+              key={crypto.symbol + index}
+              className="absolute animate-float"
+              style={{
+                left: position.left,
+                right: position.right,
+                top: position.top,
+                bottom: position.bottom,
+                animationDelay: position.delay,
+                animationDuration: position.duration
+              }}
+            >
+              <div className={`${position.size} bg-gradient-to-r ${crypto.color} rounded-full border ${crypto.border} flex items-center justify-center backdrop-blur-sm animate-glow shadow-lg hover:scale-110 transition-transform duration-300`}>
+                <span className={`${crypto.text} font-bold text-xs`}>{crypto.symbol}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
-        {/* Gradient Orbs */}
+        {/* Enhanced Floating Particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${8 + Math.random() * 4}s`
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Network Connection Lines */}
+        <div className="absolute inset-0">
+          <svg className="w-full h-full opacity-20">
+            <defs>
+              <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgb(59, 130, 246)" stopOpacity="0.5" />
+                <stop offset="100%" stopColor="rgb(16, 185, 129)" stopOpacity="0.1" />
+              </linearGradient>
+            </defs>
+            <line x1="10%" y1="20%" x2="90%" y2="30%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" />
+            <line x1="15%" y1="70%" x2="85%" y2="60%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '2s' }} />
+            <line x1="20%" y1="40%" x2="80%" y2="80%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '4s' }} />
+          </svg>
+        </div>
+
+        {/* Gradient Orbs - Positioned in corners */}
         <div 
-          className="absolute w-96 h-96 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-3xl animate-float"
+          className="absolute w-80 h-80 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-full blur-3xl animate-float"
           style={{
-            left: `${mousePosition.x * 0.02}px`,
-            top: `${mousePosition.y * 0.02}px`,
+            left: `${-100 + mousePosition.x * 0.01}px`,
+            top: `${-100 + mousePosition.y * 0.01}px`,
           }}
         />
         <div 
-          className="absolute w-64 h-64 bg-gradient-to-r from-accent/20 to-primary/20 rounded-full blur-3xl animate-float"
+          className="absolute w-60 h-60 bg-gradient-to-r from-accent/5 to-primary/5 rounded-full blur-3xl animate-float"
           style={{
-            right: `${mousePosition.x * 0.01}px`,
-            bottom: `${mousePosition.y * 0.01}px`,
+            right: `${-100 + mousePosition.x * 0.008}px`,
+            bottom: `${-100 + mousePosition.y * 0.008}px`,
             animationDelay: '2s'
           }}
         />
         
-        {/* Floating Geometric Shapes */}
-        <div className="absolute top-20 left-10 w-4 h-4 bg-primary/30 rounded-full animate-bounce-subtle" />
-        <div className="absolute top-40 right-20 w-6 h-6 bg-secondary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-40 left-20 w-3 h-3 bg-accent/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '3s' }} />
-        <div className="absolute bottom-20 right-10 w-5 h-5 bg-primary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '2s' }} />
+        {/* Floating Geometric Shapes - Enhanced */}
+        <div className="absolute top-28 left-24 w-2 h-2 bg-primary/30 rounded-full animate-bounce-subtle" />
+        <div className="absolute top-52 right-32 w-3 h-3 bg-secondary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-52 left-36 w-1.5 h-1.5 bg-accent/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '3s' }} />
+        <div className="absolute bottom-36 right-24 w-2.5 h-2.5 bg-primary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-36 left-1/4 w-2 h-2 bg-green-400/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '4s' }} />
+        <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-purple-400/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '5s' }} />
 
-        {/* Animated Lines */}
-        <div className="absolute top-1/4 left-1/4 w-32 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-pulse-slow" />
-        <div className="absolute bottom-1/3 right-1/4 w-24 h-px bg-gradient-to-r from-transparent via-secondary/50 to-transparent animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        {/* Enhanced Animated Lines */}
+        <div className="absolute top-1/4 left-20 w-28 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-pulse-slow" />
+        <div className="absolute bottom-1/3 right-20 w-24 h-px bg-gradient-to-r from-transparent via-secondary/40 to-transparent animate-pulse-slow" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-16 w-20 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent animate-pulse-slow" style={{ animationDelay: '2s' }} />
         
-        {/* Trading Chart Lines */}
-        <div className="absolute top-1/3 right-1/3">
-          <svg width="100" height="60" className="animate-pulse-slow">
+        {/* Enhanced Trading Chart Lines */}
+        <div className="absolute top-1/3 right-24">
+          <svg width="90" height="55" className="animate-pulse-slow">
             <polyline
               fill="none"
-              stroke="rgba(158, 127, 255, 0.3)"
+              stroke="rgba(59, 130, 246, 0.3)"
               strokeWidth="2"
-              points="0,50 20,30 40,40 60,20 80,25 100,10"
+              points="0,45 18,28 36,38 54,18 72,23 90,8"
             />
+            <circle cx="18" cy="28" r="2" fill="rgba(59, 130, 246, 0.4)" className="animate-ping" style={{ animationDelay: '1s' }} />
+            <circle cx="54" cy="18" r="2" fill="rgba(59, 130, 246, 0.4)" className="animate-ping" style={{ animationDelay: '3s' }} />
           </svg>
         </div>
         
-        <div className="absolute bottom-1/4 left-1/3">
+        <div className="absolute bottom-1/4 left-24">
           <svg width="80" height="50" className="animate-pulse-slow" style={{ animationDelay: '2s' }}>
             <polyline
               fill="none"
-              stroke="rgba(56, 189, 248, 0.3)"
+              stroke="rgba(16, 185, 129, 0.3)"
               strokeWidth="2"
-              points="0,40 15,25 30,35 45,15 60,20 80,5"
+              points="0,40 16,23 32,33 48,15 64,20 80,6"
             />
+            <circle cx="32" cy="33" r="2" fill="rgba(16, 185, 129, 0.4)" className="animate-ping" style={{ animationDelay: '2s' }} />
+            <circle cx="64" cy="20" r="2" fill="rgba(16, 185, 129, 0.4)" className="animate-ping" style={{ animationDelay: '4s' }} />
           </svg>
         </div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Main Content */}
-        <div className="animate-slide-up">
+        <div className="animate-slide-up pt-4 sm:pt-6 pb-4 sm:pb-6">
           {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 bg-surface/50 border border-border rounded-full text-sm text-textSecondary mb-8 animate-glow backdrop-blur-sm">
+          <div className="inline-flex items-center px-4 py-2 bg-surface border border-border rounded-full text-sm text-textSecondary mb-8 animate-glow backdrop-blur-sm shadow-sm">
             <Star className="w-4 h-4 mr-2 text-warning" />
-            Trusted by 500,000+ traders worldwide
+            Trusted by 200,000+ investors worldwide
           </div>
 
           {/* Headline */}
           <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span className="block animate-slide-up">The Future of</span>
+            <span className="block animate-slide-up text-text">Your Gateway to</span>
             <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-gradient-x" style={{ animationDelay: '0.2s' }}>
-              Crypto Trading
+              Financial Freedom
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-xl lg:text-2xl text-textSecondary max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            Access exclusive trading bonuses, professional tools, and expert insights. 
-            Start your journey to financial freedom today.
+            Discover exclusive bonuses and deals from top crypto exchanges, stock brokers, banks, and investment platforms. 
+            Compare offers and maximize your financial potential.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: '0.6s' }}>
             <Link
               to="/deals"
-              className="group bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center backdrop-blur-sm"
+              className="group bg-gradient-to-r from-primary to-primaryHover px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center"
             >
               Explore Deals
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             <Link
               to="/about"
-              className="px-8 py-4 border border-border rounded-full text-text font-semibold text-lg hover:bg-surface/50 transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
+              className="px-8 py-4 border-2 border-border rounded-full text-text font-semibold text-lg hover:bg-surface hover:border-primary transition-all duration-300 transform hover:scale-105"
             >
               Learn More
             </Link>
@@ -162,8 +225,8 @@ const Hero = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 mb-16 animate-fade-in" style={{ animationDelay: '0.8s' }}>
             {features.map((feature, index) => (
               <div key={index} className="flex items-center text-textSecondary hover:text-primary transition-colors duration-300">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mr-3 backdrop-blur-sm">
-                  <feature.icon className="w-4 h-4" />
+                <div className="w-8 h-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center mr-3 border border-primary/20">
+                  <feature.icon className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-sm font-medium">{feature.text}</span>
               </div>

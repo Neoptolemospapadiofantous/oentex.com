@@ -30,7 +30,7 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-border' : 'bg-transparent'
+      isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-border shadow-sm' : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -40,7 +40,7 @@ const Header = () => {
               <Zap className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              CryptoVault
+              Oentex
             </span>
           </Link>
 
@@ -50,11 +50,14 @@ const Header = () => {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`text-sm font-medium transition-colors duration-300 hover:text-primary ${
+                className={`text-sm font-medium transition-colors duration-300 hover:text-primary relative ${
                   location.pathname === link.path ? 'text-primary' : 'text-textSecondary'
                 }`}
               >
                 {link.name}
+                {location.pathname === link.path && (
+                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary rounded-full"></div>
+                )}
               </Link>
             ))}
           </nav>
@@ -63,7 +66,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <Link
               to="/deals"
-              className="bg-gradient-to-r from-primary to-secondary px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
+              className="bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
             >
               Get Started
             </Link>
@@ -71,7 +74,7 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-textSecondary hover:text-primary transition-colors duration-300"
+            className="md:hidden p-2 text-textSecondary hover:text-primary transition-colors duration-300 rounded-lg hover:bg-surface"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -83,13 +86,13 @@ const Header = () => {
         <div className={`md:hidden transition-all duration-300 overflow-hidden ${
           isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div className="py-4 space-y-4 border-t border-border">
+          <div className="py-4 space-y-4 border-t border-border bg-background/95 backdrop-blur-md rounded-b-lg">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`block text-sm font-medium transition-colors duration-300 hover:text-primary ${
-                  location.pathname === link.path ? 'text-primary' : 'text-textSecondary'
+                className={`block text-sm font-medium transition-colors duration-300 hover:text-primary px-2 py-1 rounded ${
+                  location.pathname === link.path ? 'text-primary bg-primaryMuted' : 'text-textSecondary'
                 }`}
               >
                 {link.name}
@@ -97,7 +100,7 @@ const Header = () => {
             ))}
             <Link
               to="/deals"
-              className="inline-block bg-gradient-to-r from-primary to-secondary px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
+              className="inline-block bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 mt-2"
             >
               Get Started
             </Link>

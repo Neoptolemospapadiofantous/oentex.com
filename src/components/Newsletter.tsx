@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { emailService } from '../lib/email'
 import toast from 'react-hot-toast'
 
 const Newsletter = () => {
@@ -29,6 +30,14 @@ const Newsletter = () => {
           throw error
         }
       } else {
+        // Send welcome email
+        try {
+          await emailService.sendNewsletterWelcome(email)
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError)
+          // Don't block the subscription if email fails
+        }
+        
         toast.success('Successfully subscribed to newsletter!')
         setEmail('')
       }
