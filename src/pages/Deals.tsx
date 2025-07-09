@@ -18,7 +18,6 @@ import { useErrorHandler } from '../hooks/useErrorHandler'
 import { usePersistedState } from '../hooks/usePersistedState'
 import { DealWithRating, DealFilters } from '../types/deals'
 import { AlertCircle, RefreshCw } from 'lucide-react'
-import toast from 'react-hot-toast'
 
 const Deals: React.FC = () => {
   const { 

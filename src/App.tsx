@@ -13,7 +13,7 @@ import PageTransition from './components/PageTransition'
 import { AuthLoader, PageLoader } from './components/ui/LoadingSpinner'
 import { AuthErrorBoundary } from './components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
-import DebugButton from './components/debug/DebugButton'
+
 
 // Lazy load pages
 const Home = React.lazy(() => import('./pages/Home'))
@@ -25,7 +25,7 @@ const Terms = React.lazy(() => import('./pages/Terms'))
 const Privacy = React.lazy(() => import('./pages/Privacy'))
 const AuthCallback = React.lazy(() => import('./pages/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
-const AuthTestPage = React.lazy(() => import('./pages/AuthTestPage'))
+
 
 // Page loading component with auth awareness
 const PageLoaderComponent = () => {
@@ -49,8 +49,8 @@ const AppContent: React.FC = () => {
     initialized, 
     isFullyReady,
     error: authError,
-    sessionValidated,
-    userDataLoaded
+    // sessionValidated,
+    // userDataLoaded
   } = useAuth()
 
   // Show auth loader during initialization
@@ -58,16 +58,16 @@ const AppContent: React.FC = () => {
     return <AuthLoader stage="initializing" />
   }
 
-  // Show auth error if critical auth failure
-  if (authError && (!sessionValidated || !userDataLoaded)) {
-    return <AuthErrorBoundary error={authError} showReturnHome={false} />
-  }
+  // // Show auth error if critical auth failure
+  // if (authError && (!sessionValidated || !userDataLoaded)) {
+  //   return <AuthErrorBoundary error={authError} showReturnHome={false} />
+  // }
 
-  // Show validation loader if session/user data still loading
-  if (!isFullyReady) {
-    const stage = !sessionValidated ? 'validating' : 'loading-profile'
-    return <AuthLoader stage={stage} />
-  }
+  // // Show validation loader if session/user data still loading
+  // if (!isFullyReady) {
+  //   const stage = !sessionValidated ? 'validating' : 'loading-profile'
+  //   return <AuthLoader stage={stage} />
+  // }
 
   return (
     <div className="min-h-screen bg-background text-text overflow-x-hidden">
@@ -88,10 +88,6 @@ const AppContent: React.FC = () => {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             
-            {/* Debug Route (Development Only) */}
-            {import.meta.env.MODE === 'development' && (
-              <Route path="/auth-test" element={<AuthTestPage />} />
-            )}
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -100,8 +96,7 @@ const AppContent: React.FC = () => {
       </PageTransition>
       <Footer />
       
-      {/* Debug Button (Development Only) */}
-      <DebugButton />
+
     </div>
   )
 }

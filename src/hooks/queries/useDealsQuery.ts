@@ -284,13 +284,13 @@ export const useSubmitRatingMutation = () => {
   })
 }
 
-// Hook to check if queries are ready to run
-export const useQueriesReady = () => {
-  const { isFullyReady, user, session } = useAuth()
+// // Hook to check if queries are ready to run
+// export const useQueriesReady = () => {
+//   const { isFullyReady, user, session } = useAuth()
   
-  return {
-    dealsReady: isFullyReady,
-    ratingsReady: isFullyReady,
-    userRatingsReady: isFullyReady && !!user && !!session,
-  }
-}
+//   return {
+//     dealsReady: isFullyReady,
+//     ratingsReady: isFullyReady,
+//     userRatingsReady: isFullyReady && !!user && !!session,
+//   }
+// }
