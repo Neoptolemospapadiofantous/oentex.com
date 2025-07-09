@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Zap } from 'lucide-react'
+import { AuthButton } from './auth/AuthButton'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -62,8 +63,9 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* CTA Button */}
+          {/* Auth & CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            <AuthButton />
             <Link
               to="/deals"
               className="bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
@@ -98,6 +100,12 @@ const Header = () => {
                 {link.name}
               </Link>
             ))}
+            
+            {/* Mobile Auth */}
+            <div className="pt-4 border-t border-border px-2">
+              <AuthButton />
+            </div>
+            
             <Link
               to="/deals"
               className="inline-block bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 mt-2"
