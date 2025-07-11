@@ -1,173 +1,215 @@
-// src/pages/Deals.tsx (Fixed - Proper State Handling)
-import React, { useState, useCallback, useMemo } from 'react'
+// src/pages/Deals.tsx - REPLACE your existing Deals.tsx
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { Search, Filter, Star } from 'lucide-react'
 import { useAuth } from '../lib/authContext'
+import { DealCard } from '../components/deals/DealCard'
 import { RatingModal } from '../components/rating/RatingModal'
 import { AuthModal } from '../components/auth/AuthModals'
-import { DealsFilters } from '../components/deals/DealsFilters'
-import { DealsList } from '../components/deals/DealsList'
-import { DealsStats } from '../components/deals/DealsStats'
-import { DealsSkeleton } from '../components/ui/SkeletonLoader'
-import { AuthErrorBoundary } from '../components/ui/AuthErrorBoundary'
-import { 
-  useDealsQuery, 
-  useCompanyRatingsQuery, 
-  useUserRatingsQuery, 
-  useUpdateDealClickMutation 
-} from '../hooks/queries/useDealsQuery'
-import { useErrorHandler } from '../hooks/useErrorHandler'
-import { usePersistedState } from '../hooks/usePersistedState'
-import { DealWithRating, DealFilters } from '../types/deals'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { ratingService, UserRating } from '../lib/services/ratingService'
+import { supabase } from '../lib/supabase'
+import toast from 'react-hot-toast'
+
+// Enhanced interfaces
+interface Company {
+  id: string
+  name: string
+  slug: string
+  description: string
+  logo_url?: string
+  website_url: string
+  overall_rating: number
+  total_reviews: number
+  category: string
+  status: string
+}
+
+interface Deal {
+  id: string
+  merchant_name: string
+  title: string
+  description: string
+  terms?: string
+  commission_rate?: number
+  tracking_link: string
+  start_date: string
+  end_date?: string
+  category: string
+  status: string
+  bonus_amount?: string
+  rating: number
+  features: string[]
+  image_url?: string
+  click_count: number
+}
+
+interface DealWithRating extends Deal {
+  company?: Company
+  companyRating?: {
+    averageRating: number
+    totalRatings: number
+  }
+  userRating?: UserRating
+}
+
+interface DealFilters {
+  searchTerm: string
+  category: string
+  sortBy: string
+}
 
 const Deals: React.FC = () => {
-  const { 
-    user, 
-    loading: authLoading, 
-    error: authError, 
-    initialized,
-    isFullyReady 
-  } = useAuth()
+  // State management
+  const [deals, setDeals] = useState<Deal[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [dealsWithRatings, setDealsWithRatings] = useState<DealWithRating[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
-  const { handleError } = useErrorHandler()
+  // Modal states
+  const [showRatingModal, setShowRatingModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [selectedDeal, setSelectedDeal] = useState<DealWithRating | null>(null)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   
-  // Persisted filters
-  const [filters, setFilters] = usePersistedState<DealFilters>('deals-filters', {
+  // Filter states
+  const [filters, setFilters] = useState<DealFilters>({
     searchTerm: '',
     category: 'all',
     sortBy: 'rating'
   })
-  
-  const [showRatingModal, setShowRatingModal] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password'>('login')
-  const [selectedDeal, setSelectedDeal] = useState<DealWithRating | null>(null)
 
-  // FIXED: Use isFullyReady instead of initialized for better state management
-  const shouldShowLoading = useMemo(() => {
-    return authLoading || !initialized || !isFullyReady
-  }, [authLoading, initialized, isFullyReady])
+  const { user } = useAuth()
 
-  // FIXED: Show loading state until auth is fully ready
-  if (shouldShowLoading) {
-    return (
-      <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center mb-12">
-            <div className="animate-pulse">
-              <div className="h-10 bg-gray-300 rounded w-96 mx-auto mb-4"></div>
-              <div className="h-6 bg-gray-200 rounded w-128 mx-auto mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
-            </div>
-            <p className="text-sm text-primary mt-4 animate-pulse">
-              {authLoading ? 'Loading authentication...' : 
-               !initialized ? 'Initializing app...' : 
-               'Preparing deals page...'}
-            </p>
-          </div>
-          <DealsSkeleton />
-        </div>
-      </div>
-    )
+  // Fetch initial data
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  // Fetch user ratings when user changes
+  useEffect(() => {
+    if (user && deals.length > 0) {
+      fetchUserRatings()
+    }
+  }, [user, deals])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Fetch deals and companies in parallel
+      const [dealsResult, companiesResult] = await Promise.all([
+        supabase
+          .from('deals')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false }),
+        
+        supabase
+          .from('trading_companies')
+          .select('*')
+          .eq('status', 'active')
+      ])
+
+      if (dealsResult.error) throw dealsResult.error
+      if (companiesResult.error) throw companiesResult.error
+
+      const fetchedDeals = dealsResult.data || []
+      const fetchedCompanies = companiesResult.data || []
+
+      setDeals(fetchedDeals)
+      setCompanies(fetchedCompanies)
+
+      // Get company ratings for all companies
+      await enrichDealsWithRatings(fetchedDeals, fetchedCompanies)
+
+    } catch (error: any) {
+      console.error('Error fetching data:', error)
+      setError('Failed to load deals. Please try again.')
+      toast.error('Failed to load deals')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // FIXED: Show auth error boundary only for critical errors
-  if (authError && !isFullyReady) {
-    return <AuthErrorBoundary error={authError} />
-  }
-
-  // FIXED: Now that auth is ready, we can safely run queries
-  const { 
-    data: dealsData, 
-    isLoading: dealsLoading, 
-    error: dealsError,
-    refetch: refetchDeals 
-  } = useDealsQuery()
-  
-  const deals = dealsData?.deals || []
-  const companies = dealsData?.companies || []
-  
-  // Get company IDs for rating queries
-  const companyIds = useMemo(() => 
-    [...new Set(deals.map(deal => deal.company?.id).filter(Boolean))] as string[],
-    [deals]
-  )
-
-  // FIXED: Only fetch ratings when we have company IDs and auth is ready
-  const { 
-    data: companyRatings = {}, 
-    isLoading: ratingsLoading,
-    error: ratingsError 
-  } = useCompanyRatingsQuery(companyIds)
-  
-  const { 
-    data: userRatings = new Map(), 
-    isLoading: userRatingsLoading,
-    error: userRatingsError 
-  } = useUserRatingsQuery(user?.id, companyIds)
-
-  // Mutations
-  const updateDealClickMutation = useUpdateDealClickMutation()
-
-  // FIXED: Better error handling for data queries
-  const hasDataErrors = useMemo(() => {
-    return !!(dealsError || ratingsError || userRatingsError)
-  }, [dealsError, ratingsError, userRatingsError])
-
-  // FIXED: More precise loading state for data
-  const isDataLoading = useMemo(() => {
-    return dealsLoading || (companyIds.length > 0 && ratingsLoading)
-  }, [dealsLoading, companyIds.length, ratingsLoading])
-
-  // Combine deals with rating data
-  const dealsWithRatings = useMemo(() => {
-    if (deals.length === 0) return []
-    
-    return deals.map(deal => {
-      if (!deal.company?.id) return deal
-
-      const companyRating = companyRatings[deal.company.id] || { 
-        averageRating: deal.company.overall_rating || 0, 
-        totalRatings: deal.company.total_reviews || 0 
-      }
+  const enrichDealsWithRatings = async (dealsList: Deal[], companiesList: Company[]) => {
+    try {
+      // Create a map of companies for quick lookup
+      const companyMap = new Map(companiesList.map(c => [c.name.toLowerCase(), c]))
       
-      const userRating = userRatings.get(deal.company.id) || null
+      // Get ratings for all companies
+      const companyIds = companiesList.map(c => c.id)
+      const companyRatings = await ratingService.getMultipleCompanyRatings(companyIds)
 
-      return {
+      // Enrich deals with company and rating data
+      const enrichedDeals: DealWithRating[] = dealsList.map(deal => {
+        const company = companyMap.get(deal.merchant_name.toLowerCase())
+        
+        return {
+          ...deal,
+          company,
+          companyRating: company ? companyRatings[company.id] : undefined
+        }
+      })
+
+      setDealsWithRatings(enrichedDeals)
+    } catch (error) {
+      console.error('Error enriching deals with ratings:', error)
+      // Still set deals without ratings
+      const basicDeals: DealWithRating[] = dealsList.map(deal => ({
         ...deal,
-        companyRating,
-        userRating
-      }
-    })
-  }, [deals, companyRatings, userRatings])
+        company: undefined,
+        companyRating: undefined
+      }))
+      setDealsWithRatings(basicDeals)
+    }
+  }
 
-  // Filter deals
-  const filteredDeals = useMemo(() => {
-    let filtered = [...dealsWithRatings]
+  const fetchUserRatings = async () => {
+    if (!user) return
 
-    // Search filter
-    if (filters.searchTerm) {
-      const searchLower = filters.searchTerm.toLowerCase()
-      filtered = filtered.filter(deal => 
-        deal.title.toLowerCase().includes(searchLower) ||
-        deal.company_name.toLowerCase().includes(searchLower) ||
-        deal.description.toLowerCase().includes(searchLower)
+    try {
+      const updatedDeals = await Promise.all(
+        dealsWithRatings.map(async (deal) => {
+          if (!deal.company) return deal
+
+          const userRating = await ratingService.getUserRating(user.id, deal.company.id)
+          return {
+            ...deal,
+            userRating: userRating || undefined
+          }
+        })
       )
-    }
 
-    // Category filter
-    if (filters.category !== 'all') {
-      filtered = filtered.filter(deal => deal.category === filters.category)
+      setDealsWithRatings(updatedDeals)
+    } catch (error) {
+      console.error('Error fetching user ratings:', error)
     }
+  }
 
-    // Sort
+  // Filter and sort deals
+  const filteredDeals = useMemo(() => {
+    let filtered = dealsWithRatings.filter(deal => {
+      const matchesSearch = deal.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                           deal.merchant_name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                           deal.description.toLowerCase().includes(filters.searchTerm.toLowerCase())
+      
+      const matchesCategory = filters.category === 'all' || deal.category === filters.category
+
+      return matchesSearch && matchesCategory
+    })
+
+    // Sort deals
     filtered.sort((a, b) => {
       switch (filters.sortBy) {
         case 'rating':
-          return (b.companyRating?.averageRating || 0) - (a.companyRating?.averageRating || 0)
-        case 'popularity':
-          return b.click_count - a.click_count
+          const ratingA = a.companyRating?.averageRating || a.company?.overall_rating || 0
+          const ratingB = b.companyRating?.averageRating || b.company?.overall_rating || 0
+          return ratingB - ratingA
         case 'newest':
-          return new Date(b.id).getTime() - new Date(a.id).getTime()
+          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime()
+        case 'popular':
+          return (b.click_count || 0) - (a.click_count || 0)
         default:
           return 0
       }
@@ -184,32 +226,74 @@ const Deals: React.FC = () => {
       return
     }
 
+    if (!deal.company) {
+      toast.error('Cannot rate this deal - company information not available')
+      return
+    }
+
     setSelectedDeal(deal)
     setShowRatingModal(true)
   }, [user])
 
-  const handleTrackClick = useCallback((deal: DealWithRating) => {
-    if (!deal.id) return
-    
-    updateDealClickMutation.mutate(deal.id, {
-      onError: (error) => {
-        handleError(error)
-      }
-    })
-  }, [updateDealClickMutation, handleError])
+  const handleTrackClick = useCallback(async (deal: DealWithRating) => {
+    try {
+      // Increment click count
+      const { error } = await supabase.rpc('increment_deal_clicks', {
+        deal_id: deal.id
+      })
 
-  const handleRatingSubmitted = useCallback(() => {
+      if (error) throw error
+
+      // Update local state
+      setDealsWithRatings(prev => prev.map(d => 
+        d.id === deal.id 
+          ? { ...d, click_count: (d.click_count || 0) + 1 }
+          : d
+      ))
+
+      // Open tracking link
+      window.open(deal.tracking_link, '_blank', 'noopener,noreferrer')
+      
+    } catch (error) {
+      console.error('Error tracking deal click:', error)
+      // Still open the link even if tracking fails
+      window.open(deal.tracking_link, '_blank', 'noopener,noreferrer')
+    }
+  }, [])
+
+  const handleRatingSubmitted = useCallback(async () => {
     setShowRatingModal(false)
     setSelectedDeal(null)
-  }, [])
+    
+    // Refresh the specific deal's rating data
+    if (selectedDeal?.company && user) {
+      try {
+        const [companyRating, userRating] = await Promise.all([
+          ratingService.getCompanyAverageRating(selectedDeal.company.id),
+          ratingService.getUserRating(user.id, selectedDeal.company.id)
+        ])
+
+        setDealsWithRatings(prev => prev.map(deal => 
+          deal.id === selectedDeal.id 
+            ? { 
+                ...deal, 
+                companyRating,
+                userRating: userRating || undefined
+              }
+            : deal
+        ))
+
+        toast.success('Rating updated successfully!')
+      } catch (error) {
+        console.error('Error refreshing rating data:', error)
+        toast.success('Rating submitted!')
+      }
+    }
+  }, [selectedDeal, user])
 
   const handleFilterChange = useCallback((key: keyof DealFilters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
-  }, [setFilters])
-
-  const handleRetry = useCallback(() => {
-    refetchDeals()
-  }, [refetchDeals])
+  }, [])
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -217,71 +301,47 @@ const Deals: React.FC = () => {
       return { averageRating: 0, totalClaims: 0 }
     }
 
-    const averageRating = Math.round(
-      filteredDeals.reduce((sum, deal) => 
-        sum + (deal.companyRating?.averageRating || deal.company?.overall_rating || deal.rating || 0), 0
-      ) / filteredDeals.length * 10
-    ) / 10
+    const averageRating = filteredDeals.reduce((sum, deal) => {
+      const rating = deal.companyRating?.averageRating || deal.company?.overall_rating || 0
+      return sum + rating
+    }, 0) / filteredDeals.length
 
-    const totalClaims = filteredDeals.reduce((sum, deal) => sum + deal.click_count, 0)
+    const totalClaims = filteredDeals.reduce((sum, deal) => sum + (deal.click_count || 0), 0)
 
-    return { averageRating, totalClaims }
+    return { 
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalClaims 
+    }
   }, [filteredDeals])
 
-  // FIXED: Handle data errors gracefully
-  if (hasDataErrors) {
-    const primaryError = dealsError || ratingsError || userRatingsError
-    
+  // Loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-red-800 mb-4">
-              Error Loading Deals
-            </h2>
-            <p className="text-red-700 mb-6">
-              {(primaryError as Error)?.message || 'An unexpected error occurred'}
-            </p>
-            <div className="flex gap-4 justify-center">
-              <button 
-                onClick={handleRetry}
-                className="flex items-center gap-2 bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Retry
-              </button>
-              <button 
-                onClick={() => window.location.reload()}
-                className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Refresh Page
-              </button>
-            </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-2 text-textSecondary">Loading deals...</span>
           </div>
         </div>
       </div>
     )
   }
 
-  // FIXED: Show loading state for data queries
-  if (isDataLoading) {
+  // Error state
+  if (error) {
     return (
       <div className="min-h-screen bg-background pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center mb-12">
-            <div className="animate-pulse">
-              <div className="h-10 bg-gray-300 rounded w-96 mx-auto mb-4"></div>
-              <div className="h-6 bg-gray-200 rounded w-128 mx-auto mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
-            </div>
-            <p className="text-sm text-primary mt-4 animate-pulse">
-              {dealsLoading ? 'Loading deals...' : 
-               ratingsLoading ? 'Loading ratings...' : 
-               'Loading data...'}
-            </p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={fetchData}
+              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
           </div>
-          <DealsSkeleton />
         </div>
       </div>
     )
@@ -289,50 +349,91 @@ const Deals: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">
-            Exclusive Trading <span className="text-primary">Deals</span>
-          </h1>
-          <p className="text-xl text-textSecondary max-w-3xl mx-auto">
-            Discover the best deals and bonuses from top-rated trading platforms. 
-            Get exclusive offers available only through our platform.
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-text mb-2">Trading Deals & Bonuses</h1>
+          <p className="text-textSecondary">
+            Discover exclusive offers from top trading platforms
           </p>
-          {userRatingsLoading && (
-            <p className="text-sm text-primary mt-2 animate-pulse">
-              Loading personalized ratings...
-            </p>
-          )}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-surface p-4 rounded-lg border border-border">
+            <div className="text-2xl font-bold text-text">{filteredDeals.length}</div>
+            <div className="text-textSecondary text-sm">Active Deals</div>
+          </div>
+          <div className="bg-surface p-4 rounded-lg border border-border">
+            <div className="text-2xl font-bold text-text">{companies.length}</div>
+            <div className="text-textSecondary text-sm">Trading Platforms</div>
+          </div>
+          <div className="bg-surface p-4 rounded-lg border border-border">
+            <div className="flex items-center space-x-2">
+              <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+              <div className="text-2xl font-bold text-text">{stats.averageRating}</div>
+            </div>
+            <div className="text-textSecondary text-sm">Average Rating</div>
+          </div>
+          <div className="bg-surface p-4 rounded-lg border border-border">
+            <div className="text-2xl font-bold text-text">{stats.totalClaims.toLocaleString()}</div>
+            <div className="text-textSecondary text-sm">Total Claims</div>
+          </div>
         </div>
 
         {/* Filters */}
-        <DealsFilters
-          searchTerm={filters.searchTerm}
-          setSearchTerm={(term) => handleFilterChange('searchTerm', term)}
-          selectedCategory={filters.category}
-          setSelectedCategory={(category) => handleFilterChange('category', category)}
-          sortBy={filters.sortBy}
-          setSortBy={(sort) => handleFilterChange('sortBy', sort)}
-        />
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search deals..."
+              value={filters.searchTerm}
+              onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-surface text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
 
-        {/* Results Summary */}
-        <div className="flex items-center justify-between mb-8">
-          <p className="text-textSecondary">
-            Showing {filteredDeals.length} of {dealsWithRatings.length} deals
-          </p>
-          {companies.length > 0 && (
-            <p className="text-textSecondary text-sm">
-              From {companies.length} trading platforms
-            </p>
-          )}
+          <select
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="px-4 py-2 border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="all">All Categories</option>
+            <option value="crypto">Crypto</option>
+            <option value="forex">Forex</option>
+            <option value="stocks">Stocks</option>
+          </select>
+
+          <select
+            value={filters.sortBy}
+            onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+            className="px-4 py-2 border border-border rounded-lg bg-surface text-text focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            <option value="rating">Highest Rated</option>
+            <option value="newest">Newest</option>
+            <option value="popular">Most Popular</option>
+          </select>
         </div>
 
-        {/* No Results */}
-        {filteredDeals.length === 0 && !isDataLoading && (
+        {/* Deals Grid */}
+        {filteredDeals.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredDeals.map((deal) => (
+              <DealCard
+                key={deal.id}
+                deal={deal}
+                onRateClick={() => handleRateClick(deal)}
+                onTrackClick={() => handleTrackClick(deal)}
+              />
+            ))}
+          </div>
+        ) : (
           <div className="text-center py-12">
-            <p className="text-textSecondary text-lg mb-4">
-              No deals found matching your criteria.
+            <Filter className="w-12 h-12 text-textSecondary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-text mb-2">No deals found</h3>
+            <p className="text-textSecondary mb-4">
+              Try adjusting your search or filter criteria
             </p>
             <button
               onClick={() => setFilters({
@@ -347,53 +448,31 @@ const Deals: React.FC = () => {
           </div>
         )}
 
-        {/* Deals List */}
-        {filteredDeals.length > 0 && (
-          <div className="mb-12">
-            <DealsList
-              deals={filteredDeals}
-              onRateClick={handleRateClick}
-              onTrackClick={handleTrackClick}
-              searchTerm={filters.searchTerm}
-              selectedCategory={filters.category}
-            />
-          </div>
+        {/* Rating Modal */}
+        {showRatingModal && selectedDeal && selectedDeal.company && (
+          <RatingModal
+            isOpen={showRatingModal}
+            onClose={() => {
+              setShowRatingModal(false)
+              setSelectedDeal(null)
+            }}
+            companyId={selectedDeal.company.id}
+            companyName={selectedDeal.company.name}
+            existingRating={selectedDeal.userRating}
+            onRatingSubmitted={handleRatingSubmitted}
+          />
         )}
-
-        {/* Stats */}
-        <DealsStats
-          filteredDealsCount={filteredDeals.length}
-          totalDealsCount={dealsWithRatings.length}
-          companiesCount={companies.length}
-          averageRating={stats.averageRating}
-          totalClaims={stats.totalClaims}
-        />
+        
+        {/* Auth Modal */}
+        {showAuthModal && (
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            mode={authMode}
+            onModeChange={setAuthMode}
+          />
+        )}
       </div>
-
-      {/* Rating Modal */}
-      {showRatingModal && selectedDeal && selectedDeal.company && (
-        <RatingModal
-          isOpen={showRatingModal}
-          onClose={() => {
-            setShowRatingModal(false)
-            setSelectedDeal(null)
-          }}
-          companyId={selectedDeal.company.id}
-          companyName={selectedDeal.company.name}
-          existingRating={selectedDeal.userRating}
-          onRatingSubmitted={handleRatingSubmitted}
-        />
-      )}
-      
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          mode={authMode}
-          onModeChange={setAuthMode}
-        />
-      )}
     </div>
   )
 }
