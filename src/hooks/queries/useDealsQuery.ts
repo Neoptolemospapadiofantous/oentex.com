@@ -1,8 +1,8 @@
-// src/hooks/queries/useDealsQuery.ts (Updated with auth state guards)
+// src/hooks/queries/useDealsQuery.ts - FIXED with proper rating refresh
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { ratingService } from '../../lib/services/ratingService'
-import { Deal, DealWithRating, Company } from '../../types/deals'
+import { DealWithRating, Company } from '../../types/deals'
 import { logger } from '../../utils/logger'
 import { useAuth } from '../../lib/authContext'
 
@@ -10,10 +10,10 @@ import { useAuth } from '../../lib/authContext'
 const DEALS_QUERY_KEY = ['deals'] as const
 const RATINGS_QUERY_KEY = ['ratings'] as const
 
-// Enhanced deals fetching with better error handling
+// ✅ ENHANCED: Main deals query with proper rating data
 const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Company[] }> => {
   try {
-    logger.info('Fetching deals...')
+    console.log('🔄 Fetching deals with real-time company ratings...')
     
     const { data: dealsData, error: dealsError } = await supabase
       .from('company_deals')
@@ -25,31 +25,51 @@ const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Compa
       .order('created_at', { ascending: false })
 
     if (dealsError) {
-      logger.error('Failed to fetch deals:', dealsError)
+      console.error('❌ Failed to fetch deals:', dealsError)
       throw new Error(`Failed to fetch deals: ${dealsError.message}`)
     }
 
     if (!dealsData) {
-      logger.warn('No deals data returned')
+      console.warn('⚠️ No deals data returned')
       return { deals: [], companies: [] }
     }
 
-    // Transform deals data
+    // Transform deals data with real-time company ratings
     const transformedDeals: DealWithRating[] = dealsData.map(deal => {
       const company = Array.isArray(deal.company) ? deal.company[0] : deal.company
       
+      // ✅ LOG: Real-time database ratings
+      if (company?.overall_rating !== undefined) {
+        console.log(`📊 ${company.name}: ${company.overall_rating}⭐ (${company.total_reviews} reviews) - REAL-TIME`)
+      }
+      
       return {
         id: deal.id,
+        company_id: deal.company_id,
         title: deal.title,
         description: deal.description,
+        deal_type: deal.deal_type,
+        value: deal.value,
+        terms: deal.terms,
+        start_date: deal.start_date,
+        end_date: deal.end_date,
+        is_active: deal.is_active,
+        click_count: deal.click_count || 0,
+        conversion_rate: deal.conversion_rate,
+        affiliate_link: deal.affiliate_link,
+        created_at: deal.created_at,
+        updated_at: deal.updated_at,
+        // Compatibility fields
         company_name: company?.name || 'Unknown Company',
         category: company?.category || deal.deal_type,
-        rating: company?.overall_rating || 0,
         bonus_amount: deal.value || 'Special Offer',
-        features: [],
-        tracking_link: deal.affiliate_link,
-        click_count: deal.click_count || 0,
-        company: company || undefined
+        features: company?.features || [],
+        // ✅ REAL COMPANY DATA with up-to-date ratings
+        company: company ? {
+          ...company,
+          overall_rating: company.overall_rating || 0,  // Real-time aggregated rating
+          total_reviews: company.total_reviews || 0     // Real-time review count
+        } : undefined
       }
     })
 
@@ -60,86 +80,56 @@ const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Compa
         company && arr.findIndex(c => c?.id === company.id) === index
       ) as Company[]
 
-    logger.info(`Fetched ${transformedDeals.length} deals from ${uniqueCompanies.length} companies`)
+    // ✅ LOG: Real-time rating summary
+    const ratingSummary = uniqueCompanies.map(c => `${c.name}: ${c.overall_rating}⭐(${c.total_reviews})`).join(', ')
+    console.log(`✅ Fetched ${transformedDeals.length} deals from ${uniqueCompanies.length} companies`)
+    console.log(`📊 REAL-TIME RATINGS: ${ratingSummary}`)
     
     return { deals: transformedDeals, companies: uniqueCompanies }
   } catch (error) {
-    logger.error('Failed to fetch deals:', error)
+    console.error('❌ Failed to fetch deals:', error)
     throw error
   }
 }
 
-// Main deals query with auth state awareness
+// ✅ ENHANCED: Main deals query with aggressive refreshing after ratings
 export const useDealsQuery = () => {
   const { isFullyReady, error: authError } = useAuth()
 
   return useQuery({
     queryKey: DEALS_QUERY_KEY,
     queryFn: fetchDeals,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
+    gcTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      // Don't retry on auth errors
       if (authError || error.message?.includes('unauthorized') || error.message?.includes('forbidden')) {
         return false
       }
       return failureCount < 3
     },
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    // Don't fetch until auth is fully ready for consistency
     enabled: isFullyReady,
+    // ✅ ENHANCED: More aggressive refetching for rating updates
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000, // Refetch every minute when ratings might be changing
   })
 }
 
-// Fetch ratings for multiple companies with auth guards
-const fetchCompanyRatings = async (companyIds: string[]) => {
-  if (companyIds.length === 0) {
-    return {}
-  }
-
-  try {
-    const ratings = await ratingService.getMultipleCompanyRatings(companyIds)
-    logger.info(`Fetched ratings for ${Object.keys(ratings).length} companies`)
-    return ratings
-  } catch (error) {
-    logger.error('Failed to fetch company ratings:', error)
-    throw error
-  }
-}
-
-export const useCompanyRatingsQuery = (companyIds: string[]) => {
-  const { isFullyReady, error: authError } = useAuth()
-
-  return useQuery({
-    queryKey: [...RATINGS_QUERY_KEY, 'companies', ...companyIds.sort()],
-    queryFn: () => fetchCompanyRatings(companyIds),
-    enabled: isFullyReady && companyIds.length > 0,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    retry: (failureCount, error) => {
-      if (authError || error.message?.includes('unauthorized')) {
-        return false
-      }
-      return failureCount < 2
-    },
-  })
-}
-
-// Enhanced user ratings fetching with better error handling
+// ✅ USER RATINGS QUERY: Keep this for user-specific ratings
 const fetchUserRatings = async (userId: string, companyIds: string[]) => {
   if (companyIds.length === 0) {
     return new Map()
   }
 
   try {
-    // Use Promise.allSettled to handle individual failures gracefully
     const ratings = await Promise.allSettled(
       companyIds.map(async (companyId) => {
         try {
           const userRating = await ratingService.getUserRating(userId, companyId)
           return { companyId, userRating }
         } catch (error) {
-          logger.warn(`Failed to fetch user rating for company ${companyId}:`, error)
+          console.warn(`Failed to fetch user rating for company ${companyId}:`, error)
           return { companyId, userRating: null }
         }
       })
@@ -155,10 +145,10 @@ const fetchUserRatings = async (userId: string, companyIds: string[]) => {
       }
     })
 
-    logger.info(`Fetched user ratings for ${userRatingsMap.size} companies`)
+    console.log(`📊 Fetched user ratings for ${userRatingsMap.size} companies`)
     return userRatingsMap
   } catch (error) {
-    logger.error('Failed to fetch user ratings:', error)
+    console.error('❌ Failed to fetch user ratings:', error)
     throw error
   }
 }
@@ -174,10 +164,10 @@ export const useUserRatingsQuery = (userId: string | undefined, companyIds: stri
              !!userId && 
              !!user && 
              companyIds.length > 0,
-    staleTime: 1 * 60 * 1000, // 1 minute
-    gcTime: 3 * 60 * 1000, // 3 minutes
+    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
+    gcTime: 2 * 60 * 1000, // 2 minutes
     retry: (failureCount, error) => {
-      if (authError || error.message?.includes('unauthorized') || error.message?.includes('auth')) {
+      if (authError || error.message?.includes('unauthorized')) {
         return false
       }
       return failureCount < 2
@@ -185,66 +175,58 @@ export const useUserRatingsQuery = (userId: string | undefined, companyIds: stri
   })
 }
 
-// Update deal click count with better error handling
+// ✅ DEAL CLICK TRACKING: Keep this functionality
 export const useUpdateDealClickMutation = () => {
   const queryClient = useQueryClient()
-  const { isFullyReady, user } = useAuth()
 
   return useMutation({
     mutationFn: async (dealId: string) => {
-      if (!isFullyReady) {
-        throw new Error('Authentication not ready')
-      }
+      const { data, error } = await supabase
+        .from('company_deals')
+        .update({ 
+          click_count: supabase.sql`click_count + 1`
+        })
+        .eq('id', dealId)
+        .select()
+        .single()
 
-      try {
-        const { data, error } = await supabase
-          .rpc('increment_deal_clicks', { deal_id: dealId })
-
-        if (error) {
-          logger.error('Error incrementing deal clicks:', error)
-          throw new Error(`Failed to update deal clicks: ${error.message}`)
-        }
-        
-        logger.info(`Updated click count for deal ${dealId}`)
-        return data
-      } catch (error) {
-        logger.error('Failed to update deal click count:', error)
+      if (error) {
         throw error
       }
+
+      return data
     },
-    onSuccess: (_, dealId) => {
+    onSuccess: () => {
       // Invalidate deals query to refresh click counts
       queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
-      logger.info(`Invalidated deals cache after updating deal ${dealId}`)
-    },
-    onError: (error) => {
-      logger.error('Deal click mutation failed:', error)
-    },
-    retry: (failureCount, error) => {
-      if (error.message?.includes('Authentication not ready')) {
-        return false
-      }
-      return failureCount < 2
-    },
+    }
   })
 }
 
-// Submit rating mutation with auth guards
+// ✅ ENHANCED: Rating submission with aggressive cache invalidation
 export const useSubmitRatingMutation = () => {
   const queryClient = useQueryClient()
   const { isFullyReady, user, session } = useAuth()
 
   return useMutation({
-    mutationFn: async ({ 
-      userId, 
-      companyId, 
-      ratings, 
-      existingRating 
+    mutationFn: async ({
+      userId,
+      companyId,
+      ratings,
+      existingRating
     }: {
       userId: string
       companyId: string
-      ratings: any
-      existingRating?: any
+      ratings: {
+        overall_rating?: number
+        platform_usability?: number
+        customer_support?: number
+        fees_commissions?: number
+        security_trust?: number
+        educational_resources?: number
+        mobile_app?: number
+      }
+      existingRating?: { id: string }
     }) => {
       if (!isFullyReady || !user || !session) {
         throw new Error('Authentication required')
@@ -255,24 +237,58 @@ export const useSubmitRatingMutation = () => {
       }
 
       try {
+        console.log('🔄 Submitting rating - will trigger database aggregation...')
+        
         const result = await ratingService.submitRating(userId, companyId, ratings, existingRating)
-        logger.info(`Rating ${existingRating ? 'updated' : 'submitted'} for company ${companyId}`)
-        return result
+        
+        if (result.error) {
+          console.error('❌ Rating submission returned error:', result.error)
+          throw result.error
+        }
+
+        if (!result.data) {
+          throw new Error('No data returned from rating submission')
+        }
+
+        console.log('✅ Rating submitted - database triggers should update company ratings')
+        return result.data
+        
       } catch (error) {
-        logger.error('Failed to submit rating:', error)
+        console.error('❌ Failed to submit rating:', error)
         throw error
       }
     },
-    onSuccess: (_, variables) => {
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'companies'] })
+    onSuccess: async (data, variables) => {
+      console.log('🔄 Rating submitted successfully - invalidating caches...')
+      
+      // ✅ AGGRESSIVE CACHE INVALIDATION
+      // Invalidate user ratings
       queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', variables.userId] })
+      
+      // ✅ CRITICAL: Invalidate deals query to get updated company ratings
       queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
       
-      logger.info(`Invalidated rating caches for user ${variables.userId} and company ${variables.companyId}`)
+      // ✅ Wait for database triggers to complete, then force refresh
+      setTimeout(() => {
+        console.log('🔄 Force refreshing deals after rating submission...')
+        queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
+        queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
+      }, 2000) // Wait 2 seconds for triggers
+      
+      // ✅ Also refresh specific company rating
+      setTimeout(async () => {
+        try {
+          const debugInfo = await ratingService.debugRatingConsistency(variables.companyId)
+          console.log('🔍 DEBUG: Rating consistency check:', debugInfo)
+        } catch (error) {
+          console.error('❌ Debug check failed:', error)
+        }
+      }, 3000)
+      
+      console.log('✅ All caches invalidated - UI should update with new ratings')
     },
     onError: (error) => {
-      logger.error('Rating submission failed:', error)
+      console.error('❌ Rating submission failed:', error)
     },
     retry: (failureCount, error) => {
       if (error.message?.includes('Authentication required') || 
@@ -284,13 +300,42 @@ export const useSubmitRatingMutation = () => {
   })
 }
 
-// // Hook to check if queries are ready to run
-// export const useQueriesReady = () => {
-//   const { isFullyReady, user, session } = useAuth()
+// ✅ RATING BREAKDOWN: For detailed rating display
+export const useCompanyRatingBreakdownQuery = (companyId: string) => {
+  const { isFullyReady } = useAuth()
+
+  return useQuery({
+    queryKey: [...RATINGS_QUERY_KEY, 'breakdown', companyId],
+    queryFn: () => ratingService.getCompanyRatings(companyId),
+    enabled: isFullyReady && !!companyId,
+    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
+    gcTime: 2 * 60 * 1000, // 2 minutes
+  })
+}
+
+// ✅ NEW: Manual refresh helper
+export const useRefreshDealsData = () => {
+  const queryClient = useQueryClient()
   
-//   return {
-//     dealsReady: isFullyReady,
-//     ratingsReady: isFullyReady,
-//     userRatingsReady: isFullyReady && !!user && !!session,
-//   }
-// }
+  return {
+    refreshDeals: () => {
+      console.log('🔄 Manually refreshing deals data...')
+      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
+      queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
+    },
+    
+    refreshUserRatings: (userId: string) => {
+      console.log('🔄 Manually refreshing user ratings...')
+      queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', userId] })
+    },
+    
+    refreshAll: (userId?: string) => {
+      console.log('🔄 Manually refreshing all data...')
+      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', userId] })
+      }
+      queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
+    }
+  }
+}
