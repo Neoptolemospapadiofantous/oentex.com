@@ -1,21 +1,29 @@
-// src/hooks/queries/useDealsQuery.ts - FIXED with proper rating refresh
+// src/hooks/queries/useDealsQuery.ts - MODERNIZED: Clean and optimized
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import { ratingService } from '../../lib/services/ratingService'
-import { DealWithRating, Company } from '../../types/deals'
-import { logger } from '../../utils/logger'
+import { ratingService, RatingTransactionResult, RatingSubmissionData } from '../../lib/services/ratingService'
 import { useAuth } from '../../lib/authContext'
+import { updateCompanyDataInAllCards, getCurrentCompanyData } from '../../lib/queryClient'
+import toast from 'react-hot-toast'
 
-// Query keys
+// ✅ MODERN: Consistent query keys
 const DEALS_QUERY_KEY = ['deals'] as const
 const RATINGS_QUERY_KEY = ['ratings'] as const
 
-// ✅ ENHANCED: Main deals query with proper rating data
-const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Company[] }> => {
+// ✅ MODERN: TypeScript interfaces
+interface RatingSubmissionVariables {
+  userId: string
+  companyId: string
+  ratings: RatingSubmissionData
+  existingRating?: { id: string }
+}
+
+// ✅ MODERN: Clean deals fetching
+const fetchDeals = async () => {
   try {
     console.log('🔄 Fetching deals with real-time company ratings...')
     
-    const { data: dealsData, error: dealsError } = await supabase
+    const { data: dealsData, error } = await supabase
       .from('company_deals')
       .select(`
         *,
@@ -24,26 +32,25 @@ const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Compa
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    if (dealsError) {
-      console.error('❌ Failed to fetch deals:', dealsError)
-      throw new Error(`Failed to fetch deals: ${dealsError.message}`)
+    if (error) {
+      console.error('❌ Failed to fetch deals:', error)
+      throw new Error(`Failed to fetch deals: ${error.message}`)
     }
 
     if (!dealsData) {
-      console.warn('⚠️ No deals data returned')
       return { deals: [], companies: [] }
     }
 
-    // Transform deals data with real-time company ratings
-    const transformedDeals: DealWithRating[] = dealsData.map(deal => {
+    // ✅ MODERN: Clean data transformation
+    const transformedDeals = dealsData.map(deal => {
       const company = Array.isArray(deal.company) ? deal.company[0] : deal.company
       
-      // ✅ LOG: Real-time database ratings
       if (company?.overall_rating !== undefined) {
-        console.log(`📊 ${company.name}: ${company.overall_rating}⭐ (${company.total_reviews} reviews) - REAL-TIME`)
+        console.log(`📊 ${company.name}: ${company.overall_rating}⭐ (${company.total_reviews} reviews)`)
       }
       
       return {
+        // Core deal data
         id: deal.id,
         company_id: deal.company_id,
         title: deal.title,
@@ -59,16 +66,18 @@ const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Compa
         affiliate_link: deal.affiliate_link,
         created_at: deal.created_at,
         updated_at: deal.updated_at,
-        // Compatibility fields
+        
+        // Display fields
         company_name: company?.name || 'Unknown Company',
         category: company?.category || deal.deal_type,
         bonus_amount: deal.value || 'Special Offer',
         features: company?.features || [],
-        // ✅ REAL COMPANY DATA with up-to-date ratings
+        
+        // ✅ REAL-TIME: Company data with current ratings
         company: company ? {
           ...company,
-          overall_rating: company.overall_rating || 0,  // Real-time aggregated rating
-          total_reviews: company.total_reviews || 0     // Real-time review count
+          overall_rating: company.overall_rating || 0,
+          total_reviews: company.total_reviews || 0
         } : undefined
       }
     })
@@ -78,60 +87,56 @@ const fetchDeals = async (): Promise<{ deals: DealWithRating[]; companies: Compa
       .map(deal => deal.company)
       .filter((company, index, arr) => 
         company && arr.findIndex(c => c?.id === company.id) === index
-      ) as Company[]
+      )
 
-    // ✅ LOG: Real-time rating summary
-    const ratingSummary = uniqueCompanies.map(c => `${c.name}: ${c.overall_rating}⭐(${c.total_reviews})`).join(', ')
     console.log(`✅ Fetched ${transformedDeals.length} deals from ${uniqueCompanies.length} companies`)
-    console.log(`📊 REAL-TIME RATINGS: ${ratingSummary}`)
     
     return { deals: transformedDeals, companies: uniqueCompanies }
+
   } catch (error) {
     console.error('❌ Failed to fetch deals:', error)
     throw error
   }
 }
 
-// ✅ ENHANCED: Main deals query with aggressive refreshing after ratings
+// ✅ MODERN: Main deals query
 export const useDealsQuery = () => {
   const { isFullyReady, error: authError } = useAuth()
 
   return useQuery({
     queryKey: DEALS_QUERY_KEY,
     queryFn: fetchDeals,
-    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    
+    staleTime: 2 * 60 * 1000,      // 2 minutes
+    gcTime: 10 * 60 * 1000,        // 10 minutes
+    
     retry: (failureCount, error) => {
-      if (authError || error.message?.includes('unauthorized') || error.message?.includes('forbidden')) {
+      if (authError || 
+          error.message?.includes('unauthorized') || 
+          error.message?.includes('forbidden')) {
         return false
       }
-      return failureCount < 3
+      return failureCount < 2
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     enabled: isFullyReady,
-    // ✅ ENHANCED: More aggressive refetching for rating updates
+    
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000, // Refetch every minute when ratings might be changing
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   })
 }
 
-// ✅ USER RATINGS QUERY: Keep this for user-specific ratings
+// ✅ MODERN: User ratings query
 const fetchUserRatings = async (userId: string, companyIds: string[]) => {
-  if (companyIds.length === 0) {
-    return new Map()
-  }
+  if (companyIds.length === 0) return new Map()
 
   try {
     const ratings = await Promise.allSettled(
       companyIds.map(async (companyId) => {
-        try {
-          const userRating = await ratingService.getUserRating(userId, companyId)
-          return { companyId, userRating }
-        } catch (error) {
-          console.warn(`Failed to fetch user rating for company ${companyId}:`, error)
-          return { companyId, userRating: null }
-        }
+        const userRating = await ratingService.getUserRating(userId, companyId)
+        return { companyId, userRating }
       })
     )
 
@@ -145,7 +150,6 @@ const fetchUserRatings = async (userId: string, companyIds: string[]) => {
       }
     })
 
-    console.log(`📊 Fetched user ratings for ${userRatingsMap.size} companies`)
     return userRatingsMap
   } catch (error) {
     console.error('❌ Failed to fetch user ratings:', error)
@@ -159,23 +163,19 @@ export const useUserRatingsQuery = (userId: string | undefined, companyIds: stri
   return useQuery({
     queryKey: [...RATINGS_QUERY_KEY, 'user', userId, ...companyIds.sort()],
     queryFn: () => fetchUserRatings(userId!, companyIds),
-    enabled: isFullyReady && 
-             !!session && 
-             !!userId && 
-             !!user && 
-             companyIds.length > 0,
-    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
-    gcTime: 2 * 60 * 1000, // 2 minutes
+    enabled: isFullyReady && !!session && !!userId && !!user && companyIds.length > 0,
+    staleTime: 60 * 1000,          // 1 minute
+    gcTime: 5 * 60 * 1000,         // 5 minutes
     retry: (failureCount, error) => {
       if (authError || error.message?.includes('unauthorized')) {
         return false
       }
-      return failureCount < 2
+      return failureCount < 1
     },
   })
 }
 
-// ✅ DEAL CLICK TRACKING: Keep this functionality
+// ✅ MODERN: Deal click tracking mutation
 export const useUpdateDealClickMutation = () => {
   const queryClient = useQueryClient()
 
@@ -190,106 +190,120 @@ export const useUpdateDealClickMutation = () => {
         .select()
         .single()
 
-      if (error) {
-        throw error
-      }
-
+      if (error) throw error
       return data
     },
-    onSuccess: () => {
-      // Invalidate deals query to refresh click counts
-      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
+    
+    onSuccess: (data) => {
+      // ✅ SURGICAL UPDATE: Only update the specific deal's click count
+      queryClient.setQueryData(DEALS_QUERY_KEY, (oldData: any) => {
+        if (!oldData?.deals) return oldData
+        
+        return {
+          ...oldData,
+          deals: oldData.deals.map((deal: any) => 
+            deal.id === data.id 
+              ? { ...deal, click_count: data.click_count }
+              : deal
+          )
+        }
+      })
+    },
+    
+    onError: (error) => {
+      console.error('❌ Failed to track deal click:', error)
     }
   })
 }
 
-// ✅ ENHANCED: Rating submission with aggressive cache invalidation
+// ✅ MODERN: Rating submission mutation with optimistic updates
 export const useSubmitRatingMutation = () => {
   const queryClient = useQueryClient()
   const { isFullyReady, user, session } = useAuth()
 
-  return useMutation({
-    mutationFn: async ({
-      userId,
-      companyId,
-      ratings,
-      existingRating
-    }: {
-      userId: string
-      companyId: string
-      ratings: {
-        overall_rating?: number
-        platform_usability?: number
-        customer_support?: number
-        fees_commissions?: number
-        security_trust?: number
-        educational_resources?: number
-        mobile_app?: number
-      }
-      existingRating?: { id: string }
-    }) => {
+  return useMutation<RatingTransactionResult, Error, RatingSubmissionVariables>({
+    mutationFn: async (variables) => {
       if (!isFullyReady || !user || !session) {
         throw new Error('Authentication required')
       }
 
-      if (userId !== user.id) {
+      if (variables.userId !== user.id) {
         throw new Error('User ID mismatch')
       }
 
-      try {
-        console.log('🔄 Submitting rating - will trigger database aggregation...')
-        
-        const result = await ratingService.submitRating(userId, companyId, ratings, existingRating)
-        
-        if (result.error) {
-          console.error('❌ Rating submission returned error:', result.error)
-          throw result.error
-        }
-
-        if (!result.data) {
-          throw new Error('No data returned from rating submission')
-        }
-
-        console.log('✅ Rating submitted - database triggers should update company ratings')
-        return result.data
-        
-      } catch (error) {
-        console.error('❌ Failed to submit rating:', error)
-        throw error
+      console.log('🔄 Modern rating submission starting...')
+      
+      const result = await ratingService.submitRating(
+        variables.userId, 
+        variables.companyId, 
+        variables.ratings, 
+        variables.existingRating
+      )
+      
+      if (result.error) {
+        throw result.error
       }
+
+      if (!result.data) {
+        throw new Error('No data returned from rating submission')
+      }
+
+      return result.data
     },
-    onSuccess: async (data, variables) => {
-      console.log('🔄 Rating submitted successfully - invalidating caches...')
+    
+    // ✅ OPTIMISTIC UPDATES: Show changes immediately
+    onMutate: async (variables) => {
+      console.log('🚀 Starting optimistic update for ALL cards...')
       
-      // ✅ AGGRESSIVE CACHE INVALIDATION
-      // Invalidate user ratings
-      queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', variables.userId] })
+      await queryClient.cancelQueries({ queryKey: DEALS_QUERY_KEY })
+      const previousDeals = queryClient.getQueryData(DEALS_QUERY_KEY)
       
-      // ✅ CRITICAL: Invalidate deals query to get updated company ratings
-      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
+      // Calculate optimistic rating
+      const optimisticRating = variables.ratings.overall_rating || 
+        calculateAverageFromCategories(variables.ratings)
       
-      // ✅ Wait for database triggers to complete, then force refresh
-      setTimeout(() => {
-        console.log('🔄 Force refreshing deals after rating submission...')
-        queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
-        queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
-      }, 2000) // Wait 2 seconds for triggers
+      const currentCompany = getCurrentCompanyData(variables.companyId)
+      const newReviewCount = (currentCompany?.total_reviews || 0) + 1
       
-      // ✅ Also refresh specific company rating
-      setTimeout(async () => {
-        try {
-          const debugInfo = await ratingService.debugRatingConsistency(variables.companyId)
-          console.log('🔍 DEBUG: Rating consistency check:', debugInfo)
-        } catch (error) {
-          console.error('❌ Debug check failed:', error)
-        }
-      }, 3000)
+      // ✅ UPDATE ALL CARDS: Immediate visual feedback
+      updateCompanyDataInAllCards(variables.companyId, {
+        overall_rating: optimisticRating,
+        total_reviews: newReviewCount
+      })
       
-      console.log('✅ All caches invalidated - UI should update with new ratings')
+      console.log(`✅ Optimistic update: ALL cards now show ${optimisticRating}⭐ (${newReviewCount} reviews)`)
+      return { previousDeals }
     },
-    onError: (error) => {
-      console.error('❌ Rating submission failed:', error)
+    
+    // ✅ SUCCESS: Replace optimistic data with real database values
+    onSuccess: (result, variables) => {
+      console.log('✅ Rating submission successful - updating with real data...')
+      
+      updateCompanyDataInAllCards(variables.companyId, {
+        overall_rating: result.overall_rating,
+        total_reviews: result.total_reviews
+      })
+      
+      queryClient.invalidateQueries({ 
+        queryKey: [...RATINGS_QUERY_KEY, 'user', variables.userId] 
+      })
+      
+      console.log(`✅ ALL cards updated: ${result.overall_rating}⭐ (${result.total_reviews} reviews)`)
+      toast.success('Rating submitted successfully!')
     },
+    
+    // ✅ ERROR HANDLING: Rollback optimistic updates
+    onError: (error, variables, context) => {
+      console.error('❌ Rating submission failed - rolling back updates...')
+      
+      if (context?.previousDeals) {
+        queryClient.setQueryData(DEALS_QUERY_KEY, context.previousDeals)
+      }
+      
+      console.log('✅ Optimistic updates rolled back')
+      toast.error('Failed to submit rating. Please try again.')
+    },
+    
     retry: (failureCount, error) => {
       if (error.message?.includes('Authentication required') || 
           error.message?.includes('User ID mismatch')) {
@@ -300,7 +314,23 @@ export const useSubmitRatingMutation = () => {
   })
 }
 
-// ✅ RATING BREAKDOWN: For detailed rating display
+// ✅ MODERN: Helper function for category rating averages
+function calculateAverageFromCategories(ratings: RatingSubmissionData): number {
+  const categories = [
+    ratings.platform_usability,
+    ratings.customer_support,
+    ratings.fees_commissions,
+    ratings.security_trust,
+    ratings.educational_resources,
+    ratings.mobile_app
+  ].filter(rating => rating && rating > 0)
+  
+  return categories.length > 0 
+    ? Math.round((categories.reduce((sum, rating) => sum + rating, 0) / categories.length) * 10) / 10
+    : 0
+}
+
+// ✅ MODERN: Company rating breakdown query
 export const useCompanyRatingBreakdownQuery = (companyId: string) => {
   const { isFullyReady } = useAuth()
 
@@ -308,34 +338,7 @@ export const useCompanyRatingBreakdownQuery = (companyId: string) => {
     queryKey: [...RATINGS_QUERY_KEY, 'breakdown', companyId],
     queryFn: () => ratingService.getCompanyRatings(companyId),
     enabled: isFullyReady && !!companyId,
-    staleTime: 30 * 1000, // ✅ REDUCED: 30 seconds for faster updates
-    gcTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 60 * 1000,          // 1 minute
+    gcTime: 5 * 60 * 1000,         // 5 minutes
   })
-}
-
-// ✅ NEW: Manual refresh helper
-export const useRefreshDealsData = () => {
-  const queryClient = useQueryClient()
-  
-  return {
-    refreshDeals: () => {
-      console.log('🔄 Manually refreshing deals data...')
-      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
-      queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
-    },
-    
-    refreshUserRatings: (userId: string) => {
-      console.log('🔄 Manually refreshing user ratings...')
-      queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', userId] })
-    },
-    
-    refreshAll: (userId?: string) => {
-      console.log('🔄 Manually refreshing all data...')
-      queryClient.invalidateQueries({ queryKey: DEALS_QUERY_KEY })
-      if (userId) {
-        queryClient.invalidateQueries({ queryKey: [...RATINGS_QUERY_KEY, 'user', userId] })
-      }
-      queryClient.refetchQueries({ queryKey: DEALS_QUERY_KEY })
-    }
-  }
 }
