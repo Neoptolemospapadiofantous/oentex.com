@@ -1,5 +1,5 @@
 // src/components/auth/AuthModals.tsx - UPDATED: Fixed scroll issues + all features
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { X, Mail, Lock, User, Eye, EyeOff, AlertCircle, Chrome } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import { useFormValidation } from '../../hooks/useFormValidation'
@@ -71,42 +71,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     }
   }, [isOpen, isLoading])
 
-  // Form validation setup based on mode
-  const getInitialValues = () => {
-    switch (mode) {
-      case 'login':
-        return { email: '', password: '' }
-      case 'register':
-        return { email: '', password: '', confirmPassword: '', fullName: '' }
-      case 'forgot-password':
-        return { email: '' }
-      default:
-        return { email: '' }
-    }
-  }
+    // Form validation setup based on mode
+  const initialValues = useMemo(() => {
+      switch (mode) {
+        case 'login':
+          return { email: '', password: '' }
+        case 'register':
+          return { email: '', password: '', confirmPassword: '', fullName: '' }
+        case 'forgot-password':
+          return { email: '' }
+        default:
+          return { email: '' }
+      }
+    }, [mode])
 
-  const getSchema = () => {
-    switch (mode) {
-      case 'login':
-        return authLoginSchema
-      case 'register':
-        return authRegisterSchema
-      case 'forgot-password':
-        return forgotPasswordSchema
-      default:
-        return forgotPasswordSchema
-    }
-  }
+    const schema = useMemo(() => {
+      switch (mode) {
+        case 'login':
+          return authLoginSchema
+        case 'register':
+          return authRegisterSchema
+        case 'forgot-password':
+          return forgotPasswordSchema
+        default:
+          return forgotPasswordSchema
+      }
+    }, [mode])
 
-  const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    validateAll,
-    reset
-  } = useFormValidation(getSchema(), getInitialValues())
+    const {
+      values,
+      errors,
+      touched,
+      handleChange,
+      handleBlur,
+      validateAll,
+      reset
+    } = useFormValidation(schema, initialValues)
 
   // Reset form when mode changes
   useEffect(() => {
