@@ -1,8 +1,9 @@
-// src/components/auth/AuthModals.tsx (Enhanced with validation)
-import React, { useState, useEffect } from 'react'
+// src/components/auth/AuthModals.tsx (Fixed infinite render issue)
+import React, { useState, useEffect, useMemo } from 'react'
 import { X, Mail, Lock, User, Eye, EyeOff, AlertCircle, Chrome } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import { useFormValidation } from '../../hooks/useFormValidation'
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
 import { 
   authLoginSchema, 
   authRegisterSchema, 
@@ -25,11 +26,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [loginSuccess, setLoginSuccess] = useState(false)
 
   const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth()
 
-  // Form validation setup based on mode
-  const getInitialValues = () => {
+  // Body scroll lock when modal is open
+  useBodyScrollLock(isOpen)
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !isLoading) {
+        onClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose, isLoading])
+
+  // Memoize initial values and schema to prevent new object references on every render
+  const initialValues = useMemo(() => {
     switch (mode) {
       case 'login':
         return { email: '', password: '' }
@@ -40,9 +59,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
       default:
         return { email: '' }
     }
-  }
+  }, [mode])
 
-  const getSchema = () => {
+  const schema = useMemo(() => {
     switch (mode) {
       case 'login':
         return authLoginSchema
@@ -53,7 +72,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
       default:
         return forgotPasswordSchema
     }
-  }
+  }, [mode])
 
   const {
     values,
@@ -63,9 +82,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     handleBlur,
     validateAll,
     reset
-  } = useFormValidation(getSchema(), getInitialValues())
+  } = useFormValidation(schema, initialValues)
 
-  // Reset form when mode changes
+  // Reset form when mode changes - this will no longer cause infinite loops
   useEffect(() => {
     reset()
     setShowPassword(false)
@@ -88,8 +107,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
         const { email, password } = values as AuthLoginData
         result = await signIn(email, password)
         if (!result.error) {
-          toast.success('Successfully signed in!')
-          onClose()
+          setLoginSuccess(true)
+          // Brief delay to show success state before closing
+          setTimeout(() => {
+            onClose()
+            setLoginSuccess(false)
+          }, 800)
         }
       } else if (mode === 'register') {
         const { email, password, fullName } = values as AuthRegisterData
@@ -110,8 +133,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
       if (result?.error) {
         toast.error(result.error.message)
       }
-    } catch (error: any) {
-      toast.error('An unexpected error occurred')
+    } catch (error) {
+      toast.error('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -120,95 +143,58 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      const { error } = await signInWithGoogle()
-      if (error) {
-        toast.error(error.message)
+      const result = await signInWithGoogle()
+      if (!result.error) {
+        setLoginSuccess(true)
+        // Brief delay to show success state before closing
+        setTimeout(() => {
+          onClose()
+          setLoginSuccess(false)
+        }, 800)
       } else {
-        toast.success('Successfully signed in with Google!')
-        onClose()
+        toast.error(result.error.message)
       }
-    } catch (error: any) {
-      toast.error('Failed to sign in with Google')
+    } catch (error) {
+      toast.error('Failed to sign in with Google. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleClose = () => {
-    reset()
-    onClose()
-  }
-
-  const handleSwitchMode = (newMode: 'login' | 'register' | 'forgot-password') => {
-    reset()
-    onModeChange(newMode)
-  }
-
   if (!isOpen) return null
 
-  const getTitle = () => {
-    switch (mode) {
-      case 'login': return 'Welcome Back'
-      case 'register': return 'Create Account'
-      case 'forgot-password': return 'Reset Password'
-    }
-  }
-
-  const getDescription = () => {
-    switch (mode) {
-      case 'login': return 'Sign in to rate deals and manage your preferences'
-      case 'register': return 'Join thousands of traders finding the best deals'
-      case 'forgot-password': return 'Enter your email to receive a password reset link'
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !isLoading) {
+      onClose()
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <FocusManager trapFocus restoreFocus>
-        <div className="bg-surface rounded-2xl max-w-md w-full p-6 relative border border-border">
-          <button 
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-textSecondary hover:text-text transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-text mb-2">
-              {getTitle()}
+    <FocusManager>
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        onClick={handleOverlayClick}
+      >
+        <div className="bg-surface border border-border rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <h2 className="text-xl font-semibold text-text">
+              {mode === 'login' ? 'Sign In' : 
+               mode === 'register' ? 'Create Account' : 
+               'Reset Password'}
             </h2>
-            <p className="text-textSecondary">
-              {getDescription()}
-            </p>
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="text-textSecondary hover:text-text transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Google Sign In - Only show for login and register */}
-          {mode !== 'forgot-password' && (
-            <>
-              <button
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center space-x-3 py-3 px-4 border border-border rounded-lg hover:bg-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-              >
-                <Chrome className="w-5 h-5 text-textSecondary" />
-                <span className="text-text font-medium">
-                  Continue with Google
-                </span>
-              </button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-surface text-textSecondary">or</span>
-                </div>
-              </div>
-            </>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
             {mode === 'register' && (
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-text mb-2">
@@ -333,7 +319,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-textSecondary hover:text-text"
-                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -347,73 +333,127 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
               </div>
             )}
 
-            {mode === 'login' && (
-              <div className="text-right">
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading || loginSuccess}
+              className={`w-full font-medium py-3 px-4 rounded-lg transition-all duration-300 ${
+                loginSuccess 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-primary hover:bg-primary/90 text-white'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {loginSuccess ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Success!
+                </span>
+              ) : isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {mode === 'login' ? 'Signing In...' : 
+                   mode === 'register' ? 'Creating Account...' : 
+                   'Sending Email...'}
+                </span>
+              ) : (
+                mode === 'login' ? 'Sign In' : 
+                mode === 'register' ? 'Create Account' : 
+                'Send Reset Email'
+              )}
+            </button>
+
+            {/* Google Sign In (only for login/register) */}
+            {mode !== 'forgot-password' && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-surface text-textSecondary">Or continue with</span>
+                  </div>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => handleSwitchMode('forgot-password')}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading || loginSuccess}
+                  className={`w-full border font-medium py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                    loginSuccess 
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : 'border-border hover:bg-background/50 text-text'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {loginSuccess ? (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Success!
+                    </>
+                  ) : (
+                    <>
+                      <Chrome className="w-5 h-5" />
+                      Continue with Google
+                    </>
+                  )}
+                </button>
+              </>
+            )}
+          </form>
+
+          {/* Footer */}
+          <div className="px-6 pb-6 text-center text-sm text-textSecondary">
+            {mode === 'login' ? (
+              <>
+                Don't have an account?{' '}
+                <button
+                  onClick={() => onModeChange('register')}
+                  disabled={isLoading}
+                  className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sign up
+                </button>
+                <br />
+                <button
+                  onClick={() => onModeChange('forgot-password')}
+                  disabled={isLoading}
+                  className="text-primary hover:underline mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Forgot your password?
                 </button>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium hover:from-primary/90 hover:to-secondary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  {mode === 'login' ? 'Signing In...' : mode === 'register' ? 'Creating Account...' : 'Sending Email...'}
-                </div>
-              ) : (
-                mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Email'
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            {mode === 'login' && (
-              <p className="text-textSecondary">
-                Don't have an account?{' '}
-                <button
-                  onClick={() => handleSwitchMode('register')}
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Sign Up
-                </button>
-              </p>
-            )}
-            
-            {mode === 'register' && (
-              <p className="text-textSecondary">
+              </>
+            ) : mode === 'register' ? (
+              <>
                 Already have an account?{' '}
                 <button
-                  onClick={() => handleSwitchMode('login')}
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                  onClick={() => onModeChange('login')}
+                  disabled={isLoading}
+                  className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Sign In
+                  Sign in
                 </button>
-              </p>
-            )}
-            
-            {mode === 'forgot-password' && (
-              <p className="text-textSecondary">
+              </>
+            ) : (
+              <>
                 Remember your password?{' '}
                 <button
-                  onClick={() => handleSwitchMode('login')}
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
+                  onClick={() => onModeChange('login')}
+                  disabled={isLoading}
+                  className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Back to Sign In
+                  Sign in
                 </button>
-              </p>
+              </>
             )}
           </div>
         </div>
-      </FocusManager>
-    </div>
+      </div>
+    </FocusManager>
   )
 }
