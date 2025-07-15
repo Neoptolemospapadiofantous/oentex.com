@@ -66,12 +66,6 @@ const Header = () => {
           {/* Auth & CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <AuthButton />
-            <Link
-              to="/deals"
-              className="bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
-            >
-              Get Started
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -105,13 +99,6 @@ const Header = () => {
             <div className="pt-4 border-t border-border px-2">
               <AuthButton />
             </div>
-            
-            <Link
-              to="/deals"
-              className="inline-block bg-gradient-to-r from-primary to-primaryHover px-6 py-2 rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 mt-2"
-            >
-              Get Started
-            </Link>
           </div>
         </div>
       </div>
