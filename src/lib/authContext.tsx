@@ -1,4 +1,4 @@
-// src/lib/authContext.tsx (Fixed - Prevents Infinite Loops)
+// Fixed AuthContext.tsx - Simple OAuth success tracking
 import React, { createContext, useContext, useEffect, useReducer, useCallback, useMemo, useRef } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
@@ -12,19 +12,21 @@ interface AuthState {
   loading: boolean
   error: CustomAuthError | null
   initialized: boolean
+  // ✅ Add simple OAuth success tracking
+  oauthSuccess: string | null // Provider name when OAuth login succeeds
 }
 
 interface AuthContextType extends AuthState {
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: CustomAuthError | null }>
-  signIn: (email: string, password: string) => Promise<{ error: CustomAuthError | null }>
   signInWithGoogle: () => Promise<{ error: CustomAuthError | null }>
+  signInWithMicrosoft: () => Promise<{ error: CustomAuthError | null }>
+  signInWithSolana: () => Promise<{ error: CustomAuthError | null }>
   signOut: () => Promise<{ error: CustomAuthError | null }>
-  resetPassword: (email: string) => Promise<{ error: CustomAuthError | null }>
-  updatePassword: (password: string) => Promise<{ error: CustomAuthError | null }>
   clearError: () => void
   retryAuth: () => Promise<void>
   refreshSession: () => Promise<void>
   isFullyReady: boolean
+  // ✅ Add method to clear OAuth success state
+  clearOAuthSuccess: () => void
 }
 
 type AuthAction = 
@@ -33,6 +35,7 @@ type AuthAction =
   | { type: 'SET_SESSION'; payload: Session | null }
   | { type: 'SET_ERROR'; payload: CustomAuthError | null }
   | { type: 'SET_INITIALIZED'; payload: boolean }
+  | { type: 'SET_OAUTH_SUCCESS'; payload: string | null }
   | { type: 'RESET_STATE' }
   | { type: 'FORCE_READY' }
 
@@ -42,6 +45,7 @@ const initialState: AuthState = {
   loading: true,
   error: null,
   initialized: false,
+  oauthSuccess: null,
 }
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -56,6 +60,8 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return { ...state, error: action.payload }
     case 'SET_INITIALIZED':
       return { ...state, initialized: action.payload }
+    case 'SET_OAUTH_SUCCESS':
+      return { ...state, oauthSuccess: action.payload }
     case 'RESET_STATE':
       return { 
         ...initialState, 
@@ -76,7 +82,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Export hook separately to avoid Fast Refresh issues
 const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
@@ -94,15 +99,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const forceReadyTimeoutRef = useRef<NodeJS.Timeout>()
 
   const MAX_INIT_ATTEMPTS = 3
-  const INIT_TIMEOUT = 10000 // 10 seconds
-  const FORCE_READY_TIMEOUT = 15000 // 15 seconds
+  const INIT_TIMEOUT = 10000
+  const FORCE_READY_TIMEOUT = 15000
 
-  // Computed property - simplified
   const isFullyReady = useMemo(() => {
     return state.initialized && !state.loading
   }, [state.initialized, state.loading])
 
-  // Stable error handler
   const handleAuthError = useCallback((error: AuthError | Error | unknown): CustomAuthError => {
     const authError = authService.handleAuthError(error)
     if (isMountedRef.current) {
@@ -117,7 +120,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  // Force ready after timeout to prevent infinite loops
+  const clearOAuthSuccess = useCallback(() => {
+    if (isMountedRef.current) {
+      dispatch({ type: 'SET_OAUTH_SUCCESS', payload: null })
+      // Also clear the handled flag
+      sessionStorage.removeItem('oauth_success_handled')
+    }
+  }, [])
+
   const forceReady = useCallback(() => {
     logger.warn('Forcing auth ready state to prevent infinite loop')
     if (isMountedRef.current) {
@@ -125,17 +135,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  // Simplified session validation with timeout
   const validateSession = useCallback(async (session: Session | null): Promise<boolean> => {
     if (!session) {
-      return true // No session is valid state
+      return true
     }
 
     try {
       const now = Date.now()
       const expiresAt = (session.expires_at || 0) * 1000
       
-      // If session expires in less than 1 minute, try to refresh
       if (now >= expiresAt - 60000) {
         logger.info('Session expiring soon, attempting refresh...')
         
@@ -167,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [])
 
-  // Simplified initialization with timeout and retry logic
   const initializeAuth = useCallback(async (): Promise<void> => {
     if (initializationRef.current) {
       return initializationRef.current
@@ -189,7 +196,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'SET_ERROR', payload: null })
         
-        // Set up timeout to prevent infinite hanging
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => reject(new Error('Auth initialization timeout')), INIT_TIMEOUT)
         })
@@ -207,18 +213,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           logger.error('Failed to get session:', error)
           handleAuthError(error)
         } else {
-          // Validate session without blocking
           const isValid = await validateSession(session)
           
           if (isValid) {
             dispatch({ type: 'SET_SESSION', payload: session })
             dispatch({ type: 'SET_USER', payload: session?.user ?? null })
             
-            // Create user profile if needed (non-blocking)
+            // ✅ Check for OAuth success flag on initialization
             if (session?.user) {
+              const oauthFlag = localStorage.getItem('oauth_login_success')
+              if (oauthFlag) {
+                console.log('🔍 AuthContext: Found OAuth success flag during init:', oauthFlag)
+                dispatch({ type: 'SET_OAUTH_SUCCESS', payload: oauthFlag })
+                localStorage.removeItem('oauth_login_success') // Clean up immediately
+                // Set a flag to prevent duplicate setting in auth event
+                sessionStorage.setItem('oauth_success_handled', 'true')
+              }
+              
               authService.createUserProfile(session.user).catch(error => {
                 logger.error('Failed to create user profile:', error)
-                // Don't fail auth initialization for profile creation errors
               })
             }
           } else {
@@ -227,7 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Reset attempts on success
         initAttempts.current = 0
       } catch (error) {
         logger.error('Auth initialization failed:', error)
@@ -275,11 +287,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [handleAuthError])
 
-  // Initialize auth and set up listeners
   useEffect(() => {
     isMountedRef.current = true
     
-    // Set up force ready timeout as a safety net
     forceReadyTimeoutRef.current = setTimeout(forceReady, FORCE_READY_TIMEOUT)
     
     const setupAuth = async () => {
@@ -295,7 +305,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         logger.info('Auth event:', event)
         
-        // Clear force ready timeout since we got an auth event
         if (forceReadyTimeoutRef.current) {
           clearTimeout(forceReadyTimeoutRef.current)
         }
@@ -304,13 +313,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_SESSION', payload: session })
         dispatch({ type: 'SET_USER', payload: session?.user ?? null })
         
+        // ✅ Handle OAuth success for sign-in events (but prevent duplicates)
         if (event === 'SIGNED_IN' && session?.user) {
+          const alreadyHandled = sessionStorage.getItem('oauth_success_handled')
+          const provider = session.user?.app_metadata?.provider
+          
+          if (provider && ['google', 'azure', 'solana'].includes(provider) && !alreadyHandled) {
+            const providerName = provider === 'google' ? 'Google' : 
+                                provider === 'azure' ? 'Microsoft' : 
+                                provider === 'solana' ? 'Solana Wallet' : 'OAuth'
+            
+            console.log('🔍 AuthContext: OAuth sign-in event detected:', providerName)
+            dispatch({ type: 'SET_OAUTH_SUCCESS', payload: providerName })
+            sessionStorage.setItem('oauth_success_handled', 'true')
+          }
+          
           authService.createUserProfile(session.user).catch(error => {
             logger.error('Failed to create user profile on sign in:', error)
           })
         }
         
-        // Ensure we're marked as ready after any auth event
         dispatch({ type: 'SET_LOADING', payload: false })
         dispatch({ type: 'SET_INITIALIZED', payload: true })
       }
@@ -329,7 +351,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [initializeAuth, forceReady])
 
-  // Auto-refresh session before expiration (simplified)
   useEffect(() => {
     if (!state.session?.expires_at) return
 
@@ -337,10 +358,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const now = new Date()
     const timeUntilExpiry = expiresAt.getTime() - now.getTime()
     
-    // Refresh 5 minutes before expiry
     const refreshTime = Math.max(timeUntilExpiry - 5 * 60 * 1000, 0)
 
-    if (refreshTime > 0 && refreshTime < 24 * 60 * 60 * 1000) { // Don't set crazy long timeouts
+    if (refreshTime > 0 && refreshTime < 24 * 60 * 60 * 1000) {
       authTimeoutRef.current = setTimeout(refreshSession, refreshTime)
     }
 
@@ -351,43 +371,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state.session?.expires_at, refreshSession])
 
-  // Auth methods with simplified error handling
-  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    clearError()
-
-    try {
-      const result = await authService.signUp(email, password, fullName)
-      return result
-    } catch (error) {
-      return { error: handleAuthError(error) }
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
-  }, [clearError, handleAuthError])
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    clearError()
-
-    try {
-      const result = await authService.signIn(email, password)
-      return result
-    } catch (error) {
-      return { error: handleAuthError(error) }
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
-  }, [clearError, handleAuthError])
-
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true })
     clearError()
 
     try {
+      console.log('🔍 AuthContext: Starting Google OAuth...')
       const result = await authService.signInWithGoogle()
+      
+      if (result.error) {
+        console.error('🔍 AuthContext: Google OAuth error:', result.error)
+      } else {
+        console.log('🔍 AuthContext: Google OAuth initiated successfully')
+      }
+      
       return result
     } catch (error) {
+      console.error('🔍 AuthContext: Google OAuth exception:', error)
+      return { error: handleAuthError(error) }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [clearError, handleAuthError])
+
+  const signInWithMicrosoft = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    clearError()
+
+    try {
+      console.log('🔍 AuthContext: Starting Microsoft OAuth...')
+      const result = await authService.signInWithMicrosoft()
+      
+      if (result.error) {
+        console.error('🔍 AuthContext: Microsoft OAuth error:', result.error)
+      } else {
+        console.log('🔍 AuthContext: Microsoft OAuth initiated successfully')
+      }
+      
+      return result
+    } catch (error) {
+      console.error('🔍 AuthContext: Microsoft OAuth exception:', error)
+      return { error: handleAuthError(error) }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [clearError, handleAuthError])
+
+  const signInWithSolana = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    clearError()
+
+    try {
+      console.log('🔍 AuthContext: Starting Solana wallet connection...')
+      const result = await authService.signInWithSolana()
+      
+      if (result.error) {
+        console.error('🔍 AuthContext: Solana wallet error:', result.error)
+      } else {
+        console.log('🔍 AuthContext: Solana wallet connected successfully')
+        // For Solana, set the OAuth success directly since it doesn't redirect
+        dispatch({ type: 'SET_OAUTH_SUCCESS', payload: 'Solana Wallet' })
+      }
+      
+      return result
+    } catch (error) {
+      console.error('🔍 AuthContext: Solana wallet exception:', error)
       return { error: handleAuthError(error) }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false })
@@ -399,40 +447,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearError()
 
     try {
+      console.log('🔍 AuthContext: Signing out...')
+      
+      // Clear any OAuth flags and all session data
+      localStorage.removeItem('oauth_login_success')
+      sessionStorage.clear() // Clear entire sessionStorage on logout
+      
       const result = await authService.signOut()
+      
       if (!result.error) {
         dispatch({ type: 'RESET_STATE' })
+        console.log('🔍 AuthContext: Sign out successful')
+      } else {
+        console.error('🔍 AuthContext: Sign out error:', result.error)
       }
+      
       return result
     } catch (error) {
-      return { error: handleAuthError(error) }
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
-  }, [clearError, handleAuthError])
-
-  const resetPassword = useCallback(async (email: string) => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    clearError()
-
-    try {
-      const result = await authService.resetPassword(email)
-      return result
-    } catch (error) {
-      return { error: handleAuthError(error) }
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
-  }, [clearError, handleAuthError])
-
-  const updatePassword = useCallback(async (password: string) => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    clearError()
-
-    try {
-      const result = await authService.updatePassword(password)
-      return result
-    } catch (error) {
+      console.error('🔍 AuthContext: Sign out exception:', error)
       return { error: handleAuthError(error) }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false })
@@ -442,27 +474,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = useMemo(() => ({
     ...state,
     isFullyReady,
-    signUp,
-    signIn,
     signInWithGoogle,
+    signInWithMicrosoft,
+    signInWithSolana,
     signOut,
-    resetPassword,
-    updatePassword,
     clearError,
     retryAuth,
     refreshSession,
+    clearOAuthSuccess,
   }), [
     state,
     isFullyReady,
-    signUp,
-    signIn,
     signInWithGoogle,
+    signInWithMicrosoft,
+    signInWithSolana,
     signOut,
-    resetPassword,
-    updatePassword,
     clearError,
     retryAuth,
     refreshSession,
+    clearOAuthSuccess,
   ])
 
   return (
@@ -472,5 +502,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 }
 
-// Export hook at the end to avoid Fast Refresh issues
 export { useAuth }
