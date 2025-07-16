@@ -1,4 +1,4 @@
-// Updated AuthModals.tsx - Better OAuth success flag management
+// AuthModals.tsx - OPTION 1: Clean OAuth-only modal
 import React, { useState, useEffect } from 'react'
 import { X, Chrome, Wallet } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
@@ -23,14 +23,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
 
   // Body scroll lock when modal is open
   useBodyScrollLock(isOpen)
-
-  // Clear any previous OAuth success flags when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      console.log('🔍 AuthModal: Clearing any previous OAuth success flags')
-      localStorage.removeItem('oauth_login_success')
-    }
-  }, [isOpen])
 
   // Handle escape key
   useEffect(() => {
@@ -78,7 +70,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
         // For OAuth providers (Google, Microsoft), the page will redirect
         // For Solana, we might handle it differently
         if (provider === 'solana') {
-          // Close modal immediately for Solana - toast will show on dashboard
+          // Close modal immediately for Solana - Dashboard will show toast
           setTimeout(() => {
             onClose()
             setLoginSuccess(false)
