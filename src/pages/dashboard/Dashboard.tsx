@@ -1,17 +1,70 @@
-// src/pages/dashboard/Dashboard.tsx
-import React from 'react';
-import { Star, Users, Award, TrendingUp, BarChart3, Settings, RefreshCw } from 'lucide-react';
+// Dashboard.tsx - Fixed OAuth toast detection
+import React, { useEffect } from 'react';
+import { Star, Users, Award, TrendingUp, Settings, RefreshCw, Chrome, Wallet } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { useDealsQuery } from '../../hooks/queries/useDealsQuery';
+import toast from 'react-hot-toast';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const dealsQuery = useDealsQuery();
-  
+
+  // ✅ FIXED: Hook into AuthContext OAuth detection
+  useEffect(() => {
+    console.log('🔍 Dashboard: Checking for OAuth login...')
+    
+    // Listen for the AuthContext OAuth detection
+    const handleOAuthDetection = () => {
+      console.log('🔍 🚀 OAUTH DETECTED - Showing toast!')
+      
+      // Get provider from session
+      const provider = session?.user?.app_metadata?.provider || 'unknown'
+      const providerName = provider === 'google' ? 'Google' : 
+                          provider === 'azure' ? 'Microsoft' : 
+                          provider === 'solana' ? 'Solana Wallet' : 'OAuth'
+      
+      const Icon = providerName.toLowerCase().includes('solana') ? Wallet : Chrome;
+      
+      toast.success(
+        <div className="flex items-center gap-3">
+          <Icon className="w-5 h-5" />
+          <div>
+            <div className="font-semibold">Welcome to Oentex!</div>
+            <div className="text-sm text-gray-600">Successfully signed in with {providerName}</div>
+          </div>
+        </div>,
+        {
+          duration: 5000,
+          style: {
+            background: '#10B981',
+            color: 'white',
+            padding: '16px',
+            borderRadius: '12px',
+          }
+        }
+      );
+    }
+    
+    // Check if we have a session with a provider (just logged in)
+    if (user && session?.user?.app_metadata?.provider) {
+      console.log('🔍 Found session with provider:', session.user.app_metadata.provider)
+      
+      // Check if we already showed toast this session
+      const toastKey = `toast_shown_${session.user.id}`
+      if (!sessionStorage.getItem(toastKey)) {
+        console.log('🔍 Toast not shown yet, showing now...')
+        sessionStorage.setItem(toastKey, 'true')
+        handleOAuthDetection()
+      } else {
+        console.log('🔍 Toast already shown for this session')
+      }
+    }
+  }, [user, session])
+
+  // Rest of your dashboard code remains the same...
   const deals = dealsQuery.data?.deals || [];
   const companies = dealsQuery.data?.companies || [];
 
-  // Calculate real stats from database - Rating focused
   const totalPlatforms = companies.length;
   const activePlatforms = companies.filter(c => c.status === 'active').length;
   const avgPlatformRating = companies.length > 0 
@@ -19,7 +72,6 @@ const Dashboard: React.FC = () => {
     : '0.0';
   const totalReviews = companies.reduce((sum, c) => sum + (c.total_reviews || 0), 0);
 
-  // Get top rated platforms
   const topRatedPlatforms = companies
     .filter(c => c.overall_rating > 0)
     .sort((a, b) => (b.overall_rating || 0) - (a.overall_rating || 0))
@@ -32,7 +84,6 @@ const Dashboard: React.FC = () => {
       reviews: company.total_reviews || 0
     }));
 
-  // Get platform categories distribution
   const categoryStats = companies.reduce((acc, company) => {
     const category = company.category?.replace('_', ' ') || 'Unknown';
     acc[category] = (acc[category] || 0) + 1;
@@ -94,16 +145,14 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Stats Grid - Rating focused data from database */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Total Platforms</p>
               <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{totalPlatforms}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>
-                Available to rate
-              </p>
+              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Available to rate</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--primary-muted)' }}>
               <Users className="w-6 h-6" style={{ color: 'var(--primary)' }} />
@@ -116,9 +165,7 @@ const Dashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Active Platforms</p>
               <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{activePlatforms}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>
-                Currently active
-              </p>
+              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Currently active</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--secondary-muted)' }}>
               <TrendingUp className="w-6 h-6" style={{ color: 'var(--secondary)' }} />
@@ -131,9 +178,7 @@ const Dashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Total Reviews</p>
               <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{totalReviews.toLocaleString()}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--warning)' }}>
-                Community reviews
-              </p>
+              <p className="text-sm font-medium mt-1" style={{ color: 'var(--warning)' }}>Community reviews</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--warning-muted)' }}>
               <Award className="w-6 h-6" style={{ color: 'var(--warning)' }} />
@@ -146,9 +191,7 @@ const Dashboard: React.FC = () => {
             <div>
               <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Avg. Platform Rating</p>
               <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{avgPlatformRating}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>
-                Overall quality
-              </p>
+              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Overall quality</p>
             </div>
             <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--success-muted)' }}>
               <Star className="w-6 h-6" style={{ color: 'var(--success)' }} />
@@ -159,13 +202,10 @@ const Dashboard: React.FC = () => {
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Rated Platforms */}
         <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Top Rated Platforms</h2>
-            <button className="text-sm font-medium hover:opacity-80 transition-opacity" style={{ color: 'var(--primary)' }}>
-              View All
-            </button>
+            <button className="text-sm font-medium hover:opacity-80 transition-opacity" style={{ color: 'var(--primary)' }}>View All</button>
           </div>
           
           {topRatedPlatforms.length > 0 ? (
@@ -203,7 +243,6 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Platform Categories */}
         <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>Platform Categories</h2>
           
@@ -247,29 +286,17 @@ const Dashboard: React.FC = () => {
       }}>
         <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text)' }}>Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button 
-            onClick={() => window.location.href = '/deals'}
-            className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" 
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <button onClick={() => window.location.href = '/deals'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
             <Users className="w-6 h-6 mb-2" style={{ color: 'var(--primary)' }} />
             <h3 className="font-medium" style={{ color: 'var(--text)' }}>Browse Platforms</h3>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Discover and rate trading platforms</p>
           </button>
-          <button 
-            onClick={() => window.location.href = '/my-deals'}
-            className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" 
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <button onClick={() => window.location.href = '/my-deals'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
             <Star className="w-6 h-6 mb-2" style={{ color: 'var(--secondary)' }} />
             <h3 className="font-medium" style={{ color: 'var(--text)' }}>My Ratings</h3>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>View and manage your platform ratings</p>
           </button>
-          <button 
-            onClick={() => window.location.href = '/profile'}
-            className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" 
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <button onClick={() => window.location.href = '/profile'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
             <Settings className="w-6 h-6 mb-2" style={{ color: 'var(--warning)' }} />
             <h3 className="font-medium" style={{ color: 'var(--text)' }}>Profile Settings</h3>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Manage your account preferences</p>
