@@ -1,4 +1,4 @@
-// src/components/auth/AuthButton.tsx - Updated for OAuth-only
+// AuthButton.tsx - OPTION 1: Clean OAuth integration
 import React, { useState, useCallback } from 'react'
 import { User, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
