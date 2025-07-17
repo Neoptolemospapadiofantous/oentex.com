@@ -1,6 +1,6 @@
-// src/components/auth/AuthButton.tsx
+// src/components/auth/AuthButton.tsx - Updated for OAuth-only
 import React, { useState, useCallback } from 'react'
-import { User, LogOut, Loader2, AlertCircle } from 'lucide-react'
+import { User, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import { AuthModal } from './AuthModals'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
@@ -8,7 +8,7 @@ import { ErrorBoundary } from '../ui/ErrorBoundary'
 
 export const AuthButton: React.FC = () => {
   const [showModal, setShowModal] = useState(false)
-  const [modalMode, setModalMode] = useState<'login' | 'register' | 'forgot-password'>('login')
+  const [modalMode, setModalMode] = useState<'login' | 'register'>('login')
   const [isSigningOut, setIsSigningOut] = useState(false)
   const { user, signOut, loading, error, retryAuth } = useAuth()
 
@@ -35,13 +35,13 @@ export const AuthButton: React.FC = () => {
   }, [])
 
   if (loading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner variant="auth" size="sm" text="Loading..." />
   }
 
   if (error) {
     return (
       <div className="flex items-center space-x-2">
-        <AlertCircle className="w-5 h-5 text-red-500" />
+        <AlertCircle className="w-4 h-4 text-red-500" />
         <button
           onClick={retryAuth}
           className="text-sm text-red-500 hover:text-red-700 underline"
@@ -60,7 +60,10 @@ export const AuthButton: React.FC = () => {
             <User className="w-4 h-4 text-white" />
           </div>
           <span className="text-sm font-medium hidden sm:block">
-            {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
+            {user.user_metadata?.full_name || 
+             (user.user_metadata?.wallet_address ? `${user.user_metadata.wallet_address.substring(0, 8)}...` : null) ||
+             user.email?.split('@')[0] || 
+             'User'}
           </span>
         </div>
         <button
@@ -70,7 +73,7 @@ export const AuthButton: React.FC = () => {
           title="Sign Out"
         >
           {isSigningOut ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <LoadingSpinner variant="auth" size="sm" showIcon={true} />
           ) : (
             <LogOut className="w-4 h-4" />
           )}
@@ -87,7 +90,7 @@ export const AuthButton: React.FC = () => {
       <div className="flex items-center space-x-3">
         <button
           onClick={handleShowLogin}
-          className="text-textSecondary hover:text-text transition-colors duration-300 font-medium"
+          className="text-textSecondary hover:text-text transition-colors duration-300 font-medium px-3 py-2 rounded-lg hover:bg-surface"
         >
           Sign In
         </button>

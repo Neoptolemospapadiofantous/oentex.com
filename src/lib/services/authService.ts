@@ -1,10 +1,9 @@
-// src/lib/services/authService.ts
+// src/lib/services/authService.ts - Updated for OAuth-only
 import { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../supabase'
 import { logger } from '../../utils/logger'
 import { config } from '../../config'
 import { AuthError as CustomAuthError, AuthErrorType } from '../../types/auth'
-import { validateEmail, validatePassword } from '../../utils/validation'
 
 interface CreateUserProfileResult {
   success: boolean
@@ -16,63 +15,7 @@ class AuthService {
   private readonly RETRY_DELAY = 1000
   private readonly profileCreationCache = new Map<string, Promise<CreateUserProfileResult>>()
 
-  async signUp(email: string, password: string, fullName: string) {
-    if (!validateEmail(email)) {
-      return { error: this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address.') }
-    }
-
-    if (!validatePassword(password)) {
-      return { error: this.createError(AuthErrorType.WEAK_PASSWORD, 'Password must be at least 8 characters long.') }
-    }
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-          emailRedirectTo: `${config.baseUrl}/auth/callback`
-        }
-      })
-      
-      if (error) {
-        logger.error('SignUp error:', error)
-        return { error: this.handleAuthError(error) }
-      }
-      
-      logger.info('SignUp successful')
-      return { error: null }
-    } catch (error) {
-      logger.error('Unexpected SignUp error:', error)
-      return { error: this.handleAuthError(error) }
-    }
-  }
-
-  async signIn(email: string, password: string) {
-    if (!validateEmail(email)) {
-      return { error: this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address.') }
-    }
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      
-      if (error) {
-        logger.error('SignIn error:', error)
-        return { error: this.handleAuthError(error) }
-      }
-      
-      logger.info('SignIn successful')
-      return { error: null }
-    } catch (error) {
-      logger.error('Unexpected SignIn error:', error)
-      return { error: this.handleAuthError(error) }
-    }
-  }
+  // ✅ OAUTH METHODS ONLY - Removed email/password methods
 
   async signInWithGoogle() {
     try {
@@ -100,10 +43,130 @@ class AuthService {
     }
   }
 
+  async signInWithMicrosoft() {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          redirectTo: `${config.baseUrl}/auth/callback`,
+          queryParams: {
+            prompt: 'select_account',
+          }
+        }
+      })
+      
+      if (error) {
+        logger.error('Microsoft OAuth error:', error)
+        return { error: this.handleAuthError(error) }
+      }
+      
+      logger.info('Microsoft sign in initiated')
+      return { error: null }
+    } catch (error) {
+      logger.error('Unexpected Microsoft OAuth error:', error)
+      return { error: this.handleAuthError(error) }
+    }
+  }
+
+  async signInWithSolana() {
+    try {
+      // Check if Solana wallet is available
+      if (typeof window === 'undefined') {
+        return { error: this.createError(AuthErrorType.PROVIDER_UNAVAILABLE, 'Solana wallet not available in server environment') }
+      }
+
+      // Check for Phantom wallet or other Solana wallets
+      const solanaWallet = (window as any).solana
+      
+      if (!solanaWallet) {
+        return { error: this.createError(AuthErrorType.PROVIDER_UNAVAILABLE, 'Solana wallet not found. Please install Phantom or another Solana wallet.') }
+      }
+
+      if (!solanaWallet.isPhantom && !solanaWallet.isSolflare) {
+        logger.warn('Unknown Solana wallet detected')
+      }
+
+      try {
+        // Request connection to wallet
+        const response = await solanaWallet.connect({ onlyIfTrusted: false })
+        const publicKey = response.publicKey.toString()
+        
+        logger.info('Solana wallet connected:', publicKey)
+        
+        // For now, we'll use custom JWT creation with Solana wallet
+        // In a full implementation, you'd verify wallet ownership on your backend
+        
+        // Create a message for the user to sign to prove wallet ownership
+        const message = `Sign this message to authenticate with Oentex.\n\nWallet: ${publicKey}\nTime: ${new Date().toISOString()}`
+        const encodedMessage = new TextEncoder().encode(message)
+        
+        const signedMessage = await solanaWallet.signMessage(encodedMessage)
+        
+        // In a real implementation, you'd send this to your backend to verify
+        // and create a proper JWT token. For now, we'll create a custom auth flow
+        
+        logger.info('Solana wallet signed message successfully')
+        
+        // Create custom user session (you'll need to implement this on your backend)
+        const customAuthResult = await this.createSolanaUserSession(publicKey, signedMessage)
+        
+        return customAuthResult
+        
+      } catch (walletError) {
+        logger.error('Solana wallet connection error:', walletError)
+        
+        if (walletError.code === 4001) {
+          return { error: this.createError(AuthErrorType.USER_CANCELLED, 'Wallet connection was cancelled') }
+        }
+        
+        return { error: this.createError(AuthErrorType.PROVIDER_ERROR, 'Failed to connect to Solana wallet') }
+      }
+    } catch (error) {
+      logger.error('Unexpected Solana wallet error:', error)
+      return { error: this.handleAuthError(error) }
+    }
+  }
+
+  // Helper method for Solana authentication
+  private async createSolanaUserSession(publicKey: string, signedMessage: any) {
+    try {
+      // This is a placeholder - you'll need to implement this with your backend
+      // The backend should verify the signed message and create a proper user session
+      
+      // For now, we'll create a user profile with the wallet address
+      const userData = {
+        id: publicKey, // Using public key as user ID
+        email: `${publicKey.substring(0, 8)}@solana.wallet`, // Placeholder email
+        user_metadata: {
+          wallet_address: publicKey,
+          provider: 'solana',
+          wallet_type: (window as any).solana?.isPhantom ? 'phantom' : 'unknown'
+        }
+      }
+      
+      // You would typically call your backend API here to create/verify the user
+      logger.info('Created Solana user session:', userData)
+      
+      return { error: null, user: userData }
+    } catch (error) {
+      logger.error('Failed to create Solana user session:', error)
+      return { error: this.createError(AuthErrorType.UNKNOWN_ERROR, 'Failed to create user session') }
+    }
+  }
+
   async signOut() {
     try {
       // Clear profile creation cache
       this.profileCreationCache.clear()
+      
+      // If Solana wallet is connected, disconnect it
+      if (typeof window !== 'undefined' && (window as any).solana?.isConnected) {
+        try {
+          await (window as any).solana.disconnect()
+        } catch (walletError) {
+          logger.warn('Failed to disconnect Solana wallet:', walletError)
+        }
+      }
       
       const { error } = await supabase.auth.signOut()
       
@@ -116,52 +179,6 @@ class AuthService {
       return { error: null }
     } catch (error) {
       logger.error('Unexpected signOut error:', error)
-      return { error: this.handleAuthError(error) }
-    }
-  }
-
-  async resetPassword(email: string) {
-    if (!validateEmail(email)) {
-      return { error: this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address.') }
-    }
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${config.baseUrl}/auth/reset-password`
-      })
-      
-      if (error) {
-        logger.error('Reset password error:', error)
-        return { error: this.handleAuthError(error) }
-      }
-      
-      logger.info('Password reset email sent')
-      return { error: null }
-    } catch (error) {
-      logger.error('Unexpected reset password error:', error)
-      return { error: this.handleAuthError(error) }
-    }
-  }
-
-  async updatePassword(password: string) {
-    if (!validatePassword(password)) {
-      return { error: this.createError(AuthErrorType.WEAK_PASSWORD, 'Password must be at least 8 characters long.') }
-    }
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-      
-      if (error) {
-        logger.error('Update password error:', error)
-        return { error: this.handleAuthError(error) }
-      }
-      
-      logger.info('Password updated successfully')
-      return { error: null }
-    } catch (error) {
-      logger.error('Unexpected update password error:', error)
       return { error: this.handleAuthError(error) }
     }
   }
@@ -219,6 +236,8 @@ class AuthService {
         email: user.email || '',
         full_name: this.extractFullName(user),
         avatar_url: user.user_metadata?.avatar_url || null,
+        provider: user.app_metadata?.provider || 'unknown',
+        wallet_address: user.user_metadata?.wallet_address || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -258,6 +277,7 @@ class AuthService {
     return (
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
+      user.user_metadata?.wallet_address?.substring(0, 8) || // For Solana wallets
       user.email?.split('@')[0] ||
       'User'
     )
@@ -269,23 +289,28 @@ class AuthService {
       
       switch (authError.code) {
         case 'email_address_invalid':
-          return this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address.')
+          return this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address')
         case 'invalid_credentials':
-          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Invalid email or password. Please try again.')
+          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Invalid credentials. Please try again')
         case 'email_not_confirmed':
-          return this.createError(AuthErrorType.EMAIL_NOT_CONFIRMED, 'Please check your email and click the confirmation link.')
+          return this.createError(AuthErrorType.EMAIL_NOT_CONFIRMED, 'Please check your email and click the confirmation link')
         case 'too_many_requests':
-          return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many attempts. Please wait a moment and try again.')
-        case 'weak_password':
-          return this.createError(AuthErrorType.WEAK_PASSWORD, 'Password must be at least 8 characters long.')
+          return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many attempts. Please wait a moment and try again')
         case 'user_already_exists':
-          return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this email already exists.')
+          return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this email already exists')
         case 'session_not_found':
-          return this.createError(AuthErrorType.SESSION_EXPIRED, 'Your session has expired. Please sign in again.')
+          return this.createError(AuthErrorType.SESSION_EXPIRED, 'Your session has expired. Please sign in again')
         case 'provider_disabled':
-          return this.createError(AuthErrorType.PROVIDER_DISABLED, 'This sign-in method is not available.')
+          return this.createError(AuthErrorType.PROVIDER_DISABLED, 'This sign-in method is not available')
+        case 'user_not_found':
+          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'User not found. Please try again')
+        case 'signup_disabled':
+          return this.createError(AuthErrorType.SERVICE_UNAVAILABLE, 'Account creation is temporarily disabled')
+        case 'email_address_not_authorized':
+          return this.createError(AuthErrorType.AUTHORIZATION_ERROR, 'This email address is not authorized')
         default:
-          return this.createError(AuthErrorType.UNKNOWN_ERROR, authError.message || 'An authentication error occurred.')
+          logger.error('Unhandled auth error code:', authError.code, authError.message)
+          return this.createError(AuthErrorType.UNKNOWN_ERROR, 'An unexpected error occurred. Please try again')
       }
     }
     
@@ -293,33 +318,29 @@ class AuthService {
       const message = error.message.toLowerCase()
       
       if (message.includes('user already registered')) {
-        return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this email already exists. Please sign in instead.')
+        return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this provider already exists. Please sign in instead')
       }
       
       if (message.includes('invalid login credentials')) {
-        return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Invalid email or password. Please try again.')
-      }
-      
-      if (message.includes('email not confirmed')) {
-        return this.createError(AuthErrorType.EMAIL_NOT_CONFIRMED, 'Please check your email and click the confirmation link before signing in.')
+        return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Invalid credentials. Please try again')
       }
       
       if (message.includes('too many requests')) {
-        return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many attempts. Please wait a moment and try again.')
+        return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many attempts. Please wait a moment and try again')
       }
       
       if (message.includes('session') || message.includes('jwt')) {
-        return this.createError(AuthErrorType.SESSION_EXPIRED, 'Your session has expired. Please sign in again.')
+        return this.createError(AuthErrorType.SESSION_EXPIRED, 'Your session has expired. Please sign in again')
       }
       
       if (message.includes('network') || message.includes('fetch')) {
-        return this.createError(AuthErrorType.UNKNOWN_ERROR, 'Network error. Please check your connection and try again.')
+        return this.createError(AuthErrorType.NETWORK_ERROR, 'Network error. Please check your connection and try again')
       }
       
       return this.createError(AuthErrorType.UNKNOWN_ERROR, error.message)
     }
     
-    return this.createError(AuthErrorType.UNKNOWN_ERROR, 'An unexpected error occurred. Please try again.')
+    return this.createError(AuthErrorType.UNKNOWN_ERROR, 'An unexpected error occurred. Please try again')
   }
 
   private createError(type: AuthErrorType, message: string): CustomAuthError {
