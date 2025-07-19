@@ -55,13 +55,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+      {/* Sidebar - Fixed height and position */}
+      <div className={`fixed top-0 left-0 z-50 w-64 h-screen bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`} style={{ borderColor: 'var(--border)' }}>
         <div className="flex flex-col h-full">
           {/* Logo - Using your existing branding */}
-          <div className="flex items-center space-x-2 p-6 border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center space-x-2 p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ 
               background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
             }}>
@@ -77,8 +77,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
             </span>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          {/* Navigation - Scrollable if needed */}
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -121,8 +121,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
             })}
           </nav>
 
-          {/* User Profile */}
-          <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+          {/* User Profile - Fixed at bottom */}
+          <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{
                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
@@ -168,16 +168,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--surface)' }}>
+    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
       <Sidebar 
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}
       />
       
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-0">
-        {/* Top Bar */}
-        <header className="bg-white border-b px-6 py-4" style={{ borderColor: 'var(--border)' }}>
+      {/* Main Content - Fixed height and scrollable */}
+      <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
+        {/* Top Bar - Fixed height */}
+        <header className="bg-white border-b px-6 py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -227,8 +227,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-6">
+        {/* Page Content - Scrollable main area */}
+        <main className="flex-1 p-6 overflow-y-auto">
           {children}
         </main>
       </div>

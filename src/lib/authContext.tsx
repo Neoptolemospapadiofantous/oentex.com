@@ -1,4 +1,4 @@
-// Fixed AuthContext.tsx - Simple OAuth success tracking
+// AuthContext.tsx - OPTION 1: Simple auth without oauthSuccess system
 import React, { createContext, useContext, useEffect, useReducer, useCallback, useMemo, useRef } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
@@ -12,8 +12,6 @@ interface AuthState {
   loading: boolean
   error: CustomAuthError | null
   initialized: boolean
-  // ✅ Add simple OAuth success tracking
-  oauthSuccess: string | null // Provider name when OAuth login succeeds
 }
 
 interface AuthContextType extends AuthState {
@@ -25,8 +23,6 @@ interface AuthContextType extends AuthState {
   retryAuth: () => Promise<void>
   refreshSession: () => Promise<void>
   isFullyReady: boolean
-  // ✅ Add method to clear OAuth success state
-  clearOAuthSuccess: () => void
 }
 
 type AuthAction = 
@@ -35,7 +31,6 @@ type AuthAction =
   | { type: 'SET_SESSION'; payload: Session | null }
   | { type: 'SET_ERROR'; payload: CustomAuthError | null }
   | { type: 'SET_INITIALIZED'; payload: boolean }
-  | { type: 'SET_OAUTH_SUCCESS'; payload: string | null }
   | { type: 'RESET_STATE' }
   | { type: 'FORCE_READY' }
 
@@ -45,7 +40,6 @@ const initialState: AuthState = {
   loading: true,
   error: null,
   initialized: false,
-  oauthSuccess: null,
 }
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
@@ -60,8 +54,6 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
       return { ...state, error: action.payload }
     case 'SET_INITIALIZED':
       return { ...state, initialized: action.payload }
-    case 'SET_OAUTH_SUCCESS':
-      return { ...state, oauthSuccess: action.payload }
     case 'RESET_STATE':
       return { 
         ...initialState, 
@@ -117,14 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = useCallback(() => {
     if (isMountedRef.current) {
       dispatch({ type: 'SET_ERROR', payload: null })
-    }
-  }, [])
-
-  const clearOAuthSuccess = useCallback(() => {
-    if (isMountedRef.current) {
-      dispatch({ type: 'SET_OAUTH_SUCCESS', payload: null })
-      // Also clear the handled flag
-      sessionStorage.removeItem('oauth_success_handled')
     }
   }, [])
 
@@ -219,17 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             dispatch({ type: 'SET_SESSION', payload: session })
             dispatch({ type: 'SET_USER', payload: session?.user ?? null })
             
-            // ✅ Check for OAuth success flag on initialization
             if (session?.user) {
-              const oauthFlag = localStorage.getItem('oauth_login_success')
-              if (oauthFlag) {
-                console.log('🔍 AuthContext: Found OAuth success flag during init:', oauthFlag)
-                dispatch({ type: 'SET_OAUTH_SUCCESS', payload: oauthFlag })
-                localStorage.removeItem('oauth_login_success') // Clean up immediately
-                // Set a flag to prevent duplicate setting in auth event
-                sessionStorage.setItem('oauth_success_handled', 'true')
-              }
-              
               authService.createUserProfile(session.user).catch(error => {
                 logger.error('Failed to create user profile:', error)
               })
@@ -313,21 +287,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'SET_SESSION', payload: session })
         dispatch({ type: 'SET_USER', payload: session?.user ?? null })
         
-        // ✅ Handle OAuth success for sign-in events (but prevent duplicates)
+        // Create user profile for new sign-ins
         if (event === 'SIGNED_IN' && session?.user) {
-          const alreadyHandled = sessionStorage.getItem('oauth_success_handled')
-          const provider = session.user?.app_metadata?.provider
-          
-          if (provider && ['google', 'azure', 'solana'].includes(provider) && !alreadyHandled) {
-            const providerName = provider === 'google' ? 'Google' : 
-                                provider === 'azure' ? 'Microsoft' : 
-                                provider === 'solana' ? 'Solana Wallet' : 'OAuth'
-            
-            console.log('🔍 AuthContext: OAuth sign-in event detected:', providerName)
-            dispatch({ type: 'SET_OAUTH_SUCCESS', payload: providerName })
-            sessionStorage.setItem('oauth_success_handled', 'true')
-          }
-          
           authService.createUserProfile(session.user).catch(error => {
             logger.error('Failed to create user profile on sign in:', error)
           })
@@ -429,8 +390,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('🔍 AuthContext: Solana wallet error:', result.error)
       } else {
         console.log('🔍 AuthContext: Solana wallet connected successfully')
-        // For Solana, set the OAuth success directly since it doesn't redirect
-        dispatch({ type: 'SET_OAUTH_SUCCESS', payload: 'Solana Wallet' })
       }
       
       return result
@@ -449,9 +408,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('🔍 AuthContext: Signing out...')
       
-      // Clear any OAuth flags and all session data
-      localStorage.removeItem('oauth_login_success')
-      sessionStorage.clear() // Clear entire sessionStorage on logout
+      // Clear all session data (includes toast tracking)
+      sessionStorage.clear()
       
       const result = await authService.signOut()
       
@@ -481,7 +439,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearError,
     retryAuth,
     refreshSession,
-    clearOAuthSuccess,
   }), [
     state,
     isFullyReady,
@@ -492,7 +449,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearError,
     retryAuth,
     refreshSession,
-    clearOAuthSuccess,
   ])
 
   return (
