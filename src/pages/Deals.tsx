@@ -1,6 +1,6 @@
-// src/pages/Deals.tsx - UPDATED with curated categories
+// src/pages/Deals.tsx - FINAL DYNAMIC VERSION
 import React, { useState, useMemo, useCallback } from 'react'
-import { Search, Filter, Star, AlertCircle, RefreshCw, Gift, Users, TrendingUp, Zap, Building } from 'lucide-react'
+import { Search, Star, AlertCircle, RefreshCw, Gift, Users, TrendingUp, Database } from 'lucide-react'
 import { useAuth } from '../lib/authContext'
 import { DealCard } from '../components/deals/DealCard'
 import { RatingModal } from '../components/rating/RatingModal'
@@ -11,53 +11,29 @@ import {
   useUpdateDealClickMutation,
   useSubmitRatingMutation 
 } from '../hooks/queries/useDealsQuery'
+import { 
+  useCategoriesQuery, 
+  useCategoryStatsQuery, 
+  useCategoryInfoQuery 
+} from '../hooks/queries/useCategoriesQuery'
 
-// ✅ UPDATED: Categories matching your curated company list
 interface Filters {
   searchTerm: string
   category: string
   sortBy: string
 }
 
-const DEAL_CATEGORIES = [
-  { value: 'all', label: 'All Deals', icon: Gift },
-  { value: 'crypto_exchange', label: 'Crypto Exchanges', icon: Zap },
-  { value: 'prop_firm', label: 'Prop Trading Firms', icon: Building },
-  { value: 'trading_tool', label: 'Trading Tools', icon: Star },
-  { value: 'multi_asset', label: 'Multi Asset Platforms', icon: TrendingUp },
-]
-
-// ✅ UPDATED: Category descriptions for better UX
-const CATEGORY_INFO = {
-  crypto_exchange: {
-    title: 'Crypto Exchange Deals',
-    description: 'Exclusive bonuses from leading cryptocurrency exchanges',
-    companies: ['Binance', 'Bybit', 'KuCoin', 'Crypto.com', 'Coinbase', 'OKX']
-  },
-  prop_firm: {
-    title: 'Prop Trading Firm Deals', 
-    description: 'Funded account challenges and prop firm bonuses',
-    companies: ['DayTraders', 'FundingTicks', 'The Legends Trading', 'Funded Futures Network', 'BlueSkyPro']
-  },
-  trading_tool: {
-    title: 'Trading Tools & Software',
-    description: 'Professional charting and analysis platform discounts',
-    companies: ['TradingView']
-  },
-  multi_asset: {
-    title: 'Multi Asset Trading Platforms',
-    description: 'Platforms supporting stocks, crypto, ETFs and more',
-    companies: ['eToro']
-  }
-}
-
 const Deals: React.FC = () => {
   const { user, isFullyReady } = useAuth()
 
-  // ✅ MODERN: All data from React Query
+  // ✅ DYNAMIC: All data from React Query
   const dealsQuery = useDealsQuery()
   const deals = dealsQuery.data?.deals || []
   const companies = dealsQuery.data?.companies || []
+  
+  // ✅ CRITICAL: Categories from dedicated categories table
+  const categoriesQuery = useCategoriesQuery()
+  const categories = categoriesQuery.data || []
 
   const companyIds = useMemo(() => 
     deals.map(deal => deal.company?.id).filter(Boolean) as string[], 
@@ -65,11 +41,18 @@ const Deals: React.FC = () => {
   )
   const userRatingsQuery = useUserRatingsQuery(user?.id, companyIds)
 
+  // ✅ DYNAMIC: Category statistics and info
+  const categoryStatsQuery = useCategoryStatsQuery(deals)
+  const categoryStats = categoryStatsQuery.data || new Map()
+  
+  const categoryInfoQuery = useCategoryInfoQuery(companies)
+  const categoryInfo = categoryInfoQuery.data || new Map()
+
   // ✅ MODERN: Mutations for updates
   const updateDealClickMutation = useUpdateDealClickMutation()
   const submitRatingMutation = useSubmitRatingMutation()
 
-  // ✅ MODERN: Only UI state
+  // ✅ UI State
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     category: 'all',
@@ -80,7 +63,7 @@ const Deals: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
-  // ✅ MODERN: Computed data (no state storage)
+  // ✅ COMPUTED: Deals with user ratings
   const dealsWithUserRatings = useMemo(() => {
     const userRatings = userRatingsQuery.data || new Map()
     
@@ -90,6 +73,7 @@ const Deals: React.FC = () => {
     }))
   }, [deals, userRatingsQuery.data])
 
+  // ✅ FILTERED: Deals based on filters
   const filteredDeals = useMemo(() => {
     let filtered = dealsWithUserRatings
 
@@ -126,23 +110,22 @@ const Deals: React.FC = () => {
     return filtered
   }, [dealsWithUserRatings, filters])
 
-  // ✅ UPDATED: Category statistics
-  const categoryStats = useMemo(() => {
-    const stats = new Map()
+  // ✅ DYNAMIC: Selected category info
+  const selectedCategoryInfo = useMemo(() => {
+    if (filters.category === 'all') return null
     
-    DEAL_CATEGORIES.forEach(category => {
-      if (category.value === 'all') {
-        stats.set('all', deals.length)
-      } else {
-        const count = deals.filter(deal => deal.company?.category === category.value).length
-        stats.set(category.value, count)
-      }
-    })
+    const category = categories.find(cat => cat.value === filters.category)
+    const info = categoryInfo.get(filters.category)
     
-    return stats
-  }, [deals])
+    return {
+      title: category?.label || 'Category Deals',
+      description: category?.description || 'Exclusive deals in this category',
+      companies: info?.companies || [],
+      count: info?.count || 0
+    }
+  }, [filters.category, categories, categoryInfo])
 
-  // ✅ MODERN: Clean event handlers
+  // ✅ EVENT HANDLERS
   const handleFilterChange = useCallback((key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
@@ -154,9 +137,7 @@ const Deals: React.FC = () => {
       return
     }
 
-    if (!deal.company) {
-      return
-    }
+    if (!deal.company) return
 
     setSelectedDeal(deal)
     setShowRatingModal(true)
@@ -164,7 +145,6 @@ const Deals: React.FC = () => {
 
   const handleTrackClick = useCallback(async (deal: any) => {
     try {
-      // ✅ MODERN: Mutation handles all updates automatically
       await updateDealClickMutation.mutateAsync(deal.id)
       window.open(deal.affiliate_link, '_blank', 'noopener,noreferrer')
     } catch (error) {
@@ -174,24 +154,39 @@ const Deals: React.FC = () => {
   }, [updateDealClickMutation])
 
   const handleRatingSubmitted = useCallback(() => {
-    // ✅ MODERN: Just close modal - mutation handles all updates
     setShowRatingModal(false)
     setSelectedDeal(null)
   }, [])
 
   const handleRetry = useCallback(() => {
     dealsQuery.refetch()
-  }, [dealsQuery])
+    categoriesQuery.refetch()
+  }, [dealsQuery, categoriesQuery])
 
-  // ✅ MODERN: Loading states
-  if (!isFullyReady) {
+  // ✅ ERROR STATES
+  if (categoriesQuery.error) {
     return (
-      <div className="min-h-screen bg-background pt-20">
+      <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-textSecondary">Initializing app...</p>
+              <Database className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Categories Not Available</h2>
+              <p className="text-gray-600 mb-6">
+                Categories table not found. Please run the SQL script to create the categories table.
+              </p>
+              <div className="space-y-2 text-sm text-gray-500 mb-6">
+                <p>• Run the categories SQL in your Supabase SQL editor</p>
+                <p>• Ensure the categories table has data</p>
+                <p>• Check RLS policies allow public read access</p>
+              </div>
+              <button
+                onClick={handleRetry}
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry Connection
+              </button>
             </div>
           </div>
         </div>
@@ -199,23 +194,22 @@ const Deals: React.FC = () => {
     )
   }
 
-  if (dealsQuery.isLoading) {
+  // ✅ LOADING STATE
+  const isLoading = !isFullyReady || dealsQuery.isLoading || categoriesQuery.isLoading
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pt-20">
+      <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-text mb-4">
-              Trading Deals & Bonuses
-            </h1>
-            <p className="text-xl text-textSecondary">
-              Loading exclusive offers with real-time ratings...
-            </p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Trading Deals & Bonuses</h1>
+            <p className="text-xl text-gray-600">Loading exclusive offers with real-time ratings...</p>
           </div>
           
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-textSecondary">Loading deals and community ratings...</p>
+              <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+              <p className="text-gray-600">Loading deals, categories, and community ratings...</p>
             </div>
           </div>
         </div>
@@ -223,24 +217,21 @@ const Deals: React.FC = () => {
     )
   }
 
+  // ✅ DEALS ERROR STATE
   if (dealsQuery.error) {
-    const error = dealsQuery.error instanceof Error 
-      ? dealsQuery.error.message 
-      : 'Failed to load deals'
-
     return (
-      <div className="min-h-screen bg-background pt-20">
+      <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-text mb-2">
-                Unable to Load Deals
-              </h2>
-              <p className="text-textSecondary mb-6">{error}</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Deals</h2>
+              <p className="text-gray-600 mb-6">
+                {dealsQuery.error instanceof Error ? dealsQuery.error.message : 'Failed to load deals'}
+              </p>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
                 Try Again
@@ -252,113 +243,118 @@ const Deals: React.FC = () => {
     )
   }
 
+  // ✅ NO CATEGORIES STATE
+  if (!categories.length) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No Categories Found</h2>
+              <p className="text-gray-600 mb-6">
+                The categories table exists but contains no data. Please add categories to the database.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reload Categories
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ✅ MAIN CONTENT
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* ✅ UPDATED: Header with focus on curated platforms */}
+        {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-text mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Trading Deals & Exclusive Bonuses
           </h1>
-          <p className="text-xl text-textSecondary mb-2">
-            Curated offers from top crypto exchanges, prop firms, and trading platforms
+          <p className="text-xl text-gray-600 mb-2">
+            Curated offers from top platforms across {categories.length - 1} categories
           </p>
-          <p className="text-textSecondary">
-            13 vetted platforms • Real community ratings • Updated daily
+          <p className="text-gray-600">
+            {companies.length} vetted platforms • Real community ratings • Updated daily
           </p>
         </div>
 
-        {/* ✅ UPDATED: Enhanced stats with category breakdown */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 p-6 rounded-xl border border-blue-500/20">
-            <div className="flex items-center gap-3 mb-2">
-              <Zap className="w-6 h-6 text-blue-500" />
-              <div>
-                <div className="text-2xl font-bold text-text">{categoryStats.get('crypto_exchange') || 0}</div>
-                <div className="text-textSecondary text-sm">Crypto Exchanges</div>
+          {categories.filter(cat => cat.value !== 'all').slice(0, 4).map((category, index) => {
+            const Icon = category.icon
+            const count = categoryStats.get(category.value) || 0
+            const colors = [
+              'from-blue-500/10 to-blue-600/10 border-blue-500/20 text-blue-500',
+              'from-green-500/10 to-green-600/10 border-green-500/20 text-green-500',
+              'from-purple-500/10 to-purple-600/10 border-purple-500/20 text-purple-500',
+              'from-orange-500/10 to-orange-600/10 border-orange-500/20 text-orange-500'
+            ]
+            const colorClass = colors[index] || colors[0]
+
+            return (
+              <div key={category.value} className={`bg-gradient-to-br ${colorClass} p-6 rounded-xl border`}>
+                <div className="flex items-center gap-3">
+                  <Icon className="w-6 h-6" />
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">{count}</div>
+                    <div className="text-gray-600 text-sm">{category.label}</div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20">
-            <div className="flex items-center gap-3 mb-2">
-              <Building className="w-6 h-6 text-green-500" />
-              <div>
-                <div className="text-2xl font-bold text-text">{categoryStats.get('prop_firm') || 0}</div>
-                <div className="text-textSecondary text-sm">Prop Firms</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 p-6 rounded-xl border border-purple-500/20">
-            <div className="flex items-center gap-3 mb-2">
-              <Star className="w-6 h-6 text-purple-500" />
-              <div>
-                <div className="text-2xl font-bold text-text">{categoryStats.get('trading_tool') || 0}</div>
-                <div className="text-textSecondary text-sm">Trading Tools</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 p-6 rounded-xl border border-orange-500/20">
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-6 h-6 text-orange-500" />
-              <div>
-                <div className="text-2xl font-bold text-text">{categoryStats.get('multi_asset') || 0}</div>
-                <div className="text-textSecondary text-sm">Multi Asset</div>
-              </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
 
-        {/* ✅ UPDATED: Enhanced category filter with counts */}
-        <div className="bg-surface p-6 rounded-xl border border-border mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search deals, companies..."
-                  value={filters.searchTerm}
-                  onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text"
-                />
-              </div>
+        {/* Filters */}
+        <div className="bg-white p-6 rounded-xl border border-gray-200 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search deals, companies..."
+                value={filters.searchTerm}
+                onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+              />
             </div>
 
-            <div>
-              <select
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text appearance-none"
-              >
-                {DEAL_CATEGORIES.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label} {category.value !== 'all' && `(${categoryStats.get(category.value) || 0})`}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={filters.category}
+              onChange={(e) => handleFilterChange('category', e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+            >
+              {categories.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label} {category.value !== 'all' && `(${categoryStats.get(category.value) || 0})`}
+                </option>
+              ))}
+            </select>
 
-            <div>
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text appearance-none"
-              >
-                <option value="rating">Highest Rated</option>
-                <option value="newest">Newest First</option>
-                <option value="popular">Most Claimed</option>
-                <option value="name">Company A-Z</option>
-              </select>
-            </div>
+            <select
+              value={filters.sortBy}
+              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+            >
+              <option value="rating">Highest Rated</option>
+              <option value="newest">Newest First</option>
+              <option value="popular">Most Claimed</option>
+              <option value="name">Company A-Z</option>
+            </select>
           </div>
 
-          {/* ✅ NEW: Category quick filters */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {DEAL_CATEGORIES.map((category) => {
+          {/* Category Quick Filters */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => {
               const Icon = category.icon
               const count = categoryStats.get(category.value) || 0
               const isActive = filters.category === category.value
@@ -369,15 +365,15 @@ const Deals: React.FC = () => {
                   onClick={() => handleFilterChange('category', category.value)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive 
-                      ? 'bg-primary text-white' 
-                      : 'bg-background text-textSecondary hover:bg-surface hover:text-text border border-border'
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   {category.label}
                   {category.value !== 'all' && (
                     <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      isActive ? 'bg-white/20' : 'bg-textSecondary/10'
+                      isActive ? 'bg-white/20' : 'bg-gray-200'
                     }`}>
                       {count}
                     </span>
@@ -388,21 +384,26 @@ const Deals: React.FC = () => {
           </div>
         </div>
 
-        {/* ✅ UPDATED: Category description when filtered */}
-        {filters.category !== 'all' && CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO] && (
-          <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 mb-8 border border-primary/10">
-            <h3 className="text-lg font-semibold text-text mb-2">
-              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].title}
+        {/* Category Description */}
+        {selectedCategoryInfo && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-8 border border-blue-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {selectedCategoryInfo.title}
             </h3>
-            <p className="text-textSecondary mb-3">
-              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].description}
+            <p className="text-gray-600 mb-3">
+              {selectedCategoryInfo.description}
             </p>
             <div className="flex flex-wrap gap-2">
-              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].companies.map((company) => (
-                <span key={company} className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">
+              {selectedCategoryInfo.companies.slice(0, 8).map((company) => (
+                <span key={company} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">
                   {company}
                 </span>
               ))}
+              {selectedCategoryInfo.companies.length > 8 && (
+                <span className="text-gray-600 text-sm">
+                  +{selectedCategoryInfo.companies.length - 8} more
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -410,22 +411,18 @@ const Deals: React.FC = () => {
         {/* No Results */}
         {filteredDeals.length === 0 && deals.length > 0 && (
           <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-text mb-2">
-              No deals found
-            </h3>
-            <p className="text-textSecondary mb-6">
-              Try adjusting your search or filter criteria
-            </p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
+            <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria</p>
             <button
               onClick={() => setFilters({ searchTerm: '', category: 'all', sortBy: 'rating' })}
-              className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Clear Filters
             </button>
           </div>
         )}
 
-        {/* ✅ MODERN: Cards automatically update via React Query */}
+        {/* Deal Cards */}
         {filteredDeals.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {filteredDeals.map((deal) => (
@@ -440,26 +437,49 @@ const Deals: React.FC = () => {
           </div>
         )}
 
-        {/* ✅ UPDATED: Community trust with platform focus */}
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-8 text-center">
+        {/* Footer */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Users className="w-6 h-6 text-primary" />
-            <h3 className="text-xl font-semibold text-text">Curated Trading Platforms</h3>
+            <Users className="w-6 h-6 text-blue-600" />
+            <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
           </div>
-          <p className="text-textSecondary max-w-2xl mx-auto mb-4">
-            13 handpicked platforms across crypto exchanges, prop firms, and trading tools. 
+          <p className="text-gray-600 max-w-2xl mx-auto mb-4">
+            {companies.length} handpicked platforms across {categories.length - 1} categories. 
             Every company is verified, regulated, and trusted by our trading community.
           </p>
-          <div className="flex items-center justify-center gap-6 text-sm text-textSecondary">
-            <span>✓ 6 Crypto Exchanges</span>
-            <span>✓ 5 Prop Firms</span>
-            <span>✓ Professional Tools</span>
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
+            {categories.filter(cat => cat.value !== 'all').slice(0, 3).map((category) => {
+              const count = categoryStats.get(category.value) || 0
+              return (
+                <span key={category.value}>
+                  ✓ {count} {category.label}
+                </span>
+              )
+            })}
             <span>✓ Real Reviews</span>
           </div>
         </div>
+
+        {/* Empty Deals State */}
+        {deals.length === 0 && !dealsQuery.isLoading && (
+          <div className="text-center py-12">
+            <Gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deals Available</h3>
+            <p className="text-gray-600 mb-6">
+              No trading deals found. Please check back later or contact support.
+            </p>
+            <button
+              onClick={handleRetry}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <RefreshCw className="w-4 h-4 mr-2 inline" />
+              Reload Deals
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ✅ MODERN: Modals use modern mutation hooks */}
+      {/* Modals */}
       {showRatingModal && selectedDeal && (
         <RatingModal
           isOpen={showRatingModal}
