@@ -1,6 +1,6 @@
-// src/pages/Deals.tsx - MODERNIZED: Pure React Query, no legacy code
+// src/pages/Deals.tsx - UPDATED with curated categories
 import React, { useState, useMemo, useCallback } from 'react'
-import { Search, Filter, Star, AlertCircle, RefreshCw, Gift, Users, TrendingUp } from 'lucide-react'
+import { Search, Filter, Star, AlertCircle, RefreshCw, Gift, Users, TrendingUp, Zap, Building } from 'lucide-react'
 import { useAuth } from '../lib/authContext'
 import { DealCard } from '../components/deals/DealCard'
 import { RatingModal } from '../components/rating/RatingModal'
@@ -12,7 +12,7 @@ import {
   useSubmitRatingMutation 
 } from '../hooks/queries/useDealsQuery'
 
-// ✅ MODERN: Simple, clean interfaces
+// ✅ UPDATED: Categories matching your curated company list
 interface Filters {
   searchTerm: string
   category: string
@@ -20,12 +20,36 @@ interface Filters {
 }
 
 const DEAL_CATEGORIES = [
-  { value: 'all', label: 'All Deals' },
-  { value: 'crypto_exchange', label: 'Crypto Exchange' },
-  { value: 'stock_broker', label: 'Stock Broker' },
-  { value: 'forex_broker', label: 'Forex Broker' },
-  { value: 'multi_asset', label: 'Multi Asset' },
+  { value: 'all', label: 'All Deals', icon: Gift },
+  { value: 'crypto_exchange', label: 'Crypto Exchanges', icon: Zap },
+  { value: 'prop_firm', label: 'Prop Trading Firms', icon: Building },
+  { value: 'trading_tool', label: 'Trading Tools', icon: Star },
+  { value: 'multi_asset', label: 'Multi Asset Platforms', icon: TrendingUp },
 ]
+
+// ✅ UPDATED: Category descriptions for better UX
+const CATEGORY_INFO = {
+  crypto_exchange: {
+    title: 'Crypto Exchange Deals',
+    description: 'Exclusive bonuses from leading cryptocurrency exchanges',
+    companies: ['Binance', 'Bybit', 'KuCoin', 'Crypto.com', 'Coinbase', 'OKX']
+  },
+  prop_firm: {
+    title: 'Prop Trading Firm Deals', 
+    description: 'Funded account challenges and prop firm bonuses',
+    companies: ['DayTraders', 'FundingTicks', 'The Legends Trading', 'Funded Futures Network', 'BlueSkyPro']
+  },
+  trading_tool: {
+    title: 'Trading Tools & Software',
+    description: 'Professional charting and analysis platform discounts',
+    companies: ['TradingView']
+  },
+  multi_asset: {
+    title: 'Multi Asset Trading Platforms',
+    description: 'Platforms supporting stocks, crypto, ETFs and more',
+    companies: ['eToro']
+  }
+}
 
 const Deals: React.FC = () => {
   const { user, isFullyReady } = useAuth()
@@ -101,6 +125,22 @@ const Deals: React.FC = () => {
 
     return filtered
   }, [dealsWithUserRatings, filters])
+
+  // ✅ UPDATED: Category statistics
+  const categoryStats = useMemo(() => {
+    const stats = new Map()
+    
+    DEAL_CATEGORIES.forEach(category => {
+      if (category.value === 'all') {
+        stats.set('all', deals.length)
+      } else {
+        const count = deals.filter(deal => deal.company?.category === category.value).length
+        stats.set(category.value, count)
+      }
+    })
+    
+    return stats
+  }, [deals])
 
   // ✅ MODERN: Clean event handlers
   const handleFilterChange = useCallback((key: keyof Filters, value: string) => {
@@ -216,67 +256,63 @@ const Deals: React.FC = () => {
     <div className="min-h-screen bg-background pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
-        {/* Header */}
+        {/* ✅ UPDATED: Header with focus on curated platforms */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-text mb-4">
-            Trading Deals & Bonuses
+            Trading Deals & Exclusive Bonuses
           </h1>
           <p className="text-xl text-textSecondary mb-2">
-            Discover exclusive offers from top-rated trading platforms
+            Curated offers from top crypto exchanges, prop firms, and trading platforms
           </p>
           <p className="text-textSecondary">
-            All ratings based on real trader reviews and experiences
+            13 vetted platforms • Real community ratings • Updated daily
           </p>
         </div>
 
-        {/* ✅ MODERN: Real-time stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-surface p-6 rounded-xl border border-border">
+        {/* ✅ UPDATED: Enhanced stats with category breakdown */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 p-6 rounded-xl border border-blue-500/20">
             <div className="flex items-center gap-3 mb-2">
-              <Gift className="w-8 h-8 text-primary" />
+              <Zap className="w-6 h-6 text-blue-500" />
               <div>
-                <div className="text-3xl font-bold text-text">{filteredDeals.length}</div>
-                <div className="text-textSecondary text-sm">Active Deals</div>
+                <div className="text-2xl font-bold text-text">{categoryStats.get('crypto_exchange') || 0}</div>
+                <div className="text-textSecondary text-sm">Crypto Exchanges</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-surface p-6 rounded-xl border border-border">
+          <div className="bg-gradient-to-br from-green-500/10 to-green-600/10 p-6 rounded-xl border border-green-500/20">
             <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-8 h-8 text-primary" />
+              <Building className="w-6 h-6 text-green-500" />
               <div>
-                <div className="text-3xl font-bold text-text">{companies.length}</div>
-                <div className="text-textSecondary text-sm">Trading Platforms</div>
+                <div className="text-2xl font-bold text-text">{categoryStats.get('prop_firm') || 0}</div>
+                <div className="text-textSecondary text-sm">Prop Firms</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-surface p-6 rounded-xl border border-border">
+          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 p-6 rounded-xl border border-purple-500/20">
             <div className="flex items-center gap-3 mb-2">
-              <Star className="w-8 h-8 text-primary" />
+              <Star className="w-6 h-6 text-purple-500" />
               <div>
-                <div className="text-3xl font-bold text-text">
-                  {companies.reduce((sum, c) => sum + (c.total_reviews || 0), 0)}
-                </div>
-                <div className="text-textSecondary text-sm">Community Reviews</div>
+                <div className="text-2xl font-bold text-text">{categoryStats.get('trading_tool') || 0}</div>
+                <div className="text-textSecondary text-sm">Trading Tools</div>
               </div>
             </div>
           </div>
           
-          <div className="bg-surface p-6 rounded-xl border border-border">
+          <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 p-6 rounded-xl border border-orange-500/20">
             <div className="flex items-center gap-3 mb-2">
-              <Users className="w-8 h-8 text-primary" />
+              <TrendingUp className="w-6 h-6 text-orange-500" />
               <div>
-                <div className="text-3xl font-bold text-text">
-                  {Math.round(companies.reduce((sum, c) => sum + (c.overall_rating || 0), 0) / Math.max(companies.length, 1) * 10) / 10}
-                </div>
-                <div className="text-textSecondary text-sm">Average Rating</div>
+                <div className="text-2xl font-bold text-text">{categoryStats.get('multi_asset') || 0}</div>
+                <div className="text-textSecondary text-sm">Multi Asset</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ✅ MODERN: Clean filters */}
+        {/* ✅ UPDATED: Enhanced category filter with counts */}
         <div className="bg-surface p-6 rounded-xl border border-border mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -300,7 +336,7 @@ const Deals: React.FC = () => {
               >
                 {DEAL_CATEGORIES.map((category) => (
                   <option key={category.value} value={category.value}>
-                    {category.label}
+                    {category.label} {category.value !== 'all' && `(${categoryStats.get(category.value) || 0})`}
                   </option>
                 ))}
               </select>
@@ -319,7 +355,57 @@ const Deals: React.FC = () => {
               </select>
             </div>
           </div>
+
+          {/* ✅ NEW: Category quick filters */}
+          <div className="flex flex-wrap gap-2 mt-4">
+            {DEAL_CATEGORIES.map((category) => {
+              const Icon = category.icon
+              const count = categoryStats.get(category.value) || 0
+              const isActive = filters.category === category.value
+              
+              return (
+                <button
+                  key={category.value}
+                  onClick={() => handleFilterChange('category', category.value)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive 
+                      ? 'bg-primary text-white' 
+                      : 'bg-background text-textSecondary hover:bg-surface hover:text-text border border-border'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {category.label}
+                  {category.value !== 'all' && (
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                      isActive ? 'bg-white/20' : 'bg-textSecondary/10'
+                    }`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
         </div>
+
+        {/* ✅ UPDATED: Category description when filtered */}
+        {filters.category !== 'all' && CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO] && (
+          <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl p-6 mb-8 border border-primary/10">
+            <h3 className="text-lg font-semibold text-text mb-2">
+              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].title}
+            </h3>
+            <p className="text-textSecondary mb-3">
+              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].description}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORY_INFO[filters.category as keyof typeof CATEGORY_INFO].companies.map((company) => (
+                <span key={company} className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">
+                  {company}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* No Results */}
         {filteredDeals.length === 0 && deals.length > 0 && (
@@ -354,16 +440,22 @@ const Deals: React.FC = () => {
           </div>
         )}
 
-        {/* Community Trust Footer */}
+        {/* ✅ UPDATED: Community trust with platform focus */}
         <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Users className="w-6 h-6 text-primary" />
-            <h3 className="text-xl font-semibold text-text">Community Trust Network</h3>
+            <h3 className="text-xl font-semibold text-text">Curated Trading Platforms</h3>
           </div>
-          <p className="text-textSecondary max-w-2xl mx-auto">
-            All ratings and reviews come from verified traders in our community. 
-            Help fellow traders by sharing your honest experience with these platforms.
+          <p className="text-textSecondary max-w-2xl mx-auto mb-4">
+            13 handpicked platforms across crypto exchanges, prop firms, and trading tools. 
+            Every company is verified, regulated, and trusted by our trading community.
           </p>
+          <div className="flex items-center justify-center gap-6 text-sm text-textSecondary">
+            <span>✓ 6 Crypto Exchanges</span>
+            <span>✓ 5 Prop Firms</span>
+            <span>✓ Professional Tools</span>
+            <span>✓ Real Reviews</span>
+          </div>
         </div>
       </div>
 
