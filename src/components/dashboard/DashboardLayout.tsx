@@ -11,7 +11,6 @@ import {
   LogOut, 
   Settings, 
   User,
-  Bell,
   Search
 } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
@@ -194,36 +193,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             >
               <Menu className="w-6 h-6" />
             </button>
-            
-            <div className="flex items-center space-x-4 ml-auto">
-              <button className="p-2 rounded-lg relative transition-colors duration-200"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--surface)';
-                  e.currentTarget.style.color = 'var(--text)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                }}
-              >
-                <Bell className="w-5 h-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full" style={{ backgroundColor: 'var(--error)' }}></div>
-              </button>
-              <button className="p-2 rounded-lg transition-colors duration-200"
-                style={{ color: 'var(--text-secondary)' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--surface)';
-                  e.currentTarget.style.color = 'var(--text)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
-                }}
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
           </div>
         </header>
 
