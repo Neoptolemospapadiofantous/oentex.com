@@ -1,6 +1,6 @@
-// AuthModals.tsx - OPTION 1: Clean OAuth-only modal
+// AuthModals.tsx - Clean OAuth-only modal
 import React, { useState, useEffect } from 'react'
-import { X, Chrome, Wallet } from 'lucide-react'
+import { X, Chrome } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
 import { FocusManager } from '../ui/FocusManager'
@@ -19,7 +19,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [loginSuccess, setLoginSuccess] = useState(false)
 
-  const { signInWithGoogle, signInWithMicrosoft, signInWithSolana } = useAuth()
+  const { signInWithGoogle, signInWithMicrosoft } = useAuth()
 
   // Body scroll lock when modal is open
   useBodyScrollLock(isOpen)
@@ -38,7 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     }
   }, [isOpen, onClose, isLoading])
 
-  const handleOAuthSignIn = async (provider: 'google' | 'microsoft' | 'solana') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'microsoft') => {
     if (isLoading) return
     
     setIsLoading(true)
@@ -56,9 +56,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
         case 'microsoft':
           result = await signInWithMicrosoft()
           break
-        case 'solana':
-          result = await signInWithSolana()
-          break
         default:
           throw new Error('Unknown provider')
       }
@@ -67,29 +64,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
         console.log(`🔍 AuthModal: ${provider} OAuth initiated successfully`)
         setLoginSuccess(true)
         
-        // For OAuth providers (Google, Microsoft), the page will redirect
-        // For Solana, we might handle it differently
-        if (provider === 'solana') {
-          // Close modal immediately for Solana - Dashboard will show toast
-          setTimeout(() => {
-            onClose()
-            setLoginSuccess(false)
-          }, 500)
-        } else {
-          // For Google/Microsoft, the redirect will happen automatically
-          // Show success state briefly before redirect
-          setTimeout(() => {
-            onClose()
-            setLoginSuccess(false)
-          }, 1000)
-        }
+        // For OAuth providers, the page will redirect
+        // Show success state briefly before redirect
+        setTimeout(() => {
+          onClose()
+          setLoginSuccess(false)
+        }, 1000)
       } else {
         console.error(`🔍 AuthModal: ${provider} OAuth error:`, result.error)
         toast.error(result.error.message)
       }
     } catch (error) {
       console.error(`🔍 AuthModal: ${provider} sign-in error:`, error)
-      toast.error(`Failed to sign in with ${provider === 'solana' ? 'Solana wallet' : provider}. Please try again.`)
+      toast.error(`Failed to sign in with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
       setLoadingProvider(null)
@@ -125,12 +112,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
           <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="text-center flex-1">
               <h2 className="text-xl font-semibold text-text">
-                {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
+                {mode === 'login' ? 'Welcome Back' : 'Join TradeBest'}
               </h2>
               <p className="text-sm text-textSecondary mt-1">
                 {mode === 'login' 
-                  ? 'Sign in to access exclusive crypto deals' 
-                  : 'Start discovering the best crypto affiliate offers'
+                  ? 'Sign in to access exclusive trading deals' 
+                  : 'Start discovering the best trading affiliate offers'
                 }
               </p>
             </div>
@@ -158,41 +145,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
               </div>
             ) : (
               <>
-                {/* Solana Wallet - Primary Option */}
-                <button
-                  onClick={() => handleOAuthSignIn('solana')}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-4 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-purple-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  {loadingProvider === 'solana' ? (
-                    <LoadingSpinner variant="auth" size="sm" />
-                  ) : (
-                    <Wallet className="w-6 h-6" />
-                  )}
-                  <span className="text-lg">Connect Solana Wallet</span>
-                </button>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-3 bg-surface text-textSecondary">Or continue with</span>
-                  </div>
-                </div>
-
-                {/* Google */}
+                {/* Google - Primary Option */}
                 <button
                   onClick={() => handleOAuthSignIn('google')}
                   disabled={isLoading}
-                  className="w-full bg-white border border-border text-text py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  className="w-full bg-white border border-border text-text py-4 px-6 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   {loadingProvider === 'google' ? (
                     <LoadingSpinner variant="auth" size="sm" />
                   ) : (
-                    <Chrome className="w-5 h-5" />
+                    <Chrome className="w-6 h-6" />
                   )}
-                  Continue with Google
+                  <span className="text-lg">Continue with Google</span>
                 </button>
 
                 {/* Microsoft */}
@@ -213,7 +177,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                 <div className="text-center text-sm text-textSecondary pt-4 border-t border-border">
                   {mode === 'login' ? (
                     <>
-                      New to crypto affiliate deals?{' '}
+                      New to trading affiliate deals?{' '}
                       <button
                         onClick={() => onModeChange('register')}
                         disabled={isLoading}

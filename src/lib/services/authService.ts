@@ -15,7 +15,7 @@ class AuthService {
   private readonly RETRY_DELAY = 1000
   private readonly profileCreationCache = new Map<string, Promise<CreateUserProfileResult>>()
 
-  // ✅ OAUTH METHODS ONLY - Removed email/password methods
+  // ✅ OAUTH METHODS ONLY - Removed email/password and Solana methods
 
   async signInWithGoogle() {
     try {
@@ -68,105 +68,10 @@ class AuthService {
     }
   }
 
-  async signInWithSolana() {
-    try {
-      // Check if Solana wallet is available
-      if (typeof window === 'undefined') {
-        return { error: this.createError(AuthErrorType.PROVIDER_UNAVAILABLE, 'Solana wallet not available in server environment') }
-      }
-
-      // Check for Phantom wallet or other Solana wallets
-      const solanaWallet = (window as any).solana
-      
-      if (!solanaWallet) {
-        return { error: this.createError(AuthErrorType.PROVIDER_UNAVAILABLE, 'Solana wallet not found. Please install Phantom or another Solana wallet.') }
-      }
-
-      if (!solanaWallet.isPhantom && !solanaWallet.isSolflare) {
-        logger.warn('Unknown Solana wallet detected')
-      }
-
-      try {
-        // Request connection to wallet
-        const response = await solanaWallet.connect({ onlyIfTrusted: false })
-        const publicKey = response.publicKey.toString()
-        
-        logger.info('Solana wallet connected:', publicKey)
-        
-        // For now, we'll use custom JWT creation with Solana wallet
-        // In a full implementation, you'd verify wallet ownership on your backend
-        
-        // Create a message for the user to sign to prove wallet ownership
-        const message = `Sign this message to authenticate with Oentex.\n\nWallet: ${publicKey}\nTime: ${new Date().toISOString()}`
-        const encodedMessage = new TextEncoder().encode(message)
-        
-        const signedMessage = await solanaWallet.signMessage(encodedMessage)
-        
-        // In a real implementation, you'd send this to your backend to verify
-        // and create a proper JWT token. For now, we'll create a custom auth flow
-        
-        logger.info('Solana wallet signed message successfully')
-        
-        // Create custom user session (you'll need to implement this on your backend)
-        const customAuthResult = await this.createSolanaUserSession(publicKey, signedMessage)
-        
-        return customAuthResult
-        
-      } catch (walletError) {
-        logger.error('Solana wallet connection error:', walletError)
-        
-        if (walletError.code === 4001) {
-          return { error: this.createError(AuthErrorType.USER_CANCELLED, 'Wallet connection was cancelled') }
-        }
-        
-        return { error: this.createError(AuthErrorType.PROVIDER_ERROR, 'Failed to connect to Solana wallet') }
-      }
-    } catch (error) {
-      logger.error('Unexpected Solana wallet error:', error)
-      return { error: this.handleAuthError(error) }
-    }
-  }
-
-  // Helper method for Solana authentication
-  private async createSolanaUserSession(publicKey: string, signedMessage: any) {
-    try {
-      // This is a placeholder - you'll need to implement this with your backend
-      // The backend should verify the signed message and create a proper user session
-      
-      // For now, we'll create a user profile with the wallet address
-      const userData = {
-        id: publicKey, // Using public key as user ID
-        email: `${publicKey.substring(0, 8)}@solana.wallet`, // Placeholder email
-        user_metadata: {
-          wallet_address: publicKey,
-          provider: 'solana',
-          wallet_type: (window as any).solana?.isPhantom ? 'phantom' : 'unknown'
-        }
-      }
-      
-      // You would typically call your backend API here to create/verify the user
-      logger.info('Created Solana user session:', userData)
-      
-      return { error: null, user: userData }
-    } catch (error) {
-      logger.error('Failed to create Solana user session:', error)
-      return { error: this.createError(AuthErrorType.UNKNOWN_ERROR, 'Failed to create user session') }
-    }
-  }
-
   async signOut() {
     try {
       // Clear profile creation cache
       this.profileCreationCache.clear()
-      
-      // If Solana wallet is connected, disconnect it
-      if (typeof window !== 'undefined' && (window as any).solana?.isConnected) {
-        try {
-          await (window as any).solana.disconnect()
-        } catch (walletError) {
-          logger.warn('Failed to disconnect Solana wallet:', walletError)
-        }
-      }
       
       const { error } = await supabase.auth.signOut()
       
@@ -237,7 +142,6 @@ class AuthService {
         full_name: this.extractFullName(user),
         avatar_url: user.user_metadata?.avatar_url || null,
         provider: user.app_metadata?.provider || 'unknown',
-        wallet_address: user.user_metadata?.wallet_address || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
@@ -277,7 +181,6 @@ class AuthService {
     return (
       user.user_metadata?.full_name ||
       user.user_metadata?.name ||
-      user.user_metadata?.wallet_address?.substring(0, 8) || // For Solana wallets
       user.email?.split('@')[0] ||
       'User'
     )
