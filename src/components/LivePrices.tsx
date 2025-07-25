@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { TrendingUp, TrendingDown, ArrowRight, Wifi, WifiOff, BarChart3, ExternalLink, Award, AlertTriangle, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowRight, Wifi, WifiOff, BarChart3, ExternalLink, Award, AlertTriangle } from 'lucide-react'
 
 interface CryptoPrice {
   symbol: string
@@ -36,35 +36,17 @@ interface CryptoComparison {
   priceSpread?: number
 }
 
-interface ConnectionDebug {
-  exchange: string
-  status: 'connecting' | 'connected' | 'disconnected' | 'error'
-  lastMessage?: Date
-  messageCount: number
-  error?: string
-}
-
 const LivePrices = () => {
   const [prices, setPrices] = useState<CryptoPrice[]>([])
   const [comparisons, setComparisons] = useState<CryptoComparison[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<Record<string, boolean>>({})
-  const [connectionDebug, setConnectionDebug] = useState<ConnectionDebug[]>([])
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
   const [selectedView, setSelectedView] = useState<'simple' | 'comparison'>('comparison')
-  const [showDebug, setShowDebug] = useState(false)
 
-  // Add update performance monitoring state
-  const [updateStats, setUpdateStats] = useState<Record<string, {
-    lastUpdate: Date
-    updateCount: number
-    avgInterval: number
-    intervals: number[]
-  }>>({})
-
-  // UNIFIED REFRESH SYSTEM - 1 second intervals (SAFE for all exchanges)
-  const UNIFIED_UPDATE_INTERVAL = 1000 // 1 second - confirmed safe for all exchanges
+  // UNIFIED REFRESH SYSTEM - 1 second intervals
+  const UNIFIED_UPDATE_INTERVAL = 1000
   const exchangeBuffers = useRef<Record<string, Record<string, any>>>({})
   const lastUnifiedUpdate = useRef<Record<string, number>>({})
 
@@ -146,7 +128,7 @@ const LivePrices = () => {
     const now = Date.now()
     const lastUpdate = lastUnifiedUpdate.current[`${exchangeKey}-${symbol}`] || 0
     
-    // Always buffer the latest data (overwrites previous if newer)
+    // Always buffer the latest data
     if (!exchangeBuffers.current[exchangeKey]) {
       exchangeBuffers.current[exchangeKey] = {}
     }
@@ -155,52 +137,18 @@ const LivePrices = () => {
       receivedAt: now
     }
     
-    // Process updates every 1 second (safe for all exchanges)
+    // Process updates every 1 second
     if (now - lastUpdate >= UNIFIED_UPDATE_INTERVAL) {
       lastUnifiedUpdate.current[`${exchangeKey}-${symbol}`] = now
       
-      // Process the most recent buffered data
       const bufferedData = exchangeBuffers.current[exchangeKey][symbol]
       if (bufferedData) {
-        // Remove metadata before sending to updateComparison
         const { receivedAt, ...cleanData } = bufferedData
         updateComparison(symbol, exchangeKey, cleanData)
         setLastUpdate(new Date())
       }
     }
   }, [])
-
-  const updateDebugInfo = (exchange: string, status: ConnectionDebug['status'], error?: string) => {
-    setConnectionDebug(prev => {
-      const existing = prev.find(d => d.exchange === exchange)
-      if (existing) {
-        return prev.map(d => d.exchange === exchange ? {
-          ...d,
-          status,
-          error,
-          lastMessage: status === 'connected' ? new Date() : d.lastMessage
-        } : d)
-      } else {
-        return [...prev, {
-          exchange,
-          status,
-          messageCount: 0,
-          error,
-          lastMessage: status === 'connected' ? new Date() : undefined
-        }]
-      }
-    })
-  }
-
-  const incrementMessageCount = (exchange: string) => {
-    setConnectionDebug(prev => 
-      prev.map(d => d.exchange === exchange ? {
-        ...d,
-        messageCount: d.messageCount + 1,
-        lastMessage: new Date()
-      } : d)
-    )
-  }
 
   const handleImageError = (symbol: string) => {
     setImageErrors(prev => new Set([...prev, symbol]))
@@ -254,7 +202,7 @@ const LivePrices = () => {
       logo: exchangeConfig.logo,
       affiliateUrl: exchangeConfig.affiliateUrl,
       isConnected: true,
-      lastUpdate: synchronizedTimestamp || new Date(), // 🎯 Use synchronized timestamp
+      lastUpdate: synchronizedTimestamp || new Date(),
       fees: exchangeConfig.fees,
       bonus: exchangeConfig.bonus
     }
@@ -307,41 +255,32 @@ const LivePrices = () => {
   }
 
   const handleAffiliateClick = (exchange: string, url: string) => {
-    console.log(`Affiliate click: ${exchange}`)
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   useEffect(() => {
-    console.log('🚀 Starting WebSocket connections with unified 1-second refresh...')
-    
     const connections: WebSocket[] = []
     
-    // 1. BINANCE WebSocket with unified refresh
+    // 1. BINANCE WebSocket
     const connectBinance = () => {
-      updateDebugInfo('binance', 'connecting')
       const symbols = Object.keys(cryptoConfig).map(s => `${s.toLowerCase()}@ticker`).join('/')
       const binanceWs = new WebSocket(`wss://stream.binance.com:9443/ws/${symbols}`)
       connections.push(binanceWs)
 
       binanceWs.onopen = () => {
-        console.log('✅ Binance WebSocket connected')
         setIsConnected(true)
         setConnectionStatus(prev => ({ ...prev, binance: true }))
-        updateDebugInfo('binance', 'connected')
       }
 
       binanceWs.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          incrementMessageCount('binance')
-          
           const symbol = data.s
           const config = cryptoConfig[symbol as keyof typeof cryptoConfig]
           
           if (config) {
             const volume = parseFloat(data.v) * parseFloat(data.c)
             
-            // Update simple prices view immediately (for responsiveness)
             setPrices(prev => {
               const updatedPrices = prev.filter(p => p.symbol !== config.symbol)
               return [...updatedPrices, {
@@ -357,44 +296,35 @@ const LivePrices = () => {
               })
             })
 
-            // Use unified 1-second refresh for comparison data
             processUnifiedUpdate('binance', config.symbol, {
               price: parseFloat(data.c),
               change24h: parseFloat(data.P),
               volume: formatVolume(volume)
             })
           }
-        } catch (error: any) {
-          console.error('❌ Binance parse error:', error)
-          updateDebugInfo('binance', 'error', error.message)
+        } catch (error) {
+          // Silently handle error
         }
       }
 
-      binanceWs.onclose = (event) => {
-        console.log('🔌 Binance disconnected:', event.code, event.reason)
+      binanceWs.onclose = () => {
         setConnectionStatus(prev => ({ ...prev, binance: false }))
-        updateDebugInfo('binance', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
       }
 
-      binanceWs.onerror = (error) => {
-        console.error('❌ Binance WebSocket error:', error)
-        updateDebugInfo('binance', 'error', 'WebSocket connection failed')
+      binanceWs.onerror = () => {
         setConnectionStatus(prev => ({ ...prev, binance: false }))
       }
 
       return binanceWs
     }
 
-    // 2. COINBASE Exchange WebSocket with unified refresh
+    // 2. COINBASE Exchange WebSocket
     const connectCoinbase = () => {
-      updateDebugInfo('coinbase', 'connecting')
       const coinbaseWs = new WebSocket('wss://ws-feed.exchange.coinbase.com')
       connections.push(coinbaseWs)
 
       coinbaseWs.onopen = () => {
-        console.log('✅ Coinbase Exchange WebSocket connected')
         setConnectionStatus(prev => ({ ...prev, coinbase: true }))
-        updateDebugInfo('coinbase', 'connected')
         
         coinbaseWs.send(JSON.stringify({
           "type": "subscribe",
@@ -406,16 +336,8 @@ const LivePrices = () => {
       coinbaseWs.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          incrementMessageCount('coinbase')
           
-          if (data.type === 'subscriptions') {
-            console.log('✅ Coinbase subscription confirmed:', data.channels)
-            return
-          }
-          
-          if (data.type === 'error') {
-            console.error('❌ Coinbase subscription error:', data.message)
-            updateDebugInfo('coinbase', 'error', `Subscription error: ${data.message}`)
+          if (data.type === 'subscriptions' || data.type === 'error') {
             return
           }
           
@@ -429,7 +351,6 @@ const LivePrices = () => {
               const change24h = open24h > 0 ? ((price - open24h) / open24h) * 100 : 0
               const volume24h = parseFloat(data.volume_24h) || 0
               
-              // 🎯 FIXED: Use unified refresh system consistently (same as other exchanges)
               processUnifiedUpdate('coinbase', symbol, {
                 price: price,
                 change24h: change24h,
@@ -438,36 +359,28 @@ const LivePrices = () => {
             }
           }
         } catch (error) {
-          console.error('❌ Coinbase parse error:', error)
-          updateDebugInfo('coinbase', 'error', error.message)
+          // Silently handle error
         }
       }
 
-      coinbaseWs.onclose = (event) => {
-        console.log('🔌 Coinbase disconnected:', event.code, event.reason)
+      coinbaseWs.onclose = () => {
         setConnectionStatus(prev => ({ ...prev, coinbase: false }))
-        updateDebugInfo('coinbase', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
       }
 
-      coinbaseWs.onerror = (error) => {
-        console.error('❌ Coinbase WebSocket error:', error)
-        updateDebugInfo('coinbase', 'error', 'WebSocket connection failed')
+      coinbaseWs.onerror = () => {
         setConnectionStatus(prev => ({ ...prev, coinbase: false }))
       }
 
       return coinbaseWs
     }
 
-    // 3. KRAKEN WebSocket with unified refresh
+    // 3. KRAKEN WebSocket
     const connectKraken = () => {
-      updateDebugInfo('kraken', 'connecting')
       const krakenWs = new WebSocket('wss://ws.kraken.com')
       connections.push(krakenWs)
 
       krakenWs.onopen = () => {
-        console.log('✅ Kraken WebSocket connected')
         setConnectionStatus(prev => ({ ...prev, kraken: true }))
-        updateDebugInfo('kraken', 'connected')
         
         krakenWs.send(JSON.stringify({
           "event": "subscribe",
@@ -479,13 +392,8 @@ const LivePrices = () => {
       krakenWs.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          incrementMessageCount('kraken')
           
-          if (data.event === 'heartbeat') return
-          if (data.event === 'subscriptionStatus') {
-            console.log('Kraken subscription:', data.status)
-            return
-          }
+          if (data.event === 'heartbeat' || data.event === 'subscriptionStatus') return
           
           if (Array.isArray(data) && data.length >= 4 && data[2] === 'ticker') {
             const tickerData = data[1]
@@ -498,20 +406,16 @@ const LivePrices = () => {
               if (cryptoInfo) {
                 const price = parseFloat(tickerData.c[0])
                 
-                // FIXED: Kraken 24h change calculation
-                // tickerData.P[0] = today's change percentage, tickerData.P[1] = 24h change percentage
                 let change24h = 0
                 if (tickerData.P && tickerData.P[1]) {
                   change24h = parseFloat(tickerData.P[1])
                 } else if (tickerData.o && tickerData.o[1]) {
-                  // Fallback: calculate from open price if percentage not available
                   const open24h = parseFloat(tickerData.o[1])
                   change24h = open24h > 0 ? ((price - open24h) / open24h) * 100 : 0
                 }
                 
                 const volume24h = parseFloat(tickerData.v && tickerData.v[1] ? tickerData.v[1] : '0') || 0
                 
-                // Use unified refresh system
                 processUnifiedUpdate('kraken', symbol, {
                   price: price,
                   change24h: change24h,
@@ -520,39 +424,31 @@ const LivePrices = () => {
               }
             }
           }
-        } catch (error: any) {
-          console.error('❌ Kraken parse error:', error)
-          updateDebugInfo('kraken', 'error', error.message)
+        } catch (error) {
+          // Silently handle error
         }
       }
 
-      krakenWs.onclose = (event) => {
-        console.log('🔌 Kraken disconnected:', event.code, event.reason)
+      krakenWs.onclose = () => {
         setConnectionStatus(prev => ({ ...prev, kraken: false }))
-        updateDebugInfo('kraken', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
       }
 
-      krakenWs.onerror = (error) => {
-        console.error('❌ Kraken WebSocket error:', error)
-        updateDebugInfo('kraken', 'error', 'WebSocket connection failed')
+      krakenWs.onerror = () => {
         setConnectionStatus(prev => ({ ...prev, kraken: false }))
       }
 
       return krakenWs
     }
 
-    // 4. BYBIT WebSocket with unified refresh
+    // 4. BYBIT WebSocket
     const connectBybit = () => {
-      updateDebugInfo('bybit', 'connecting')
       const bybitWs = new WebSocket('wss://stream.bybit.com/v5/public/spot')
       connections.push(bybitWs)
 
       let heartbeatInterval: NodeJS.Timeout | null = null
 
       bybitWs.onopen = () => {
-        console.log('✅ Bybit WebSocket connected')
         setConnectionStatus(prev => ({ ...prev, bybit: true }))
-        updateDebugInfo('bybit', 'connected')
         
         bybitWs.send(JSON.stringify({
           "op": "subscribe",
@@ -569,10 +465,8 @@ const LivePrices = () => {
       bybitWs.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data)
-          incrementMessageCount('bybit')
           
-          if (data.op === 'pong') return
-          if (data.success) return
+          if (data.op === 'pong' || data.success) return
           
           if (data.topic && data.topic.startsWith('tickers.') && data.data) {
             const tickerData = data.data
@@ -584,7 +478,6 @@ const LivePrices = () => {
               const change24h = parseFloat(tickerData.price24hPcnt) * 100 || 0
               const volume24h = parseFloat(tickerData.volume24h) || 0
               
-              // Use unified refresh system
               processUnifiedUpdate('bybit', symbol, {
                 price: price,
                 change24h: change24h,
@@ -592,16 +485,13 @@ const LivePrices = () => {
               })
             }
           }
-        } catch (error: any) {
-          console.error('❌ Bybit parse error:', error)
-          updateDebugInfo('bybit', 'error', error.message)
+        } catch (error) {
+          // Silently handle error
         }
       }
 
-      bybitWs.onclose = (event) => {
-        console.log('🔌 Bybit disconnected:', event.code, event.reason)
+      bybitWs.onclose = () => {
         setConnectionStatus(prev => ({ ...prev, bybit: false }))
-        updateDebugInfo('bybit', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
         
         if (heartbeatInterval) {
           clearInterval(heartbeatInterval)
@@ -609,9 +499,7 @@ const LivePrices = () => {
         }
       }
 
-      bybitWs.onerror = (error) => {
-        console.error('❌ Bybit WebSocket error:', error)
-        updateDebugInfo('bybit', 'error', 'WebSocket connection failed')
+      bybitWs.onerror = () => {
         setConnectionStatus(prev => ({ ...prev, bybit: false }))
         
         if (heartbeatInterval) {
@@ -623,16 +511,13 @@ const LivePrices = () => {
       return bybitWs
     }
 
-    // 5. OKX WebSocket with unified refresh (removed individual throttling)
+    // 5. OKX WebSocket
     const connectOKX = () => {
-      updateDebugInfo('okx', 'connecting')
       const okxWs = new WebSocket('wss://ws.okx.com:8443/ws/v5/public')
       connections.push(okxWs)
 
       okxWs.onopen = () => {
-        console.log('✅ OKX WebSocket connected')
         setConnectionStatus(prev => ({ ...prev, okx: true }))
-        updateDebugInfo('okx', 'connected')
         
         okxWs.send(JSON.stringify({
           "op": "subscribe",
@@ -658,31 +543,23 @@ const LivePrices = () => {
             const instId = data.arg.instId
             const symbol = instId.replace('-USDT', '')
             
-            incrementMessageCount('okx')
-            
             const cryptoInfo = Object.values(cryptoConfig).find(c => c.symbol === symbol)
             
             if (cryptoInfo && tickerData.last) {
               const price = parseFloat(tickerData.last)
               
-              // FIXED: OKX 24h change calculation
-              // Try multiple fields for 24h change percentage
               let change24h = 0
               if (tickerData.changeUtc8) {
-                // changeUtc8 is 24h change percentage (preferred)
                 change24h = parseFloat(tickerData.changeUtc8) * 100
               } else if (tickerData.change24h) {
-                // change24h is 24h change percentage (alternative)
                 change24h = parseFloat(tickerData.change24h) * 100
               } else if (tickerData.open24h) {
-                // Fallback: calculate from 24h open price
                 const open24h = parseFloat(tickerData.open24h)
                 change24h = open24h > 0 ? ((price - open24h) / open24h) * 100 : 0
               }
               
               const volume24h = parseFloat(tickerData.vol24h || '0') || 0
               
-              // Use unified refresh system (removed individual throttling)
               processUnifiedUpdate('okx', symbol, {
                 price: price,
                 change24h: change24h,
@@ -690,21 +567,16 @@ const LivePrices = () => {
               })
             }
           }
-        } catch (error: any) {
-          console.error('❌ OKX parse error:', error)
-          updateDebugInfo('okx', 'error', error.message)
+        } catch (error) {
+          // Silently handle error
         }
       }
 
-      okxWs.onclose = (event) => {
-        console.log('🔌 OKX disconnected:', event.code, event.reason)
+      okxWs.onclose = () => {
         setConnectionStatus(prev => ({ ...prev, okx: false }))
-        updateDebugInfo('okx', 'disconnected', `Code: ${event.code}, Reason: ${event.reason}`)
       }
 
-      okxWs.onerror = (error) => {
-        console.error('❌ OKX WebSocket error:', error)
-        updateDebugInfo('okx', 'error', 'WebSocket connection failed')
+      okxWs.onerror = () => {
         setConnectionStatus(prev => ({ ...prev, okx: false }))
       }
 
@@ -713,46 +585,13 @@ const LivePrices = () => {
 
     // Connect to all exchanges with staggered delays
     connectBinance()
-    
-    setTimeout(() => {
-      try {
-        connectCoinbase()
-      } catch (error: any) {
-        console.error('Failed to connect to Coinbase:', error)
-        updateDebugInfo('coinbase', 'error', 'Failed to initiate connection')
-      }
-    }, 1000)
-    
-    setTimeout(() => {
-      try {
-        connectKraken()
-      } catch (error: any) {
-        console.error('Failed to connect to Kraken:', error)
-        updateDebugInfo('kraken', 'error', 'Failed to initiate connection')
-      }
-    }, 2000)
-    
-    setTimeout(() => {
-      try {
-        connectBybit()
-      } catch (error: any) {
-        console.error('Failed to connect to Bybit:', error)
-        updateDebugInfo('bybit', 'error', 'Failed to initiate connection')
-      }
-    }, 3000)
-    
-    setTimeout(() => {
-      try {
-        connectOKX()
-      } catch (error: any) {
-        console.error('Failed to connect to OKX:', error)
-        updateDebugInfo('okx', 'error', 'Failed to initiate connection')
-      }
-    }, 4000)
+    setTimeout(() => connectCoinbase(), 1000)
+    setTimeout(() => connectKraken(), 2000)
+    setTimeout(() => connectBybit(), 3000)
+    setTimeout(() => connectOKX(), 4000)
 
     // Cleanup function
     return () => {
-      console.log('🧹 Cleaning up all WebSocket connections')
       connections.forEach(ws => {
         if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
           ws.close()
@@ -801,147 +640,6 @@ const LivePrices = () => {
           )}
         </div>
 
-        {/* Debug Panel Toggle */}
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            <Activity className="w-4 h-4" />
-            {showDebug ? 'Hide' : 'Show'} Debug Info
-          </button>
-        </div>
-
-        {/* Debug Panel */}
-        {showDebug && (
-          <div className="mb-8 bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-              <h3 className="font-semibold text-gray-900">WebSocket Debug Information</h3>
-              <p className="text-sm text-gray-600 mt-1">Real-time connection status and diagnostics</p>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {connectionDebug.map((debug) => (
-                  <div key={debug.exchange} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-900 capitalize">{debug.exchange}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        debug.status === 'connected' ? 'bg-green-100 text-green-700' :
-                        debug.status === 'connecting' ? 'bg-yellow-100 text-yellow-700' :
-                        debug.status === 'error' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {debug.status}
-                      </span>
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <div>Messages: {debug.messageCount}</div>
-                      {debug.lastMessage && (
-                        <div>Last: {debug.lastMessage.toLocaleTimeString()}</div>
-                      )}
-                      {debug.error && (
-                        <div className="text-red-600 text-xs break-words">{debug.error}</div>
-                      )}
-                      <div className="text-xs text-gray-500">
-                        Connected: {connectionStatus[debug.exchange] ? 'Yes' : 'No'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Enhanced connection status */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-900 mb-2">Connection Summary</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                  {Object.entries(exchangeConfigs).map(([key, config]) => (
-                    <div key={key} className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        connectionStatus[key] ? 'bg-green-500' : 'bg-red-500'
-                      }`} />
-                      <span className="text-gray-700">{config.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Enhanced Synchronization Monitor */}
-              <div className="mt-4 p-3 bg-purple-50 rounded-lg">
-                <h4 className="font-medium text-purple-900 mb-2">🎯 Maximum Synchronization Monitor</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(updateStats).map(([key, stats]) => {
-                    const [exchange, symbol] = key.split('-')
-                    const isOnTime = stats.avgInterval <= UNIFIED_UPDATE_INTERVAL + 100 // 100ms tolerance
-                    const isSynchronized = Object.values(updateStats).filter(s => 
-                      Math.abs(s.lastUpdate.getTime() - stats.lastUpdate.getTime()) <= 50
-                    ).length > 1 // Check if other exchanges have same timestamp (±50ms)
-                    
-                    return (
-                      <div key={key} className="text-xs">
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium text-purple-900">{exchange} {symbol}</span>
-                          <div className="flex gap-1">
-                            <span className={`px-1 py-0.5 rounded text-xs ${
-                              isOnTime ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                            }`}>
-                              {isOnTime ? '⏰' : '⚠️'}
-                            </span>
-                            <span className={`px-1 py-0.5 rounded text-xs ${
-                              isSynchronized ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                              {isSynchronized ? '🔗' : '💔'}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-purple-700 space-y-0.5">
-                          <div>Updates: {stats.updateCount}</div>
-                          <div>Avg: {Math.round(stats.avgInterval)}ms</div>
-                          <div>Last: {stats.lastUpdate.toLocaleTimeString()}.{stats.lastUpdate.getMilliseconds().toString().padStart(3, '0')}</div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-                <div className="mt-2 text-xs text-purple-600">
-                  ⏰ = Timing ✅ | 🔗 = Synchronized ✅ | ⚠️ = Slow | 💔 = Out of sync
-                </div>
-              </div>
-
-              {/* Enhanced Unified Refresh System Info */}
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-900 mb-2">🎯 Maximum Synchronization System</h4>
-                <div className="text-sm text-green-700 space-y-1">
-                  <div>• <strong>Global Timer:</strong> Single interval timer for ALL exchanges</div>
-                  <div>• <strong>Batch Processing:</strong> All updates processed simultaneously</div>
-                  <div>• <strong>Identical Timestamps:</strong> Down to the millisecond</div>
-                  <div>• <strong>Synchronized State:</strong> All React state updates in single batch</div>
-                  <div>• <strong>Zero Drift:</strong> No individual timing variations</div>
-                </div>
-              </div>
-              
-              {/* Technical notes */}
-              <div className="mt-4 p-3 bg-gray-900 text-green-400 rounded-lg text-xs font-mono max-h-40 overflow-y-auto">
-                <div className="mb-2 text-green-300">Verified Working WebSocket Endpoints (2025):</div>
-                <div className="space-y-1 text-gray-300">
-                  <div>• Binance: wss://stream.binance.com:9443 (✅ Unified refresh)</div>
-                  <div>• Coinbase: wss://ws-feed.exchange.coinbase.com (✅ Fixed endpoint)</div>
-                  <div>• Kraken: wss://ws.kraken.com (✅ Unified refresh)</div>
-                  <div>• Bybit: wss://stream.bybit.com/v5/public/spot (✅ Unified refresh)</div>
-                  <div>• OKX: wss://ws.okx.com:8443/ws/v5/public (✅ Unified refresh)</div>
-                </div>
-                <div className="mt-2 text-yellow-400">
-                  Fixed Issues (2025):
-                  <br />• Kraken: Fixed 24h change % calculation (now uses P[1] field)
-                  <br />• OKX: Fixed 24h change % calculation (now uses changeUtc8 * 100)
-                  <br />• Coinbase: Fixed endpoint to official Exchange API
-                  <br />• All exchanges: Unified 1-second refresh for fair comparison
-                  <br />• Rate limits: Confirmed safe for all 5 exchanges
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* View Toggle */}
         <div className="flex justify-center mb-8">
           <div className="bg-white border border-gray-200 rounded-lg p-1">
@@ -978,7 +676,6 @@ const LivePrices = () => {
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-500">Connecting to live data feeds...</p>
-                  <p className="text-gray-400 text-sm mt-2">All exchanges should connect successfully!</p>
                 </div>
               </div>
             ) : (
@@ -1057,7 +754,6 @@ const LivePrices = () => {
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-500">Loading exchange comparisons...</p>
-                  <p className="text-gray-400 text-sm mt-2">Connecting to all 5 exchanges...</p>
                 </div>
               </div>
             ) : (
@@ -1251,7 +947,7 @@ const LivePrices = () => {
             
             <div className="text-center">
               <div className="bg-purple-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Activity className="w-8 h-8 text-purple-600" />
+                <BarChart3 className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Fee Transparency</h3>
               <p className="text-gray-600 text-sm">
