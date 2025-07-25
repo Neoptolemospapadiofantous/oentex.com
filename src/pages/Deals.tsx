@@ -287,33 +287,6 @@ const Deals: React.FC = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {categories.filter(cat => cat.value !== 'all').slice(0, 4).map((category, index) => {
-            const Icon = category.icon
-            const count = categoryStats.get(category.value) || 0
-            const colors = [
-              'from-blue-500/10 to-blue-600/10 border-blue-500/20 text-blue-500',
-              'from-green-500/10 to-green-600/10 border-green-500/20 text-green-500',
-              'from-purple-500/10 to-purple-600/10 border-purple-500/20 text-purple-500',
-              'from-orange-500/10 to-orange-600/10 border-orange-500/20 text-orange-500'
-            ]
-            const colorClass = colors[index] || colors[0]
-
-            return (
-              <div key={category.value} className={`bg-gradient-to-br ${colorClass} p-6 rounded-xl border`}>
-                <div className="flex items-center gap-3">
-                  <Icon className="w-6 h-6" />
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{count}</div>
-                    <div className="text-gray-600 text-sm">{category.label}</div>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
         {/* Filters */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
