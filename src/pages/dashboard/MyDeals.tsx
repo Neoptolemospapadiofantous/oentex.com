@@ -10,8 +10,6 @@ import {
   Users,
   Calendar,
   Award,
-  Download,
-  Share2,
   Eye,
   EyeOff,
   SortAsc,
@@ -305,43 +303,7 @@ const MyDeals: React.FC = () => {
     }
   }, [refetch]);
 
-  const handleExportRatings = useCallback(() => {
-    const csvData = [
-      ['Company', 'Category', 'Overall Rating', 'Rating Type', 'Rated Date', 'Updated Date'],
-      ...filteredRatings.map(rating => [
-        rating.companyName,
-        rating.category.replace('_', ' '),
-        rating.overallRating.toString(),
-        rating.ratingType,
-        rating.ratedAt,
-        rating.updatedAt
-      ])
-    ];
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `my-ratings-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }, [filteredRatings]);
 
-  const handleShareRatings = useCallback(() => {
-    const shareText = `I've rated ${analytics.totalRatings} trading platforms with an average rating of ${analytics.avgRating}/5. Check out the best trading platforms on our site!`;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'My Trading Platform Ratings',
-        text: shareText,
-        url: window.location.origin + '/deals'
-      });
-    } else {
-      navigator.clipboard.writeText(shareText + '\n' + window.location.origin + '/deals');
-      alert('Rating summary copied to clipboard!');
-    }
-  }, [analytics]);
 
   const handleToggleSelection = useCallback((ratingId: string) => {
     setSelectedRatings(prev => {
@@ -559,22 +521,6 @@ const MyDeals: React.FC = () => {
               >
                 {showAnalytics ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 {showAnalytics ? 'Hide' : 'Show'} Analytics
-              </button>
-              
-              <button
-                onClick={handleExportRatings}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Export CSV
-              </button>
-              
-              <button
-                onClick={handleShareRatings}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Share2 className="w-4 h-4" />
-                Share Summary
               </button>
             </div>
           )}
