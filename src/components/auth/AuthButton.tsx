@@ -1,4 +1,4 @@
-// AuthButton.tsx - OPTION 1: Clean OAuth integration
+// AuthButton.tsx - Clean OAuth integration without wallet references
 import React, { useState, useCallback } from 'react'
 import { User, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
@@ -61,7 +61,6 @@ export const AuthButton: React.FC = () => {
           </div>
           <span className="text-sm font-medium hidden sm:block">
             {user.user_metadata?.full_name || 
-             (user.user_metadata?.wallet_address ? `${user.user_metadata.wallet_address.substring(0, 8)}...` : null) ||
              user.email?.split('@')[0] || 
              'User'}
           </span>
