@@ -1,4 +1,4 @@
-// AuthContext.tsx - OPTION 1: Simple auth without oauthSuccess system
+// AuthContext.tsx - Clean OAuth-only version
 import React, { createContext, useContext, useEffect, useReducer, useCallback, useMemo, useRef } from 'react'
 import { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase } from './supabase'
@@ -17,7 +17,6 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   signInWithGoogle: () => Promise<{ error: CustomAuthError | null }>
   signInWithMicrosoft: () => Promise<{ error: CustomAuthError | null }>
-  signInWithSolana: () => Promise<{ error: CustomAuthError | null }>
   signOut: () => Promise<{ error: CustomAuthError | null }>
   clearError: () => void
   retryAuth: () => Promise<void>
@@ -378,29 +377,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [clearError, handleAuthError])
 
-  const signInWithSolana = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    clearError()
-
-    try {
-      console.log('🔍 AuthContext: Starting Solana wallet connection...')
-      const result = await authService.signInWithSolana()
-      
-      if (result.error) {
-        console.error('🔍 AuthContext: Solana wallet error:', result.error)
-      } else {
-        console.log('🔍 AuthContext: Solana wallet connected successfully')
-      }
-      
-      return result
-    } catch (error) {
-      console.error('🔍 AuthContext: Solana wallet exception:', error)
-      return { error: handleAuthError(error) }
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false })
-    }
-  }, [clearError, handleAuthError])
-
   const signOut = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true })
     clearError()
@@ -434,7 +410,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isFullyReady,
     signInWithGoogle,
     signInWithMicrosoft,
-    signInWithSolana,
     signOut,
     clearError,
     retryAuth,
@@ -444,7 +419,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isFullyReady,
     signInWithGoogle,
     signInWithMicrosoft,
-    signInWithSolana,
     signOut,
     clearError,
     retryAuth,

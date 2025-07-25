@@ -1,83 +1,292 @@
 // src/pages/dashboard/Profile.tsx
-import React, { useState, useCallback } from 'react';
-import { User, Mail, Save, Edit3, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Mail, Save, Edit3, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
-import { RatingModal } from '../../components/rating/RatingModal';
-import { useDealsQuery, useUserRatingsQuery } from '../../hooks/queries/useDealsQuery';
+import { supabase } from '../../lib/supabase';
+
+interface FormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  location: string;
+}
+
+interface FormErrors {
+  fullName?: string;
+  phone?: string;
+  location?: string;
+  general?: string;
+}
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [showRatingModal, setShowRatingModal] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Set<string>>(new Set());
+  const [showSuccess, setShowSuccess] = useState(false);
   
-  // Rating functionality
-  const dealsQuery = useDealsQuery();
-  const companies = dealsQuery.data?.companies || [];
-  const companyIds = companies.map(c => c.id).filter(Boolean) as string[];
-  const userRatingsQuery = useUserRatingsQuery(user?.id, companyIds);
-  
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || '',
     phone: user?.user_metadata?.phone || '',
     location: user?.user_metadata?.location || '',
-    bio: user?.user_metadata?.bio || '',
-    website: user?.user_metadata?.website || '',
   });
 
+  // ✅ UPDATE: Sync form data when user data changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: user?.user_metadata?.phone || '',
+        location: user?.user_metadata?.location || '',
+      });
+    }
+  }, [user]);
+
+  // Clear success message after 3 seconds
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
+  // Validation functions
+  const validateFullName = (name: string): string | undefined => {
+    if (!name.trim()) {
+      return 'Full name is required';
+    }
+    if (name.trim().length < 2) {
+      return 'Full name must be at least 2 characters';
+    }
+    if (name.trim().length > 50) {
+      return 'Full name must be less than 50 characters';
+    }
+    if (!/^[a-zA-Z\s'-]+$/.test(name.trim())) {
+      return 'Full name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+    return undefined;
+  };
+
+  const validatePhone = (phone: string): string | undefined => {
+    if (!phone.trim()) {
+      return undefined; // Phone is optional
+    }
+    // Remove all non-digit characters for validation
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      return 'Phone number must be at least 10 digits';
+    }
+    if (cleanPhone.length > 15) {
+      return 'Phone number must be less than 15 digits';
+    }
+    // Basic international phone format validation
+    if (!/^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+      return 'Please enter a valid phone number';
+    }
+    return undefined;
+  };
+
+  const validateLocation = (location: string): string | undefined => {
+    if (!location.trim()) {
+      return undefined; // Location is optional
+    }
+    if (location.trim().length < 2) {
+      return 'Location must be at least 2 characters';
+    }
+    if (location.trim().length > 100) {
+      return 'Location must be less than 100 characters';
+    }
+    return undefined;
+  };
+
+  // Validate all fields
+  const validateForm = (): FormErrors => {
+    const newErrors: FormErrors = {};
+    
+    const fullNameError = validateFullName(formData.fullName);
+    if (fullNameError) newErrors.fullName = fullNameError;
+    
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) newErrors.phone = phoneError;
+    
+    const locationError = validateLocation(formData.location);
+    if (locationError) newErrors.location = locationError;
+    
+    return newErrors;
+  };
+
+  // Check if form is valid
+  const isFormValid = (): boolean => {
+    const formErrors = validateForm();
+    return Object.keys(formErrors).length === 0;
+  };
+
   const handleSave = async () => {
+    // Validate all fields
+    const formErrors = validateForm();
+    setErrors(formErrors);
+    
+    if (Object.keys(formErrors).length > 0) {
+      // Mark all fields as touched to show errors
+      setTouched(new Set(['fullName', 'phone', 'location']));
+      return;
+    }
+
+    setIsSaving(true);
+    setErrors({});
+
     try {
-      // Update user profile in Supabase
-      // Note: You'll need to implement this with your supabase client
-      /*
+      // ✅ FIXED: Actually update user profile in Supabase
       const { error } = await supabase.auth.updateUser({
         data: {
-          full_name: formData.fullName,
-          phone: formData.phone,
-          location: formData.location,
-          bio: formData.bio,
-          website: formData.website,
+          full_name: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          location: formData.location.trim(),
         }
       });
 
-      if (error) throw error;
-      */
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
       setIsEditing(false);
-      // toast.success('Profile updated successfully!');
-      console.log('Profile updated:', formData);
+      setTouched(new Set());
+      setShowSuccess(true);
+      console.log('Profile updated successfully:', formData);
+      
     } catch (error) {
       console.error('Error updating profile:', error);
-      // toast.error('Failed to update profile');
+      setErrors({ 
+        general: 'Failed to update profile. Please check your connection and try again.' 
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+
+    // Real-time validation for touched fields
+    if (touched.has(field)) {
+      const newErrors = { ...errors };
+      
+      switch (field) {
+        case 'fullName':
+          const fullNameError = validateFullName(value);
+          if (fullNameError) {
+            newErrors.fullName = fullNameError;
+          } else {
+            delete newErrors.fullName;
+          }
+          break;
+        case 'phone':
+          const phoneError = validatePhone(value);
+          if (phoneError) {
+            newErrors.phone = phoneError;
+          } else {
+            delete newErrors.phone;
+          }
+          break;
+        case 'location':
+          const locationError = validateLocation(value);
+          if (locationError) {
+            newErrors.location = locationError;
+          } else {
+            delete newErrors.location;
+          }
+          break;
+      }
+      
+      setErrors(newErrors);
+    }
   };
 
-  // Rating functionality
-  const handleRateClick = useCallback((company: any) => {
-    setSelectedCompany(company);
-    setShowRatingModal(true);
-  }, []);
+  const handleFieldBlur = (field: string) => {
+    setTouched(prev => new Set(prev).add(field));
+    
+    // Validate the field when it loses focus
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'fullName':
+        const fullNameError = validateFullName(formData.fullName);
+        if (fullNameError) {
+          newErrors.fullName = fullNameError;
+        } else {
+          delete newErrors.fullName;
+        }
+        break;
+      case 'phone':
+        const phoneError = validatePhone(formData.phone);
+        if (phoneError) {
+          newErrors.phone = phoneError;
+        } else {
+          delete newErrors.phone;
+        }
+        break;
+      case 'location':
+        const locationError = validateLocation(formData.location);
+        if (locationError) {
+          newErrors.location = locationError;
+        } else {
+          delete newErrors.location;
+        }
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
 
-  const handleRatingSubmitted = useCallback(() => {
-    setShowRatingModal(false);
-    setSelectedCompany(null);
-  }, []);
+  const handleCancel = () => {
+    // Reset form to original values
+    setFormData({
+      fullName: user?.user_metadata?.full_name || '',
+      email: user?.email || '',
+      phone: user?.user_metadata?.phone || '',
+      location: user?.user_metadata?.location || '',
+    });
+    setIsEditing(false);
+    setErrors({});
+    setTouched(new Set());
+  };
 
   return (
     <div className="space-y-6">
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center space-x-3">
+          <CheckCircle className="w-5 h-5 text-green-600" />
+          <div>
+            <p className="text-green-800 font-medium">Profile updated successfully!</p>
+            <p className="text-green-600 text-sm">Your changes have been saved.</p>
+          </div>
+        </div>
+      )}
+
+      {/* General Error Message */}
+      {errors.general && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
+          <AlertCircle className="w-5 h-5 text-red-600" />
+          <div>
+            <p className="text-red-800 font-medium">Error updating profile</p>
+            <p className="text-red-600 text-sm">{errors.general}</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>Profile</h1>
-          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage your account settings and rating preferences</p>
+          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Manage your account settings and preferences</p>
         </div>
         
         {!isEditing ? (
@@ -98,34 +307,50 @@ const Profile: React.FC = () => {
         ) : (
           <div className="flex space-x-2">
             <button
-              onClick={() => setIsEditing(false)}
+              onClick={handleCancel}
+              disabled={isSaving}
               className="px-4 py-2 border rounded-lg transition-colors"
               style={{ 
                 borderColor: 'var(--border)', 
-                color: 'var(--text-secondary)' 
+                color: 'var(--text-secondary)',
+                opacity: isSaving ? '0.5' : '1',
+                cursor: isSaving ? 'not-allowed' : 'pointer'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
+                if (!isSaving) {
+                  e.currentTarget.style.backgroundColor = 'var(--surface)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
+                if (!isSaving) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
               }}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
+              disabled={isSaving || !isFormValid()}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-white transition-colors"
-              style={{ backgroundColor: 'var(--success)' }}
+              style={{ 
+                backgroundColor: (!isFormValid() || isSaving) ? 'var(--border)' : 'var(--success)',
+                opacity: isSaving ? '0.7' : '1',
+                cursor: (isSaving || !isFormValid()) ? 'not-allowed' : 'pointer'
+              }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.opacity = '0.9';
+                if (!isSaving && isFormValid()) {
+                  e.currentTarget.style.opacity = '0.9';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.opacity = '1';
+                if (!isSaving && isFormValid()) {
+                  e.currentTarget.style.opacity = '1';
+                }
               }}
             >
               <Save className="w-4 h-4" />
-              <span>Save Changes</span>
+              <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
             </button>
           </div>
         )}
@@ -151,29 +376,49 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Full Name */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Full Name
+              Full Name <span className="text-red-500">*</span>
             </label>
             {isEditing ? (
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent"
-                style={{ 
-                  borderColor: 'var(--border)',
-                  color: 'var(--text)'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+              <div>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  onBlur={() => handleFieldBlur('fullName')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
+                    errors.fullName ? 'border-red-500 bg-red-50' : ''
+                  }`}
+                  style={{ 
+                    borderColor: errors.fullName ? '#ef4444' : 'var(--border)',
+                    color: 'var(--text)'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.fullName) {
+                      e.target.style.borderColor = 'var(--primary)';
+                      e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
+                    }
+                  }}
+                  onBlur={(e) => {
+                    handleFieldBlur('fullName');
+                    if (!errors.fullName) {
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
+                  placeholder="Enter your full name"
+                  maxLength={50}
+                />
+                {errors.fullName && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errors.fullName}</span>
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">{formData.fullName.length}/50 characters</p>
+              </div>
             ) : (
               <p className="px-4 py-3 rounded-lg" style={{ 
                 backgroundColor: 'var(--surface)', 
@@ -184,6 +429,7 @@ const Profile: React.FC = () => {
             )}
           </div>
 
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
               Email Address
@@ -197,29 +443,48 @@ const Profile: React.FC = () => {
             <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Email cannot be changed</p>
           </div>
 
+          {/* Phone */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
               Phone Number
             </label>
             {isEditing ? (
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent"
-                style={{ 
-                  borderColor: 'var(--border)',
-                  color: 'var(--text)'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+              <div>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  onBlur={() => handleFieldBlur('phone')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
+                    errors.phone ? 'border-red-500 bg-red-50' : ''
+                  }`}
+                  style={{ 
+                    borderColor: errors.phone ? '#ef4444' : 'var(--border)',
+                    color: 'var(--text)'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.phone) {
+                      e.target.style.borderColor = 'var(--primary)';
+                      e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
+                    }
+                  }}
+                  onBlur={(e) => {
+                    handleFieldBlur('phone');
+                    if (!errors.phone) {
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
+                  placeholder="+1 (555) 123-4567"
+                />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errors.phone}</span>
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">Optional - Include country code for international numbers</p>
+              </div>
             ) : (
               <p className="px-4 py-3 rounded-lg" style={{ 
                 backgroundColor: 'var(--surface)', 
@@ -230,29 +495,49 @@ const Profile: React.FC = () => {
             )}
           </div>
 
+          {/* Location */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
               Location
             </label>
             {isEditing ? (
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent"
-                style={{ 
-                  borderColor: 'var(--border)',
-                  color: 'var(--text)'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+              <div>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  onBlur={() => handleFieldBlur('location')}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
+                    errors.location ? 'border-red-500 bg-red-50' : ''
+                  }`}
+                  style={{ 
+                    borderColor: errors.location ? '#ef4444' : 'var(--border)',
+                    color: 'var(--text)'
+                  }}
+                  onFocus={(e) => {
+                    if (!errors.location) {
+                      e.target.style.borderColor = 'var(--primary)';
+                      e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
+                    }
+                  }}
+                  onBlur={(e) => {
+                    handleFieldBlur('location');
+                    if (!errors.location) {
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.boxShadow = 'none';
+                    }
+                  }}
+                  placeholder="City, Country"
+                  maxLength={100}
+                />
+                {errors.location && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errors.location}</span>
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">{formData.location.length}/100 characters</p>
+              </div>
             ) : (
               <p className="px-4 py-3 rounded-lg" style={{ 
                 backgroundColor: 'var(--surface)', 
@@ -262,217 +547,18 @@ const Profile: React.FC = () => {
               </p>
             )}
           </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Bio
-            </label>
-            {isEditing ? (
-              <textarea
-                value={formData.bio}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent"
-                style={{ 
-                  borderColor: 'var(--border)',
-                  color: 'var(--text)'
-                }}
-                placeholder="Tell us about your trading experience..."
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-            ) : (
-              <p className="px-4 py-3 rounded-lg" style={{ 
-                backgroundColor: 'var(--surface)', 
-                color: 'var(--text)' 
-              }}>
-                {formData.bio || 'No bio provided'}
-              </p>
-            )}
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Website
-            </label>
-            {isEditing ? (
-              <input
-                type="url"
-                value={formData.website}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent"
-                style={{ 
-                  borderColor: 'var(--border)',
-                  color: 'var(--text)'
-                }}
-                placeholder="https://yourwebsite.com"
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'var(--primary)';
-                  e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'var(--border)';
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
-            ) : (
-              <p className="px-4 py-3 rounded-lg" style={{ 
-                backgroundColor: 'var(--surface)', 
-                color: 'var(--text)' 
-              }}>
-                {formData.website || 'Not provided'}
-              </p>
-            )}
-          </div>
         </div>
-      </div>
 
-      {/* Rating Statistics */}
-      <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text)' }}>Your Rating Statistics</h3>
-        
-        {dealsQuery.isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="text-center p-4 rounded-lg animate-pulse" style={{ backgroundColor: 'var(--surface)' }}>
-                <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--surface)' }}>
-              <p className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
-                {companies.filter(c => c.status === 'active').length}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Available Platforms</p>
-            </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--surface)' }}>
-              <p className="text-2xl font-bold" style={{ color: 'var(--success)' }}>
-                {userRatingsQuery.data?.size || 0}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Platforms You've Rated</p>
-            </div>
-            <div className="text-center p-4 rounded-lg" style={{ backgroundColor: 'var(--surface)' }}>
-              <p className="text-2xl font-bold" style={{ color: 'var(--warning)' }}>
-                {companies.length > 0 
-                  ? (companies.reduce((sum, c) => sum + (c.overall_rating || 0), 0) / companies.length).toFixed(1)
-                  : '0.0'}
-              </p>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Avg. Platform Rating</p>
-            </div>
+        {/* Form Help Text */}
+        {isEditing && (
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Note:</strong> Fields marked with <span className="text-red-500">*</span> are required. 
+              Your profile information helps us provide you with better service and personalized recommendations.
+            </p>
           </div>
         )}
       </div>
-
-      {/* Rate Trading Platforms Section */}
-      <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
-        <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text)' }}>Rate Trading Platforms</h3>
-        <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-          Help the community by rating trading platforms you've used
-        </p>
-        
-        {dealsQuery.isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="border rounded-lg p-4 animate-pulse" style={{ borderColor: 'var(--border)' }}>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded mb-3"></div>
-                <div className="h-8 bg-gray-200 rounded"></div>
-              </div>
-            ))}
-          </div>
-        ) : companies.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {companies.slice(0, 6).map((company) => {
-              const userRating = userRatingsQuery.data?.get(company.id);
-              return (
-                <div key={company.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow" style={{ borderColor: 'var(--border)' }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium" style={{ color: 'var(--text)' }}>{company.name}</h4>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {company.overall_rating?.toFixed(1) || '0.0'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm mb-3 capitalize" style={{ color: 'var(--text-secondary)' }}>
-                    {company.category?.replace('_', ' ') || 'Trading platform'}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs px-2 py-1 rounded capitalize" style={{ 
-                      backgroundColor: 'var(--surface)', 
-                      color: 'var(--text-secondary)' 
-                    }}>
-                      {company.category?.replace('_', ' ') || 'Trading'}
-                    </span>
-                    
-                    <button
-                      onClick={() => handleRateClick(company)}
-                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                        userRating 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                          : 'text-white hover:opacity-90'
-                      }`}
-                      style={!userRating ? {
-                        background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-                      } : {}}
-                    >
-                      {userRating ? 'Update Rating' : 'Rate Platform'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <Star className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-secondary)' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>No trading platforms available to rate</p>
-          </div>
-        )}
-        
-        {companies.length > 6 && (
-          <div className="text-center mt-6">
-            <button
-              onClick={() => window.location.href = '/deals'}
-              className="text-sm font-medium hover:opacity-80 transition-opacity"
-              style={{ color: 'var(--primary)' }}
-            >
-              View all {companies.length} platforms →
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Rating Modal */}
-      {showRatingModal && selectedCompany && (
-        <RatingModal
-          isOpen={showRatingModal}
-          onClose={() => {
-            setShowRatingModal(false);
-            setSelectedCompany(null);
-          }}
-          companyId={selectedCompany.id}
-          companyName={selectedCompany.name}
-          existingRating={userRatingsQuery.data?.get(selectedCompany.id)}
-          onRatingSubmitted={handleRatingSubmitted}
-          companyRating={{
-            averageRating: selectedCompany.overall_rating || 0,
-            totalRatings: selectedCompany.total_reviews || 0
-          }}
-        />
-      )}
     </div>
   );
 };
