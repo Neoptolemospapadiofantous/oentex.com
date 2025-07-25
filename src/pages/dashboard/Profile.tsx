@@ -1,22 +1,88 @@
 // src/pages/dashboard/Profile.tsx
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Save, Edit3, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Save, Edit3, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { supabase } from '../../lib/supabase';
+import { COUNTRIES, validateCountry } from '../../data/countries';
 
 interface FormData {
   fullName: string;
   email: string;
   phone: string;
   location: string;
+  country: string;
 }
 
 interface FormErrors {
   fullName?: string;
   phone?: string;
   location?: string;
+  country?: string;
   general?: string;
 }
+
+interface CountrySelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: (e: React.FocusEvent<HTMLSelectElement>) => void;
+  error?: string;
+  disabled?: boolean;
+}
+
+// Reusable Country Select Component
+const CountrySelect: React.FC<CountrySelectProps> = ({ 
+  value, 
+  onChange, 
+  onBlur, 
+  error, 
+  disabled = false 
+}) => {
+  return (
+    <div>
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          disabled={disabled}
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors appearance-none bg-white ${
+            error ? 'border-red-500 bg-red-50' : ''
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          style={{ 
+            borderColor: error ? '#ef4444' : 'var(--border)',
+            color: 'var(--text)'
+          }}
+          onFocus={(e) => {
+            if (!error && !disabled) {
+              e.target.style.borderColor = 'var(--primary)';
+              e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
+            }
+          }}
+        >
+          <option value="">Select a country</option>
+          {COUNTRIES.map((country) => (
+            <option key={country.code} value={country.name}>
+              {country.name}
+            </option>
+          ))}
+        </select>
+        <ChevronDown 
+          className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none ${
+            disabled ? 'opacity-50' : ''
+          }`} 
+          style={{ color: 'var(--text-secondary)' }} 
+        />
+      </div>
+      {error && (
+        <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+          <AlertCircle className="w-4 h-4" />
+          <span>{error}</span>
+        </p>
+      )}
+      <p className="mt-1 text-xs text-gray-500">Optional - Select your country</p>
+    </div>
+  );
+};
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -31,18 +97,49 @@ const Profile: React.FC = () => {
     email: user?.email || '',
     phone: user?.user_metadata?.phone || '',
     location: user?.user_metadata?.location || '',
+    country: user?.user_metadata?.country || '',
   });
 
-  // ✅ UPDATE: Sync form data when user data changes
+  // ✅ UPDATE: Load data from both auth metadata and database
   useEffect(() => {
-    if (user) {
-      setFormData({
-        fullName: user?.user_metadata?.full_name || '',
-        email: user?.email || '',
-        phone: user?.user_metadata?.phone || '',
-        location: user?.user_metadata?.location || '',
-      });
-    }
+    const loadProfileData = async () => {
+      if (user) {
+        // Start with auth metadata as fallback
+        let profileData = {
+          fullName: user?.user_metadata?.full_name || '',
+          email: user?.email || '',
+          phone: user?.user_metadata?.phone || '',
+          location: user?.user_metadata?.location || '',
+          country: user?.user_metadata?.country || '',
+        };
+
+        try {
+          // Try to get more complete data from database
+          const { data: dbProfile, error } = await supabase
+            .from('user_profiles')
+            .select('full_name, phone, location, country')
+            .eq('id', user.id)
+            .single();
+
+          if (!error && dbProfile) {
+            // Use database values if available, fallback to auth metadata
+            profileData = {
+              fullName: dbProfile.full_name || profileData.fullName,
+              email: profileData.email, // Email stays from auth
+              phone: dbProfile.phone || profileData.phone,
+              location: dbProfile.location || profileData.location,
+              country: dbProfile.country || profileData.country,
+            };
+          }
+        } catch (error) {
+          console.warn('Could not load profile from database, using auth metadata:', error);
+        }
+
+        setFormData(profileData);
+      }
+    };
+
+    loadProfileData();
   }, [user]);
 
   // Clear success message after 3 seconds
@@ -115,6 +212,9 @@ const Profile: React.FC = () => {
     const locationError = validateLocation(formData.location);
     if (locationError) newErrors.location = locationError;
     
+    const countryError = validateCountry(formData.country);
+    if (countryError) newErrors.country = countryError;
+    
     return newErrors;
   };
 
@@ -131,7 +231,7 @@ const Profile: React.FC = () => {
     
     if (Object.keys(formErrors).length > 0) {
       // Mark all fields as touched to show errors
-      setTouched(new Set(['fullName', 'phone', 'location']));
+      setTouched(new Set(['fullName', 'phone', 'location', 'country']));
       return;
     }
 
@@ -139,18 +239,36 @@ const Profile: React.FC = () => {
     setErrors({});
 
     try {
-      // ✅ FIXED: Actually update user profile in Supabase
-      const { error } = await supabase.auth.updateUser({
+      // ✅ STEP 1: Update auth user metadata
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           full_name: formData.fullName.trim(),
           phone: formData.phone.trim(),
           location: formData.location.trim(),
+          country: formData.country.trim(),
         }
       });
 
-      if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
+      if (authError) {
+        console.error('Auth update error:', authError);
+        throw authError;
+      }
+
+      // ✅ STEP 2: Update user_profiles table
+      const { error: dbError } = await supabase
+        .from('user_profiles')
+        .update({
+          full_name: formData.fullName.trim(),
+          phone: formData.phone.trim(),
+          location: formData.location.trim(),
+          country: formData.country.trim(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user?.id);
+
+      if (dbError) {
+        console.error('Database update error:', dbError);
+        throw dbError;
       }
 
       setIsEditing(false);
@@ -203,6 +321,14 @@ const Profile: React.FC = () => {
             delete newErrors.location;
           }
           break;
+        case 'country':
+          const countryError = validateCountry(value);
+          if (countryError) {
+            newErrors.country = countryError;
+          } else {
+            delete newErrors.country;
+          }
+          break;
       }
       
       setErrors(newErrors);
@@ -240,19 +366,67 @@ const Profile: React.FC = () => {
           delete newErrors.location;
         }
         break;
+      case 'country':
+        const countryError = validateCountry(formData.country);
+        if (countryError) {
+          newErrors.country = countryError;
+        } else {
+          delete newErrors.country;
+        }
+        break;
     }
     
     setErrors(newErrors);
   };
 
-  const handleCancel = () => {
-    // Reset form to original values
-    setFormData({
-      fullName: user?.user_metadata?.full_name || '',
-      email: user?.email || '',
-      phone: user?.user_metadata?.phone || '',
-      location: user?.user_metadata?.location || '',
-    });
+  // ✅ FIXED: Combined onBlur handlers
+  const handleBlur = (field: string, e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    // Handle field validation
+    handleFieldBlur(field);
+    
+    // Handle styling reset
+    const fieldError = errors[field as keyof FormErrors];
+    if (!fieldError) {
+      e.target.style.borderColor = 'var(--border)';
+      e.target.style.boxShadow = 'none';
+    }
+  };
+
+  const handleCancel = async () => {
+    // Reset form to original values from both sources
+    if (user) {
+      let profileData = {
+        fullName: user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: user?.user_metadata?.phone || '',
+        location: user?.user_metadata?.location || '',
+        country: user?.user_metadata?.country || '',
+      };
+
+      try {
+        // Get current database values
+        const { data: dbProfile, error } = await supabase
+          .from('user_profiles')
+          .select('full_name, phone, location, country')
+          .eq('id', user.id)
+          .single();
+
+        if (!error && dbProfile) {
+          profileData = {
+            fullName: dbProfile.full_name || profileData.fullName,
+            email: profileData.email,
+            phone: dbProfile.phone || profileData.phone,
+            location: dbProfile.location || profileData.location,
+            country: dbProfile.country || profileData.country,
+          };
+        }
+      } catch (error) {
+        console.warn('Could not reload profile from database:', error);
+      }
+
+      setFormData(profileData);
+    }
+
     setIsEditing(false);
     setErrors({});
     setTouched(new Set());
@@ -387,7 +561,6 @@ const Profile: React.FC = () => {
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  onBlur={() => handleFieldBlur('fullName')}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.fullName ? 'border-red-500 bg-red-50' : ''
                   }`}
@@ -401,13 +574,7 @@ const Profile: React.FC = () => {
                       e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
                     }
                   }}
-                  onBlur={(e) => {
-                    handleFieldBlur('fullName');
-                    if (!errors.fullName) {
-                      e.target.style.borderColor = 'var(--border)';
-                      e.target.style.boxShadow = 'none';
-                    }
-                  }}
+                  onBlur={(e) => handleBlur('fullName', e)}
                   placeholder="Enter your full name"
                   maxLength={50}
                 />
@@ -454,7 +621,6 @@ const Profile: React.FC = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  onBlur={() => handleFieldBlur('phone')}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.phone ? 'border-red-500 bg-red-50' : ''
                   }`}
@@ -468,13 +634,7 @@ const Profile: React.FC = () => {
                       e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
                     }
                   }}
-                  onBlur={(e) => {
-                    handleFieldBlur('phone');
-                    if (!errors.phone) {
-                      e.target.style.borderColor = 'var(--border)';
-                      e.target.style.boxShadow = 'none';
-                    }
-                  }}
+                  onBlur={(e) => handleBlur('phone', e)}
                   placeholder="+1 (555) 123-4567"
                 />
                 {errors.phone && (
@@ -495,10 +655,32 @@ const Profile: React.FC = () => {
             )}
           </div>
 
-          {/* Location */}
+          {/* Country */}
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Location
+              Country
+            </label>
+            {isEditing ? (
+              <CountrySelect
+                value={formData.country}
+                onChange={(value) => handleInputChange('country', value)}
+                onBlur={(e) => handleBlur('country', e)}
+                error={errors.country}
+              />
+            ) : (
+              <p className="px-4 py-3 rounded-lg" style={{ 
+                backgroundColor: 'var(--surface)', 
+                color: 'var(--text)' 
+              }}>
+                {formData.country || 'Not provided'}
+              </p>
+            )}
+          </div>
+
+          {/* Location/City */}
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+              City/Location
             </label>
             {isEditing ? (
               <div>
@@ -506,7 +688,6 @@ const Profile: React.FC = () => {
                   type="text"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  onBlur={() => handleFieldBlur('location')}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.location ? 'border-red-500 bg-red-50' : ''
                   }`}
@@ -520,14 +701,8 @@ const Profile: React.FC = () => {
                       e.target.style.boxShadow = `0 0 0 2px rgba(30, 64, 175, 0.1)`;
                     }
                   }}
-                  onBlur={(e) => {
-                    handleFieldBlur('location');
-                    if (!errors.location) {
-                      e.target.style.borderColor = 'var(--border)';
-                      e.target.style.boxShadow = 'none';
-                    }
-                  }}
-                  placeholder="City, Country"
+                  onBlur={(e) => handleBlur('location', e)}
+                  placeholder="Enter your city"
                   maxLength={100}
                 />
                 {errors.location && (
