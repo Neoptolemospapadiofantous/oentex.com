@@ -1,9 +1,8 @@
-// src/hooks/queries/useFeaturedDealsQuery.ts
+// src/hooks/queries/useFeaturedDealsQuery.ts - FIXED FOR ACCURATE STATISTICS
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../lib/authContext'
 
-// ✅ STRATEGIC: Interfaces matching your database schema
 export interface FeaturedCompany {
   id: string
   name: string
@@ -27,32 +26,31 @@ export interface FeaturedDeal {
   value: string | null
   affiliate_link: string
   is_active: boolean
-  click_count: number
   created_at: string
+  updated_at: string
   company: FeaturedCompany
 }
 
 export interface FeaturedDealsData {
   deals: FeaturedDeal[]
   companies: FeaturedCompany[]
+  featuredDeals: FeaturedDeal[] // Limited subset for display
   totalCount: number
+  totalCompaniesCount: number
+  totalDealsCount: number
 }
 
-// ✅ STRATEGIC: Query key for caching
 const FEATURED_DEALS_QUERY_KEY = ['featured-deals'] as const
 
-// ✅ ROBUST: Main hook for featured deals
 export const useFeaturedDealsQuery = (limit: number = 6) => {
   const { isFullyReady } = useAuth()
 
   return useQuery({
     queryKey: [...FEATURED_DEALS_QUERY_KEY, limit],
     queryFn: async (): Promise<FeaturedDealsData> => {
-      console.log('🔄 Fetching featured deals for homepage...')
-
       try {
-        // ✅ STRATEGIC: Get active deals with company data (ordered by click_count)
-        const { data: dealsData, error: dealsError } = await supabase
+        // Fetch ALL active deals for accurate statistics
+        const { data: allDealsData, error: dealsError } = await supabase
           .from('company_deals')
           .select(`
             id,
@@ -63,8 +61,8 @@ export const useFeaturedDealsQuery = (limit: number = 6) => {
             value,
             affiliate_link,
             is_active,
-            click_count,
             created_at,
+            updated_at,
             company:trading_companies!company_deals_company_id_fkey (
               id,
               name,
@@ -81,27 +79,48 @@ export const useFeaturedDealsQuery = (limit: number = 6) => {
           `)
           .eq('is_active', true)
           .not('company', 'is', null)
-          .order('click_count', { ascending: false })
-          .limit(limit * 2) // Get more deals to filter and sort later
+          .order('created_at', { ascending: false })
 
         if (dealsError) {
-          console.error('❌ Error fetching featured deals:', dealsError)
-          console.error('❌ Full error details:', JSON.stringify(dealsError, null, 2))
-          throw new Error(`Failed to fetch featured deals: ${dealsError.message}`)
+          throw new Error(`Failed to fetch deals: ${dealsError.message}`)
         }
 
-        if (!dealsData || dealsData.length === 0) {
-          console.log('⚠️ No featured deals found')
+        // Fetch ALL active companies for accurate statistics
+        const { data: allCompaniesData, error: companiesError } = await supabase
+          .from('trading_companies')
+          .select(`
+            id,
+            name,
+            slug,
+            description,
+            logo_url,
+            website_url,
+            category,
+            affiliate_link,
+            overall_rating,
+            total_reviews,
+            status
+          `)
+          .eq('status', 'active')
+
+        if (companiesError) {
+          throw new Error(`Failed to fetch companies: ${companiesError.message}`)
+        }
+
+        if (!allDealsData || !allCompaniesData) {
           return {
             deals: [],
             companies: [],
-            totalCount: 0
+            featuredDeals: [],
+            totalCount: 0,
+            totalCompaniesCount: 0,
+            totalDealsCount: 0
           }
         }
 
-        // ✅ STRATEGIC: Transform and sort data by company rating, filter active companies
-        const deals: FeaturedDeal[] = dealsData
-          .filter(deal => deal.company && deal.company.status === 'active') // Filter active companies here
+        // Process ALL deals
+        const allDeals: FeaturedDeal[] = allDealsData
+          .filter(deal => deal.company && deal.company.status === 'active')
           .map(deal => ({
             id: deal.id,
             company_id: deal.company_id,
@@ -111,47 +130,53 @@ export const useFeaturedDealsQuery = (limit: number = 6) => {
             value: deal.value,
             affiliate_link: deal.affiliate_link,
             is_active: deal.is_active,
-            click_count: deal.click_count,
             created_at: deal.created_at,
+            updated_at: deal.updated_at,
             company: deal.company as FeaturedCompany
           }))
+
+        // Process ALL companies
+        const allCompanies: FeaturedCompany[] = allCompaniesData.map(company => ({
+          id: company.id,
+          name: company.name,
+          slug: company.slug,
+          description: company.description,
+          logo_url: company.logo_url,
+          website_url: company.website_url,
+          category: company.category,
+          affiliate_link: company.affiliate_link,
+          overall_rating: company.overall_rating,
+          total_reviews: company.total_reviews,
+          status: company.status
+        }))
+
+        // Create featured subset for display (sorted by rating and reviews)
+        const featuredDeals = allDeals
           .sort((a, b) => {
-            // First sort by company rating (descending)
             const ratingDiff = (b.company.overall_rating || 0) - (a.company.overall_rating || 0)
             if (ratingDiff !== 0) return ratingDiff
             
-            // Then by click count (descending)
-            return (b.click_count || 0) - (a.click_count || 0)
+            return (b.company.total_reviews || 0) - (a.company.total_reviews || 0)
           })
-          .slice(0, limit) // Take only the requested amount
-
-        // ✅ STRATEGIC: Extract unique companies
-        const companiesMap = new Map<string, FeaturedCompany>()
-        deals.forEach(deal => {
-          if (deal.company && !companiesMap.has(deal.company.id)) {
-            companiesMap.set(deal.company.id, deal.company)
-          }
-        })
-        const companies = Array.from(companiesMap.values())
-
-        console.log(`✅ Fetched ${deals.length} featured deals from ${companies.length} companies`)
+          .slice(0, limit)
 
         return {
-          deals,
-          companies,
-          totalCount: deals.length
+          deals: allDeals, // ALL deals for statistics
+          companies: allCompanies, // ALL companies for statistics
+          featuredDeals, // Limited subset for display
+          totalCount: featuredDeals.length,
+          totalCompaniesCount: allCompanies.length,
+          totalDealsCount: allDeals.length
         }
         
       } catch (error) {
-        console.error('❌ Unexpected error in useFeaturedDealsQuery:', error)
         throw error
       }
     },
     enabled: isFullyReady,
-    staleTime: 5 * 60 * 1000,    // 5 minutes
-    gcTime: 10 * 60 * 1000,      // 10 minutes cache
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: (failureCount, error) => {
-      // Don't retry on authentication errors
       if (error.message?.includes('permission') || error.message?.includes('policy')) {
         return false
       }
@@ -160,15 +185,12 @@ export const useFeaturedDealsQuery = (limit: number = 6) => {
   })
 }
 
-// ✅ STRATEGIC: Hook for category-specific featured deals
 export const useFeaturedDealsByCategory = (category: string, limit: number = 3) => {
   const { isFullyReady } = useAuth()
 
   return useQuery({
     queryKey: [...FEATURED_DEALS_QUERY_KEY, 'by-category', category, limit],
     queryFn: async (): Promise<FeaturedDealsData> => {
-      console.log(`🔄 Fetching featured deals for category: ${category}`)
-
       try {
         const { data: dealsData, error: dealsError } = await supabase
           .from('company_deals')
@@ -181,8 +203,8 @@ export const useFeaturedDealsByCategory = (category: string, limit: number = 3) 
             value,
             affiliate_link,
             is_active,
-            click_count,
             created_at,
+            updated_at,
             company:trading_companies!company_deals_company_id_fkey (
               id,
               name,
@@ -199,12 +221,9 @@ export const useFeaturedDealsByCategory = (category: string, limit: number = 3) 
           `)
           .eq('is_active', true)
           .not('company', 'is', null)
-          .order('click_count', { ascending: false })
-          .limit(limit * 2)
+          .order('created_at', { ascending: false })
 
         if (dealsError) {
-          console.error(`❌ Error fetching featured deals for ${category}:`, dealsError)
-          console.error('❌ Full error details:', JSON.stringify(dealsError, null, 2))
           throw new Error(`Failed to fetch featured deals for ${category}: ${dealsError.message}`)
         }
 
@@ -219,17 +238,15 @@ export const useFeaturedDealsByCategory = (category: string, limit: number = 3) 
             value: deal.value,
             affiliate_link: deal.affiliate_link,
             is_active: deal.is_active,
-            click_count: deal.click_count,
             created_at: deal.created_at,
+            updated_at: deal.updated_at,
             company: deal.company as FeaturedCompany
           }))
           .sort((a, b) => {
-            // First sort by company rating (descending)
             const ratingDiff = (b.company.overall_rating || 0) - (a.company.overall_rating || 0)
             if (ratingDiff !== 0) return ratingDiff
             
-            // Then by click count (descending)
-            return (b.click_count || 0) - (a.click_count || 0)
+            return (b.company.total_reviews || 0) - (a.company.total_reviews || 0)
           })
           .slice(0, limit)
 
@@ -241,16 +258,16 @@ export const useFeaturedDealsByCategory = (category: string, limit: number = 3) 
         })
         const companies = Array.from(companiesMap.values())
 
-        console.log(`✅ Fetched ${deals.length} featured deals for ${category}`)
-
         return {
           deals,
           companies,
-          totalCount: deals.length
+          featuredDeals: deals,
+          totalCount: deals.length,
+          totalCompaniesCount: companies.length,
+          totalDealsCount: deals.length
         }
         
       } catch (error) {
-        console.error(`❌ Unexpected error in useFeaturedDealsByCategory for ${category}:`, error)
         throw error
       }
     },
@@ -260,15 +277,12 @@ export const useFeaturedDealsByCategory = (category: string, limit: number = 3) 
   })
 }
 
-// ✅ STRATEGIC: Hook for top companies across categories
 export const useTopCompaniesQuery = (limit: number = 12) => {
   const { isFullyReady } = useAuth()
 
   return useQuery({
     queryKey: ['top-companies', limit],
     queryFn: async (): Promise<FeaturedCompany[]> => {
-      console.log('🔄 Fetching top companies...')
-
       try {
         const { data: companiesData, error: companiesError } = await supabase
           .from('trading_companies')
@@ -286,15 +300,13 @@ export const useTopCompaniesQuery = (limit: number = 12) => {
             status
           `)
           .eq('status', 'active')
-          .gte('overall_rating', 4.0) // Only highly rated companies
-          .gte('total_reviews', 5)    // Companies with sufficient reviews
+          .gte('overall_rating', 4.0)
+          .gte('total_reviews', 5)
           .order('overall_rating', { ascending: false })
           .order('total_reviews', { ascending: false })
           .limit(limit)
 
         if (companiesError) {
-          console.error('❌ Error fetching top companies:', companiesError)
-          console.error('❌ Full error details:', JSON.stringify(companiesError, null, 2))
           throw new Error(`Failed to fetch top companies: ${companiesError.message}`)
         }
 
@@ -312,16 +324,14 @@ export const useTopCompaniesQuery = (limit: number = 12) => {
           status: company.status
         }))
 
-        console.log(`✅ Fetched ${companies.length} top companies`)
         return companies
         
       } catch (error) {
-        console.error('❌ Unexpected error in useTopCompaniesQuery:', error)
         throw error
       }
     },
     enabled: isFullyReady,
-    staleTime: 10 * 60 * 1000,   // 10 minutes
-    gcTime: 20 * 60 * 1000,      // 20 minutes cache
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
   })
 }

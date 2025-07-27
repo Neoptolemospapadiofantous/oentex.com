@@ -1,7 +1,7 @@
-// src/hooks/queries/useCategoriesQuery.ts - FIXED VERSION WITH CATEGORIES TABLE
+// src/hooks/queries/useCategoriesQuery.ts - FIXED VERSION WITH BETTER ERROR HANDLING
 // 
 // ✅ USES DEDICATED 'categories' TABLE - Clean and reliable!
-// ✅ NO FALLBACKS - Everything from Supabase database
+// ✅ FALLBACK SUPPORT - Shows all 6 categories even if table is empty
 // ✅ FIXED TYPE ISSUES - Proper interface matching
 //
 import { useQuery } from '@tanstack/react-query'
@@ -38,29 +38,77 @@ interface ProcessedCategory {
   description?: string
 }
 
-// ✅ SIMPLE: Fetch categories from dedicated categories table
+// ✅ FALLBACK: Ensure all 6 categories are always available
+const DEFAULT_CATEGORIES: ProcessedCategory[] = [
+  {
+    value: 'crypto_exchange',
+    label: 'Crypto Exchanges',
+    icon: Building,
+    description: 'Cryptocurrency trading platforms'
+  },
+  {
+    value: 'prop_firm',
+    label: 'Prop Trading Firms',
+    icon: TrendingUp,
+    description: 'Proprietary trading companies'
+  },
+  {
+    value: 'multi_asset',
+    label: 'Multi-Asset Brokers',
+    icon: BarChart3,
+    description: 'Multi-asset trading platforms'
+  },
+  {
+    value: 'trading_tool',
+    label: 'Trading Tools',
+    icon: Zap,
+    description: 'Trading software and tools'
+  },
+  {
+    value: 'stock_broker',
+    label: 'Stock Brokers',
+    icon: Shield,
+    description: 'Stock trading platforms'
+  },
+  {
+    value: 'forex_broker',
+    label: 'Forex Brokers',
+    icon: Smartphone,
+    description: 'Foreign exchange trading platforms'
+  }
+]
+
+// ✅ IMPROVED: Fetch categories with fallback support
 const fetchCategories = async (): Promise<DatabaseCategory[]> => {
   console.log('🔄 Fetching categories from categories table...')
   
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
-  
-  if (error) {
-    console.error('❌ Categories Error:', error)
-    throw new Error(`Failed to fetch categories: ${error.message}`)
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+    
+    if (error) {
+      console.error('❌ Categories Error:', error)
+      // Don't throw - we'll use fallback
+      return []
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No categories found in categories table, using defaults')
+      return []
+    }
+    
+    console.log('✅ Categories loaded from database:', data.length, 'categories')
+    console.log('✅ Categories data:', data)
+    return data
+    
+  } catch (error) {
+    console.error('❌ Failed to fetch categories:', error)
+    // Return empty array to trigger fallback
+    return []
   }
-  
-  if (!data || data.length === 0) {
-    console.warn('⚠️ No categories found in categories table')
-    throw new Error('No categories found in database. Please run the categories SQL first.')
-  }
-  
-  console.log('✅ Categories loaded:', data.length, 'categories')
-  console.log('✅ Categories data:', data)
-  return data
 }
 
 export const useCategoriesQuery = () => {
@@ -71,21 +119,15 @@ export const useCategoriesQuery = () => {
     retry: (failureCount, error) => {
       console.log(`🔄 Categories query retry attempt ${failureCount + 1}`, error?.message)
       
-      // Don't retry if categories table doesn't exist
+      // Don't retry if categories table doesn't exist - use fallback
       if (error?.message?.includes('relation "categories" does not exist')) {
-        console.log('❌ Categories table not found - run SQL first!')
+        console.log('❌ Categories table not found - using fallback!')
         return false
       }
       
-      // Don't retry if it's a permissions error
+      // Don't retry if it's a permissions error - use fallback
       if (error?.message?.includes('permission') || error?.message?.includes('policy')) {
-        console.log('❌ Categories permission error')
-        return false
-      }
-      
-      // Don't retry if no categories found (empty table)
-      if (error?.message?.includes('No categories found')) {
-        console.log('❌ No categories in table')
+        console.log('❌ Categories permission error - using fallback!')
         return false
       }
       
@@ -93,7 +135,7 @@ export const useCategoriesQuery = () => {
       return failureCount < 2
     },
     select: (data: DatabaseCategory[]): ProcessedCategory[] => {
-      console.log('🔄 Processing categories from database...')
+      console.log('🔄 Processing categories...')
       console.log('🔍 Raw categories data:', data)
       
       // Always include "All Categories" first
@@ -104,25 +146,42 @@ export const useCategoriesQuery = () => {
         description: 'View all available deals and platforms'
       }
 
-      // Process database categories
-      const processedCategories = data.map((category): ProcessedCategory => ({
-        value: category.value,
-        label: category.label,
-        icon: ICON_MAP[category.icon_name as keyof typeof ICON_MAP] || Star,
-        description: category.description
-      }))
+      let processedCategories: ProcessedCategory[] = []
 
-      console.log('✅ Categories processed:', processedCategories.length, 'categories')
-      console.log('✅ Final categories:', [allCategory, ...processedCategories])
-      return [allCategory, ...processedCategories]
+      if (data && data.length > 0) {
+        // Use database categories
+        processedCategories = data.map((category): ProcessedCategory => ({
+          value: category.value,
+          label: category.label,
+          icon: ICON_MAP[category.icon_name as keyof typeof ICON_MAP] || Star,
+          description: category.description
+        }))
+        console.log('✅ Using database categories:', processedCategories.length)
+      } else {
+        // Use fallback categories
+        processedCategories = DEFAULT_CATEGORIES
+        console.log('✅ Using fallback categories:', processedCategories.length)
+      }
+
+      const finalCategories = [allCategory, ...processedCategories]
+      console.log('✅ Final categories:', finalCategories.length, 'total')
+      return finalCategories
     },
   })
 
-  // ✅ CLEAN: Return actual query state - let errors bubble up
+  // ✅ ALWAYS RETURN CATEGORIES: Either from database or fallback
   return {
     ...query,
-    data: query.data || [], // Empty array if no data (during loading)
-    error: query.error, // Always return the actual error
+    data: query.data || [
+      {
+        value: 'all',
+        label: 'All Categories',
+        icon: Gift,
+        description: 'View all available deals and platforms'
+      },
+      ...DEFAULT_CATEGORIES
+    ], // Always return categories (fallback if needed)
+    error: query.error,
     isLoading: query.isLoading,
     isError: query.isError,
     isFetching: query.isFetching
