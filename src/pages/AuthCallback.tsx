@@ -1,6 +1,6 @@
-// src/pages/AuthCallback.tsx - IMPROVED: Better OAuth handling
+// src/pages/AuthCallback.tsx - Following Official Supabase PKCE Documentation
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/authContext'
 import { config } from '../config'
@@ -11,129 +11,162 @@ interface CallbackState {
   status: 'processing' | 'success' | 'error' | 'redirecting'
   message: string
   details?: any
+  errorCode?: string
+  errorDescription?: string
 }
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { retryAuth } = useAuth()
   const [callbackState, setCallbackState] = useState<CallbackState>({
     status: 'processing',
-    message: 'Processing authentication...'
+    message: 'Processing OAuth callback...'
   })
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        const currentUrl = window.location.href
+        const code = searchParams.get('code')
+        const error = searchParams.get('error')
+        const errorDescription = searchParams.get('error_description')
+        
         console.log('🔍 AuthCallback: Starting OAuth callback processing...')
-        console.log('🔍 AuthCallback: Current URL:', window.location.href)
-        console.log('🔍 AuthCallback: Search params:', window.location.search)
-        console.log('🔍 AuthCallback: Hash params:', window.location.hash)
+        console.log('🔍 AuthCallback: Current URL:', currentUrl)
+        console.log('🔍 AuthCallback: Code parameter:', code ? 'present' : 'missing')
+        console.log('🔍 AuthCallback: Error parameter:', error || 'none')
         
-        setCallbackState({
-          status: 'processing',
-          message: 'Validating authentication...'
-        })
-
-        // ✅ CRITICAL: Handle the OAuth callback using Supabase's session management
-        const { data, error } = await supabase.auth.getSession()
-        
-        console.log('🔍 AuthCallback: Session data:', data)
-        
+        // ✅ OFFICIAL SUPABASE: Handle OAuth errors first
         if (error) {
-          console.error('🔍 AuthCallback: Session error:', error)
+          console.error('🔍 AuthCallback: OAuth error found:', error, errorDescription)
           setCallbackState({
             status: 'error',
-            message: 'Authentication failed. Please try again.',
-            details: error
+            message: 'Authentication failed',
+            details: { error, errorDescription },
+            errorCode: error,
+            errorDescription: errorDescription || undefined
+          })
+          return
+        }
+        
+        // ✅ OFFICIAL SUPABASE: Handle PKCE code exchange
+        if (code) {
+          console.log('🔍 AuthCallback: PKCE code found, exchanging for session...')
+          setCallbackState({
+            status: 'processing',
+            message: 'Exchanging authorization code for session...'
+          })
+
+          // Following official Supabase documentation for code exchange
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          if (exchangeError) {
+            console.error('🔍 AuthCallback: Code exchange error:', exchangeError)
+            setCallbackState({
+              status: 'error',
+              message: 'Failed to exchange authorization code for session',
+              details: exchangeError,
+              errorCode: exchangeError.code,
+              errorDescription: exchangeError.message
+            })
+            return
+          }
+
+          if (data.session && data.user) {
+            const user = data.user
+            const session = data.session
+            
+            console.log('🔍 AuthCallback: PKCE code exchange successful!')
+            console.log('🔍 AuthCallback: User ID:', user.id)
+            console.log('🔍 AuthCallback: Email:', user.email)
+            console.log('🔍 AuthCallback: Provider:', user.app_metadata?.provider)
+            console.log('🔍 AuthCallback: Session expires:', new Date(session.expires_at! * 1000).toISOString())
+            
+            setCallbackState({
+              status: 'success',
+              message: `Welcome ${user.email || 'back'}! Setting up your dashboard...`,
+              details: {
+                userId: user.id,
+                email: user.email,
+                provider: user.app_metadata?.provider,
+                expiresAt: session.expires_at
+              }
+            })
+
+            // ✅ Redirect after successful authentication
+            setTimeout(() => {
+              console.log('🔍 AuthCallback: Redirecting to dashboard...')
+              setCallbackState({
+                status: 'redirecting',
+                message: 'Taking you to your dashboard...'
+              })
+              
+              const redirectPath = config.auth.redirectPath || '/dashboard'
+              navigate(redirectPath, { replace: true })
+            }, 1500)
+            
+          } else {
+            console.error('🔍 AuthCallback: Code exchange succeeded but no session/user returned')
+            setCallbackState({
+              status: 'error',
+              message: 'Authentication succeeded but session could not be established',
+              details: { data, noSession: true }
+            })
+          }
+          return
+        }
+        
+        // ✅ FALLBACK: Try to get existing session (implicit flow or session already exists)
+        console.log('🔍 AuthCallback: No code parameter, checking for existing session...')
+        setCallbackState({
+          status: 'processing',
+          message: 'Checking authentication status...'
+        })
+        
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          console.error('🔍 AuthCallback: Session check error:', sessionError)
+          setCallbackState({
+            status: 'error',
+            message: 'Failed to verify authentication session',
+            details: sessionError,
+            errorCode: sessionError.code,
+            errorDescription: sessionError.message
           })
           return
         }
 
-        if (data.session && data.session.user) {
-          const user = data.session.user
-          console.log('🔍 AuthCallback: OAuth successful!')
-          console.log('🔍 AuthCallback: User ID:', user.id)
-          console.log('🔍 AuthCallback: Email:', user.email)
-          console.log('🔍 AuthCallback: Provider:', user.app_metadata?.provider)
-          console.log('🔍 AuthCallback: Created at:', user.created_at)
+        if (sessionData.session && sessionData.session.user) {
+          const user = sessionData.session.user
+          console.log('🔍 AuthCallback: Existing session found!')
+          console.log('🔍 AuthCallback: User:', user.email)
           
           setCallbackState({
             status: 'success',
-            message: `Welcome ${user.email}! Redirecting to dashboard...`,
+            message: `Welcome back ${user.email}! Redirecting...`,
             details: {
               userId: user.id,
               email: user.email,
               provider: user.app_metadata?.provider
             }
           })
-
-          // ✅ IMPROVED: Give time for auth context to update, then redirect
+          
           setTimeout(() => {
-            console.log('🔍 AuthCallback: Redirecting to dashboard...')
-            setCallbackState({
-              status: 'redirecting',
-              message: 'Taking you to your dashboard...'
-            })
-            
-            // Navigate to dashboard
             const redirectPath = config.auth.redirectPath || '/dashboard'
             navigate(redirectPath, { replace: true })
-          }, 1500) // Give user time to see success message
+          }, 1000)
           
         } else {
-          console.log('🔍 AuthCallback: No session found')
-          console.log('🔍 AuthCallback: URL params:', window.location.search)
-          
-          // Check if there are error parameters in the URL
-          const urlParams = new URLSearchParams(window.location.search)
-          const errorParam = urlParams.get('error')
-          const errorDescription = urlParams.get('error_description')
-          
-          if (errorParam) {
-            console.error('🔍 AuthCallback: OAuth error in URL:', errorParam, errorDescription)
-            setCallbackState({
-              status: 'error',
-              message: `Authentication failed: ${errorDescription || errorParam}`,
-              details: { error: errorParam, description: errorDescription }
-            })
-            return
-          }
-          
-          // No session and no error - might be a timing issue
-          console.log('🔍 AuthCallback: No session, will retry...')
+          console.log('🔍 AuthCallback: No session found, redirecting to home')
           setCallbackState({
-            status: 'processing',
-            message: 'Finalizing authentication...'
+            status: 'error',
+            message: 'No authentication session found. Please try signing in again.',
+            details: { noSession: true, url: currentUrl }
           })
-          
-          // Wait a bit and try again
-          setTimeout(async () => {
-            const { data: retryData, error: retryError } = await supabase.auth.getSession()
-            
-            if (retryData.session) {
-              console.log('🔍 AuthCallback: Session found on retry!')
-              setCallbackState({
-                status: 'success',
-                message: 'Authentication successful! Redirecting...'
-              })
-              
-              setTimeout(() => {
-                const redirectPath = config.auth.redirectPath || '/dashboard'
-                navigate(redirectPath, { replace: true })
-              }, 1000)
-            } else {
-              console.log('🔍 AuthCallback: Still no session, redirecting to home')
-              setCallbackState({
-                status: 'error',
-                message: 'Authentication incomplete. Redirecting to home...'
-              })
-              
-              setTimeout(() => {
-                navigate('/', { replace: true })
-              }, 2000)
-            }
-          }, 1000)
         }
+        
       } catch (error) {
         console.error('🔍 AuthCallback: Unexpected error:', error)
         setCallbackState({
@@ -147,7 +180,7 @@ const AuthCallback: React.FC = () => {
     // Small delay to let the page settle
     const timer = setTimeout(handleAuthCallback, 300)
     return () => clearTimeout(timer)
-  }, [navigate])
+  }, [navigate, searchParams])
 
   const handleRetry = async () => {
     setCallbackState({
@@ -157,7 +190,6 @@ const AuthCallback: React.FC = () => {
     
     try {
       await retryAuth()
-      // Will trigger useEffect again
     } catch (error) {
       setCallbackState({
         status: 'error',
@@ -171,6 +203,39 @@ const AuthCallback: React.FC = () => {
     navigate('/', { replace: true })
   }
 
+  const handleTryAgain = () => {
+    // Clear URL parameters and redirect to home for fresh sign-in
+    window.location.href = '/'
+  }
+
+  // ✅ SUPABASE: Error message mapping based on OAuth error codes
+  const getErrorMessage = (): string => {
+    const { errorCode, errorDescription } = callbackState
+    
+    if (!errorCode) return callbackState.message
+    
+    // Map OAuth error codes to user-friendly messages
+    switch (errorCode) {
+      case 'access_denied':
+        return 'You cancelled the sign-in process. Please try again if you want to continue.'
+      case 'invalid_request':
+        return 'Invalid authentication request. Please try signing in again.'
+      case 'unsupported_response_type':
+        return 'Authentication method not supported. Please contact support.'
+      case 'invalid_scope':
+        return 'Invalid permissions requested. Please contact support.'
+      case 'server_error':
+        return 'Authentication server error. Please try again in a moment.'
+      case 'temporarily_unavailable':
+        return 'Authentication service temporarily unavailable. Please try again later.'
+      default:
+        if (errorCode.startsWith('4')) {
+          return `Authentication failed: ${errorDescription || 'Please try again'}`
+        }
+        return errorDescription || 'Authentication failed. Please try again.'
+    }
+  }
+
   // Render based on current state
   const renderContent = () => {
     switch (callbackState.status) {
@@ -182,7 +247,7 @@ const AuthCallback: React.FC = () => {
               {callbackState.message}
             </h2>
             <p className="text-gray-600">
-              Please wait while we complete your sign-in...
+              Following official Supabase OAuth flow...
             </p>
           </div>
         )
@@ -231,15 +296,26 @@ const AuthCallback: React.FC = () => {
               Authentication Failed
             </h2>
             <p className="text-gray-600 mb-6">
-              {callbackState.message}
+              {getErrorMessage()}
             </p>
+            
             <div className="space-y-3">
-              <button
-                onClick={handleRetry}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Try Again
-              </button>
+              {callbackState.errorCode === 'access_denied' ? (
+                <button
+                  onClick={handleTryAgain}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Try Signing In Again
+                </button>
+              ) : (
+                <button
+                  onClick={handleRetry}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Retry Authentication
+                </button>
+              )}
+              
               <button
                 onClick={handleGoHome}
                 className="w-full bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
@@ -247,6 +323,13 @@ const AuthCallback: React.FC = () => {
                 Return Home
               </button>
             </div>
+            
+            {/* Error details for debugging */}
+            {callbackState.errorCode && (
+              <div className="mt-4 text-xs text-gray-500">
+                Error Code: {callbackState.errorCode}
+              </div>
+            )}
             
             {/* Debug info in development */}
             {process.env.NODE_ENV === 'development' && callbackState.details && (
