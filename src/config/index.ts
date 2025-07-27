@@ -46,7 +46,7 @@ const environments: Record<string, EnvironmentConfig> = {
     redirectPath: '/dashboard',
   },
   production: {
-    baseUrl: 'https://oentex.com',
+    baseUrl: 'https://oentex.com', // ✅ Canonical URL without www
     redirectPath: '/dashboard',
   }
 }
@@ -101,6 +101,12 @@ const getBaseUrl = (): string => {
     const hostname = window.location.hostname
     const origin = window.location.origin
     
+    // ✅ Handle www subdomain - redirect to canonical URL
+    if (hostname === 'www.oentex.com') {
+      console.log('🔧 WWW subdomain detected, using canonical URL')
+      return 'https://oentex.com' // Canonical URL without www
+    }
+    
     // If deployed on Vercel preview or other domains, use actual origin
     if (hostname.includes('.vercel.app') || 
         hostname.includes('.netlify.app') || 
@@ -110,7 +116,7 @@ const getBaseUrl = (): string => {
     }
     
     // If on the main domain, use the configured production URL
-    if (hostname === 'oentex.com' || hostname === 'www.oentex.com') {
+    if (hostname === 'oentex.com') {
       return 'https://oentex.com'
     }
     
@@ -157,5 +163,12 @@ console.log('🔧 OAuth Config Debug:', {
 if (typeof window !== 'undefined') {
   const redirectUrl = `${config.baseUrl}/auth/callback`
   console.log('🔧 Expected OAuth redirect URL:', redirectUrl)
-  console.log('🔧 Make sure this URL is added to Supabase Additional Redirect URLs!')
+  console.log('🔧 Make sure BOTH of these URLs are in Supabase Additional Redirect URLs:')
+  console.log('   - https://oentex.com/auth/callback')
+  console.log('   - https://www.oentex.com/auth/callback')
+  
+  // ✅ Warn about www subdomain
+  if (window.location.hostname === 'www.oentex.com') {
+    console.warn('🔧 ⚠️  You are on www.oentex.com - make sure this URL is in Supabase!')
+  }
 }

@@ -1,12 +1,11 @@
-// src/App.tsx - INTEGRATED: Dashboard + Public Site
+// src/App.tsx - FIXED: OAuth callback available in both authenticated and public apps
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './lib/authContext'
-// import UnsubscribePage from './pages/UnsubscribePage'
-// ✅ Import the clean query client
+import UnsubscribePage from './pages/UnsubscribePage'
 import { queryClient } from './lib/queryClient'
 
 // Public site components
@@ -20,12 +19,11 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary'
 
 // Dashboard components
 import DashboardLayout from './components/dashboard/DashboardLayout'
-import OAuthDebugger from './components/OAuthDebugger'
 
 // Lazy load public pages
 const Home = React.lazy(() => import('./pages/Home'))
 const About = React.lazy(() => import('./pages/About'))
-const PublicDeals = React.lazy(() => import('./pages/Deals')) // Rename your current deals page
+const PublicDeals = React.lazy(() => import('./pages/Deals'))
 const FAQ = React.lazy(() => import('./pages/FAQ'))
 const Contact = React.lazy(() => import('./pages/Contact'))
 const Terms = React.lazy(() => import('./pages/Terms'))
@@ -35,10 +33,9 @@ const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
 
 // Lazy load dashboard pages
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
-// const BrowseDeals = React.lazy(() => import('./pages/dashboard/BrowseDeals'))
 const MyDeals = React.lazy(() => import('./pages/dashboard/MyDeals'))
-// const Analytics = React.lazy(() => import('./pages/dashboard/Analytics'))
 const Profile = React.lazy(() => import('./pages/dashboard/Profile'))
+
 // ✅ Toast configuration
 const toastConfig = {
   duration: 4000,
@@ -68,20 +65,32 @@ const toastConfig = {
   },
 }
 
+// ✅ FIXED: OAuth Callback Component that works in both contexts
+const OAuthCallbackHandler: React.FC = () => {
+  return (
+    <Suspense fallback={<PageLoader message="Processing authentication..." />}>
+      <AuthCallback />
+    </Suspense>
+  )
+}
+
 // ✅ Dashboard App for authenticated users
 const AuthenticatedApp: React.FC = () => {
   return (
     <DashboardLayout>
       <Suspense fallback={<PageLoader message="Loading dashboard..." />}>
         <Routes>
+          {/* ✅ CRITICAL: OAuth callback must be available in authenticated app too */}
+          <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
+          
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/deals" element={<PublicDeals />} />
           <Route path="/my-deals" element={<MyDeals />} />
-          {/* <Route path="/analytics" element={<Analytics />} /> */}
           <Route path="/profile" element={<Profile />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
           
+          {/* Catch all - redirect to dashboard */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>
     </DashboardLayout>
@@ -108,9 +117,13 @@ const PublicApp: React.FC = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                
+                {/* ✅ OAuth callback available in public app */}
+                <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
-                 {/* <Route path="/unsubscribe" element={<UnsubscribePage />} /> */}
+                
+                {/* 404 handler */}
                 <Route path="*" element={
                   <div className="min-h-screen flex items-center justify-center pt-20">
                     <div className="text-center">
@@ -136,22 +149,7 @@ const PublicApp: React.FC = () => {
   )
 }
 
-// ✅ Page loader component
-const PageLoaderComponent = () => {
-  const { loading, initialized, isFullyReady } = useAuth()
-  
-  if (loading || !initialized) {
-    return <AuthLoader stage="initializing" />
-  }
-  
-  if (!isFullyReady) {
-    return <AuthLoader stage="validating" />
-  }
-  
-  return <PageLoader message="Loading page..." />
-}
-
-// ✅ Main app content with authentication routing
+// ✅ SPECIAL: OAuth-aware routing that handles callback regardless of auth state
 const AppContent: React.FC = () => {
   const { 
     user,
@@ -176,7 +174,14 @@ const AppContent: React.FC = () => {
     return <AuthLoader stage="validating" />
   }
 
-  // ✅ KEY CHANGE: Route based on authentication status
+  // ✅ CRITICAL: Special handling for OAuth callback
+  // Check if we're on the callback route - handle it regardless of auth state
+  if (typeof window !== 'undefined' && window.location.pathname === '/auth/callback') {
+    console.log('🔧 OAuth callback detected, rendering callback handler')
+    return <OAuthCallbackHandler />
+  }
+
+  // ✅ Route based on authentication status for all other routes
   if (user) {
     // User is authenticated - show dashboard app
     return <AuthenticatedApp />
@@ -194,7 +199,7 @@ function App() {
         <AuthProvider>
           <Router>
             <AppContent />
-            {process.env.NODE_ENV === 'development' && <OAuthDebugger />}
+            
             {/* ✅ Toast notifications */}
             <Toaster 
               position="top-right"
