@@ -1,4 +1,4 @@
-// src/App.tsx - FIXED: OAuth callback available in both authenticated and public apps
+// src/App.tsx - FIXED: Proper OAuth callback handling for implicit flow
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -65,10 +65,10 @@ const toastConfig = {
   },
 }
 
-// ✅ FIXED: OAuth Callback Component that works in both contexts
+// ✅ CRITICAL: OAuth Callback Component that handles tokens in URL
 const OAuthCallbackHandler: React.FC = () => {
   return (
-    <Suspense fallback={<PageLoader message="Processing authentication..." />}>
+    <Suspense fallback={<PageLoader message="Processing OAuth tokens..." />}>
       <AuthCallback />
     </Suspense>
   )
@@ -80,7 +80,7 @@ const AuthenticatedApp: React.FC = () => {
     <DashboardLayout>
       <Suspense fallback={<PageLoader message="Loading dashboard..." />}>
         <Routes>
-          {/* ✅ CRITICAL: OAuth callback must be available in authenticated app too */}
+          {/* ✅ CRITICAL: OAuth callback MUST be available in authenticated app */}
           <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -119,7 +119,7 @@ const PublicApp: React.FC = () => {
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 
-                {/* ✅ OAuth callback available in public app */}
+                {/* ✅ CRITICAL: OAuth callback available in public app */}
                 <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 
@@ -149,7 +149,7 @@ const PublicApp: React.FC = () => {
   )
 }
 
-// ✅ SPECIAL: OAuth-aware routing that handles callback regardless of auth state
+// ✅ SMART: OAuth-aware routing that always handles callback
 const AppContent: React.FC = () => {
   const { 
     user,
@@ -158,6 +158,16 @@ const AppContent: React.FC = () => {
     isFullyReady,
     error: authError
   } = useAuth()
+
+  // ✅ CRITICAL: Always handle OAuth callback regardless of auth state
+  const isOAuthCallback = typeof window !== 'undefined' && 
+    (window.location.pathname === '/auth/callback' || 
+     window.location.hash.includes('access_token'))
+
+  if (isOAuthCallback) {
+    console.log('🔍 OAuth callback detected, rendering callback handler')
+    return <OAuthCallbackHandler />
+  }
 
   // Show loading while initializing auth
   if (authLoading || !initialized) {
@@ -172,13 +182,6 @@ const AppContent: React.FC = () => {
   // Show validating state
   if (!isFullyReady) {
     return <AuthLoader stage="validating" />
-  }
-
-  // ✅ CRITICAL: Special handling for OAuth callback
-  // Check if we're on the callback route - handle it regardless of auth state
-  if (typeof window !== 'undefined' && window.location.pathname === '/auth/callback') {
-    console.log('🔧 OAuth callback detected, rendering callback handler')
-    return <OAuthCallbackHandler />
   }
 
   // ✅ Route based on authentication status for all other routes
@@ -231,13 +234,6 @@ function App() {
       </QueryClientProvider>
     </ErrorBoundary>
   )
-}
-
-// ✅ Error handling for development
-if (process.env.NODE_ENV === 'development') {
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason)
-  })
 }
 
 export default App
