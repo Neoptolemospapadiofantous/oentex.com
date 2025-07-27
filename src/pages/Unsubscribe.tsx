@@ -19,8 +19,8 @@ const Unsubscribe = () => {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [reason, setReason] = useState('too_frequent')
-  const [feedback, setFeedback] = useState('')
+  const [reason, setReason] = useState('1') // Use numeric values
+  // Remove feedback since column doesn't exist
 
   useEffect(() => {
     if (!token) {
@@ -72,7 +72,7 @@ const Unsubscribe = () => {
     setSubmitting(true)
 
     try {
-      console.log('📧 Processing unsubscribe for token:', token)
+      console.log('📧 Processing unsubscribe for token:', token, 'reason:', reason)
       
       // Check if already unsubscribed
       if (subscriber?.status === 'unsubscribed') {
@@ -86,9 +86,8 @@ const Unsubscribe = () => {
         .from('email_subscribers')
         .update({
           status: 'unsubscribed',
-          unsubscribed_at: new Date().toISOString(),
-          unsubscribe_reason: reason,
-          feedback: feedback.trim(),
+          unsubscribed_at: Math.floor(Date.now() / 1000), // Unix timestamp as Float
+          unsubscribe_reason: parseInt(reason), // Convert to number
           updated_at: new Date().toISOString()
         })
         .eq('unsubscribe_token', token)
@@ -218,26 +217,12 @@ const Unsubscribe = () => {
               onChange={(e) => setReason(e.target.value)}
               className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             >
-              <option value="too_frequent">Too many emails</option>
-              <option value="not_relevant">Content not relevant</option>
-              <option value="never_signed_up">Never signed up</option>
-              <option value="spam">Received spam</option>
-              <option value="other">Other reason</option>
+              <option value="1">Too many emails</option>
+              <option value="2">Content not relevant</option>
+              <option value="3">Never signed up</option>
+              <option value="4">Received spam</option>
+              <option value="5">Other reason</option>
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="feedback" className="block text-sm font-medium text-text mb-2">
-              Additional feedback (Optional)
-            </label>
-            <textarea
-              id="feedback"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              rows={4}
-              placeholder="Help us improve our newsletter service..."
-              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-            />
           </div>
 
           <button
