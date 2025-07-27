@@ -1,4 +1,5 @@
 node_modules/
 supabase/
 package-lock.json
-debug/
+src/components/debug/*
+

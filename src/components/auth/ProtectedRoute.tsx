@@ -1,4 +1,3 @@
-// src/components/auth/ProtectedRoute.tsx - Optional: for protecting routes
 import React from 'react'
 import { useAuth } from '../../lib/authContext'
 import { AuthModal } from './AuthModals'
@@ -19,7 +18,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
-  // Show loading while checking auth
   if (loading) {
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center">
@@ -31,12 +29,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     )
   }
 
-  // If user is authenticated, show the protected content
   if (user) {
     return <>{children}</>
   }
 
-  // If not authenticated, show fallback or login prompt
   if (fallback) {
     return <>{fallback}</>
   }
@@ -72,17 +68,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             </div>
           </div>
         </div>
-
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
           mode={authMode}
-          onSwitchMode={setAuthMode}
+          onModeChange={setAuthMode}
         />
       </>
     )
   }
 
-  // Default: just show children (no protection)
   return <>{children}</>
 }
