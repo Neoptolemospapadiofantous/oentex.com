@@ -1,4 +1,3 @@
-// AuthModals.tsx - Clean OAuth-only modal
 import React, { useState, useEffect } from 'react'
 import { X, Chrome } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
@@ -21,10 +20,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
 
   const { signInWithGoogle, signInWithMicrosoft } = useAuth()
 
-  // Body scroll lock when modal is open
   useBodyScrollLock(isOpen)
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen && !isLoading) {
@@ -44,8 +41,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     setIsLoading(true)
     setLoadingProvider(provider)
     
-    console.log(`🔍 AuthModal: Starting ${provider} OAuth flow...`)
-    
     try {
       let result
       
@@ -61,21 +56,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
       }
 
       if (!result.error) {
-        console.log(`🔍 AuthModal: ${provider} OAuth initiated successfully`)
         setLoginSuccess(true)
         
-        // For OAuth providers, the page will redirect
-        // Show success state briefly before redirect
         setTimeout(() => {
           onClose()
           setLoginSuccess(false)
         }, 1000)
       } else {
-        console.error(`🔍 AuthModal: ${provider} OAuth error:`, result.error)
         toast.error(result.error.message)
       }
     } catch (error) {
-      console.error(`🔍 AuthModal: ${provider} sign-in error:`, error)
       toast.error(`Failed to sign in with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
@@ -91,7 +81,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     }
   }
 
-  // Microsoft icon component
   const MicrosoftIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 21 21" fill="none">
       <path d="M10 1H1v9h9V1z" fill="#f25022"/>
@@ -108,7 +97,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
         onClick={handleOverlayClick}
       >
         <div className="bg-surface border border-border rounded-xl max-w-md w-full">
-          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="text-center flex-1">
               <h2 className="text-xl font-semibold text-text">
@@ -131,7 +119,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
             </button>
           </div>
 
-          {/* OAuth Buttons */}
           <div className="p-6 space-y-4">
             {loginSuccess ? (
               <div className="text-center py-8">
@@ -145,7 +132,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
               </div>
             ) : (
               <>
-                {/* Google - Primary Option */}
                 <button
                   onClick={() => handleOAuthSignIn('google')}
                   disabled={isLoading}
@@ -159,7 +145,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                   <span className="text-lg">Continue with Google</span>
                 </button>
 
-                {/* Microsoft */}
                 <button
                   onClick={() => handleOAuthSignIn('microsoft')}
                   disabled={isLoading}
@@ -173,7 +158,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                   Continue with Microsoft
                 </button>
 
-                {/* Mode Toggle */}
                 <div className="text-center text-sm text-textSecondary pt-4 border-t border-border">
                   {mode === 'login' ? (
                     <>
@@ -200,7 +184,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                   )}
                 </div>
 
-                {/* Trust Indicators */}
                 <div className="text-center pt-4">
                   <p className="text-xs text-textSecondary">
                     🔒 Secure OAuth authentication • No passwords needed

@@ -1,4 +1,3 @@
-// AuthButton.tsx - Clean OAuth integration without wallet references
 import React, { useState, useCallback } from 'react'
 import { User, LogOut, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
