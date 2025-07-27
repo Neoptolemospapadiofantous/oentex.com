@@ -1,4 +1,4 @@
-// src/config/index.ts
+// src/config/index.ts - FIXED VERSION
 interface Config {
   baseUrl: string
   supabase: {
@@ -38,16 +38,16 @@ for (const [key, value] of Object.entries(requiredEnvVars)) {
 // Environment configurations
 const environments: Record<string, EnvironmentConfig> = {
   development: {
-    baseUrl: 'http://localhost:3000',
-    redirectPath: '/deals',
+    baseUrl: 'http://localhost:5174', // ✅ FIXED: Use correct dev port
+    redirectPath: '/dashboard',
   },
   staging: {
     baseUrl: 'https://staging-oentex.vercel.app',
-    redirectPath: '/deals',
+    redirectPath: '/dashboard',
   },
   production: {
     baseUrl: 'https://oentex.com',
-    redirectPath: '/deals',
+    redirectPath: '/dashboard',
   }
 }
 
@@ -80,27 +80,43 @@ const getEnvironmentConfig = (): EnvironmentConfig => {
   const envConfig = environments[currentEnv]
   
   if (!envConfig) {
-    throw new Error(`Unknown environment: ${currentEnv}`)
+    console.warn(`Unknown environment: ${currentEnv}, falling back to development`)
+    return environments.development
   }
   
   return envConfig
 }
 
-// Determine base URL
+// Determine base URL with better logic
 const getBaseUrl = (): string => {
   // Use explicit VITE_BASE_URL if provided
   if (optionalEnvVars.VITE_BASE_URL) {
     return optionalEnvVars.VITE_BASE_URL
   }
   
-  // For production, use actual origin if on Vercel/custom domain
   const currentEnv = getCurrentEnvironment()
+  
+  // ✅ CRITICAL: For production, handle various deployment scenarios
   if (currentEnv === 'production' && typeof window !== 'undefined') {
     const hostname = window.location.hostname
-    // If on Vercel domain, use actual origin instead of hardcoded production URL
-    if (hostname.includes('.vercel.app') || hostname.includes('.netlify.app')) {
-      return window.location.origin
+    const origin = window.location.origin
+    
+    // If deployed on Vercel preview or other domains, use actual origin
+    if (hostname.includes('.vercel.app') || 
+        hostname.includes('.netlify.app') || 
+        hostname.includes('.herokuapp.com')) {
+      console.log('🔧 Using dynamic origin for deployment:', origin)
+      return origin
     }
+    
+    // If on the main domain, use the configured production URL
+    if (hostname === 'oentex.com' || hostname === 'www.oentex.com') {
+      return 'https://oentex.com'
+    }
+    
+    // Fallback to origin for unknown production domains
+    console.warn('🔧 Unknown production domain, using origin:', origin)
+    return origin
   }
   
   // Use environment-specific configuration
@@ -125,13 +141,21 @@ export const config: Config = {
   environment: currentEnvironment,
 }
 
-// Debug info (only in development)
-if (import.meta.env.DEV) {
-  console.log('🔧 Config loaded:', {
-    environment: config.environment,
-    baseUrl: config.baseUrl,
-    redirectPath: config.auth.redirectPath,
-    hasBaseUrlEnv: !!optionalEnvVars.VITE_BASE_URL,
-    hasEnvironmentEnv: !!optionalEnvVars.VITE_ENVIRONMENT,
-  })
+// ✅ CRITICAL: Debug info to help troubleshoot
+console.log('🔧 OAuth Config Debug:', {
+  environment: config.environment,
+  baseUrl: config.baseUrl,
+  redirectUrl: `${config.baseUrl}/auth/callback`,
+  redirectPath: config.auth.redirectPath,
+  hostname: typeof window !== 'undefined' ? window.location.hostname : 'server',
+  origin: typeof window !== 'undefined' ? window.location.origin : 'server',
+  hasBaseUrlEnv: !!optionalEnvVars.VITE_BASE_URL,
+  hasEnvironmentEnv: !!optionalEnvVars.VITE_ENVIRONMENT,
+})
+
+// ✅ VALIDATION: Check if the redirect URL is properly configured
+if (typeof window !== 'undefined') {
+  const redirectUrl = `${config.baseUrl}/auth/callback`
+  console.log('🔧 Expected OAuth redirect URL:', redirectUrl)
+  console.log('🔧 Make sure this URL is added to Supabase Additional Redirect URLs!')
 }

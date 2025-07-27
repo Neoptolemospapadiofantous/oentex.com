@@ -1,3 +1,4 @@
+// src/lib/services/authService.ts - IMPROVED VERSION
 import { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../supabase'
 import { config } from '../../config'
@@ -8,23 +9,31 @@ interface CreateUserProfileResult {
   error?: string
 }
 
+interface OAuthResult {
+  error: CustomAuthError | null
+  redirectUrl?: string
+}
+
 class AuthService {
   private readonly MAX_RETRIES = 3
   private readonly RETRY_DELAY = 1000
   private readonly profileCreationCache = new Map<string, Promise<CreateUserProfileResult>>()
 
-  async signInWithGoogle() {
+  // ✅ IMPROVED: Better OAuth with environment-specific handling
+  async signInWithGoogle(): Promise<OAuthResult> {
     try {
       const redirectUrl = `${config.baseUrl}/auth/callback`
       
-      // 🔍 DEBUG: Log the redirect URL
-      console.log('🔧 DEBUG - OAuth Config:', {
+      // ✅ CRITICAL: Log OAuth configuration for debugging
+      console.log('🔧 Google OAuth Configuration:', {
+        environment: config.environment,
         baseUrl: config.baseUrl,
         redirectUrl: redirectUrl,
-        environment: config.environment || 'unknown'
+        supabaseUrl: config.supabase.url,
+        currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'server'
       })
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -36,29 +45,45 @@ class AuthService {
       })
       
       if (error) {
-        console.error('🔧 DEBUG - Google OAuth error:', error)
-        return { error: this.handleAuthError(error) }
+        console.error('🔧 Google OAuth error:', error)
+        return { 
+          error: this.handleAuthError(error),
+          redirectUrl 
+        }
       }
       
-      console.log('🔧 DEBUG - Google OAuth initiated with redirect:', redirectUrl)
-      return { error: null }
+      console.log('🔧 Google OAuth initiated successfully')
+      console.log('🔧 Expected redirect flow:')
+      console.log('  1. User → Google Auth')
+      console.log('  2. Google → Supabase:', `${config.supabase.url}/auth/v1/callback`)
+      console.log('  3. Supabase → Your app:', redirectUrl)
+      console.log('🔧 Make sure step 3 URL is in Supabase Additional Redirect URLs!')
+      
+      return { 
+        error: null,
+        redirectUrl 
+      }
     } catch (error) {
-      console.error('🔧 DEBUG - Google OAuth exception:', error)
-      return { error: this.handleAuthError(error) }
+      console.error('🔧 Google OAuth exception:', error)
+      return { 
+        error: this.handleAuthError(error)
+      }
     }
   }
 
-  async signInWithMicrosoft() {
+  async signInWithMicrosoft(): Promise<OAuthResult> {
     try {
       const redirectUrl = `${config.baseUrl}/auth/callback`
       
-      console.log('🔧 DEBUG - Microsoft OAuth Config:', {
+      console.log('🔧 Microsoft OAuth Configuration:', {
+        environment: config.environment,
         baseUrl: config.baseUrl,
         redirectUrl: redirectUrl,
-        environment: config.environment || 'unknown'
+        supabaseUrl: config.supabase.url,
+        currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'server'
       })
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           redirectTo: redirectUrl,
@@ -69,15 +94,28 @@ class AuthService {
       })
       
       if (error) {
-        console.error('🔧 DEBUG - Microsoft OAuth error:', error)
-        return { error: this.handleAuthError(error) }
+        console.error('🔧 Microsoft OAuth error:', error)
+        return { 
+          error: this.handleAuthError(error),
+          redirectUrl 
+        }
       }
       
-      console.log('🔧 DEBUG - Microsoft OAuth initiated with redirect:', redirectUrl)
-      return { error: null }
+      console.log('🔧 Microsoft OAuth initiated successfully')
+      console.log('🔧 Expected redirect flow:')
+      console.log('  1. User → Microsoft Auth')
+      console.log('  2. Microsoft → Supabase:', `${config.supabase.url}/auth/v1/callback`)
+      console.log('  3. Supabase → Your app:', redirectUrl)
+      
+      return { 
+        error: null,
+        redirectUrl 
+      }
     } catch (error) {
-      console.error('🔧 DEBUG - Microsoft OAuth exception:', error)
-      return { error: this.handleAuthError(error) }
+      console.error('🔧 Microsoft OAuth exception:', error)
+      return { 
+        error: this.handleAuthError(error)
+      }
     }
   }
 
@@ -94,6 +132,65 @@ class AuthService {
       return { error: null }
     } catch (error) {
       return { error: this.handleAuthError(error) }
+    }
+  }
+
+  // ✅ DIAGNOSTIC: Method to check OAuth configuration
+  async diagnoseOAuthConfig(): Promise<{
+    isValid: boolean
+    issues: string[]
+    recommendations: string[]
+  }> {
+    const issues: string[] = []
+    const recommendations: string[] = []
+    
+    try {
+      // Check current environment
+      const redirectUrl = `${config.baseUrl}/auth/callback`
+      
+      // Check if we're in the right environment
+      if (typeof window !== 'undefined') {
+        const currentOrigin = window.location.origin
+        const expectedBaseUrl = config.baseUrl
+        
+        if (currentOrigin !== expectedBaseUrl) {
+          issues.push(`Origin mismatch: current=${currentOrigin}, config=${expectedBaseUrl}`)
+          recommendations.push('Check environment detection in config')
+        }
+      }
+      
+      // Check Supabase connection
+      const { data, error } = await supabase.auth.getSession()
+      if (error) {
+        issues.push(`Supabase auth connection issue: ${error.message}`)
+        recommendations.push('Check Supabase URL and anon key')
+      }
+      
+      // Log current configuration
+      console.log('🔧 OAuth Diagnosis:', {
+        environment: config.environment,
+        baseUrl: config.baseUrl,
+        redirectUrl: redirectUrl,
+        supabaseUrl: config.supabase.url,
+        hasSession: !!data?.session
+      })
+      
+      return {
+        isValid: issues.length === 0,
+        issues,
+        recommendations: [
+          ...recommendations,
+          `Add "${redirectUrl}" to Supabase Additional Redirect URLs`,
+          'Verify OAuth provider redirect URI points to Supabase',
+          'Check console logs for detailed OAuth flow'
+        ]
+      }
+    } catch (error) {
+      return {
+        isValid: false,
+        issues: [`Diagnosis failed: ${error}`],
+        recommendations: ['Check console for errors']
+      }
     }
   }
 
