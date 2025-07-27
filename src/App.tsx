@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './lib/authContext'
-import UnsubscribePage from './pages/UnsubscribePage'
+// import UnsubscribePage from './pages/UnsubscribePage'
 import { queryClient } from './lib/queryClient'
 
 // Public site components
@@ -117,7 +117,7 @@ const PublicApp: React.FC = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
-                <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                {/* <Route path="/unsubscribe" element={<UnsubscribePage />} /> */}
                 
                 {/* ✅ CRITICAL: OAuth callback available in public app */}
                 <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
