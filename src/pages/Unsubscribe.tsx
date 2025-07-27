@@ -9,7 +9,7 @@ interface Subscriber {
   status: string
 }
 
-const UnsubscribePage = () => {
+const Unsubscribe = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   
@@ -251,4 +251,4 @@ const UnsubscribePage = () => {
   )
 }
 
-export default UnsubscribePage
+export default Unsubscribe
