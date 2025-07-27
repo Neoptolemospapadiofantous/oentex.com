@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Mail, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 interface Subscriber {
   email: string
@@ -34,6 +35,7 @@ const Unsubscribe = () => {
     try {
       console.log('🔍 Fetching subscriber for token:', token)
       
+      // Query the database directly for the subscriber
       const { data, error } = await supabase
         .from('email_subscribers')
         .select('email, status')
@@ -72,29 +74,48 @@ const Unsubscribe = () => {
     try {
       console.log('📧 Processing unsubscribe for token:', token)
       
-      const { data, error } = await supabase.functions.invoke('newsletter-unsubscribe', {
-        body: {
-          token,
-          reason,
-          feedback
-        }
-      })
+      // Check if already unsubscribed
+      if (subscriber?.status === 'unsubscribed') {
+        setSuccess(true)
+        toast.success('Already unsubscribed')
+        return
+      }
 
-      if (error) {
-        console.error('Unsubscribe error:', error)
+      // Update the subscriber status directly in the database
+      const { error: updateError } = await supabase
+        .from('email_subscribers')
+        .update({
+          status: 'unsubscribed',
+          unsubscribed_at: new Date().toISOString(),
+          unsubscribe_reason: reason,
+          feedback: feedback.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('unsubscribe_token', token)
+
+      if (updateError) {
+        console.error('Unsubscribe error:', updateError)
         setError('Failed to unsubscribe. Please try again.')
         return
       }
 
-      if (data?.success) {
-        console.log('✅ Unsubscribe successful')
-        setSuccess(true)
-      } else {
-        setError(data?.error || 'Failed to unsubscribe')
+      console.log('✅ Unsubscribe successful')
+      setSuccess(true)
+      toast.success('Successfully unsubscribed from newsletter')
+
+      // Optional: Remove from external services like Resend
+      try {
+        // You can add logic here to remove from Resend audience if needed
+        // For now, we'll just handle the database update
+      } catch (externalError) {
+        console.error('External service removal failed:', externalError)
+        // Don't fail the whole operation if external service fails
       }
+
     } catch (err) {
       console.error('Unsubscribe error:', err)
       setError('Failed to unsubscribe. Please try again.')
+      toast.error('Failed to unsubscribe. Please try again.')
     } finally {
       setSubmitting(false)
     }
