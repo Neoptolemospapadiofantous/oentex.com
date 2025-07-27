@@ -38,17 +38,20 @@ const Unsubscribe = () => {
       // Query the database directly for the subscriber
       const { data, error } = await supabase
         .from('email_subscribers')
-        .select('email, status')
+        .select('email, status, unsubscribe_token')
         .eq('unsubscribe_token', token)
         .single()
 
+      console.log('📋 Database query result:', { data, error, token })
+
       if (error) {
-        console.error('Error fetching subscriber:', error)
-        setError('Invalid unsubscribe link')
+        console.error('❌ Error fetching subscriber:', error)
+        setError(`Invalid unsubscribe link: ${error.message}`)
         return
       }
 
       if (!data) {
+        console.error('❌ No subscriber found for token:', token)
         setError('Subscriber not found')
         return
       }
@@ -57,17 +60,18 @@ const Unsubscribe = () => {
       setSubscriber(data)
 
       if (data.status === 'unsubscribed') {
+        console.log('ℹ️ Subscriber already unsubscribed')
         setSuccess(true)
       }
     } catch (err) {
-      console.error('Fetch error:', err)
+      console.error('❌ Fetch error:', err)
       setError('Failed to load unsubscribe page')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleUnsubscribe = async (e: React.FormEvent) => {
+const handleUnsubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
 
@@ -81,45 +85,105 @@ const Unsubscribe = () => {
         return
       }
 
-      // Update the subscriber status directly in the database
-      const { error: updateError } = await supabase
-        .from('email_subscribers')
-        .update({
-          status: 'unsubscribed',
-          unsubscribed_at: Math.floor(Date.now() / 1000), // Unix timestamp as Float
-          unsubscribe_reason: parseInt(reason), // Convert to number
-          updated_at: new Date().toISOString()
-        })
-        .eq('unsubscribe_token', token)
-
-      if (updateError) {
-        console.error('Unsubscribe error:', updateError)
-        setError('Failed to unsubscribe. Please try again.')
-        return
-      }
-
-      console.log('✅ Unsubscribe successful')
-      setSuccess(true)
-      toast.success('Successfully unsubscribed from newsletter')
-
-      // Optional: Remove from external services like Resend
+      // Option 1: Try calling the edge function (which handles both DB and Resend)
+      console.log('🔄 Attempting edge function call...')
       try {
-        // You can add logic here to remove from Resend audience if needed
-        // For now, we'll just handle the database update
-      } catch (externalError) {
-        console.error('External service removal failed:', externalError)
-        // Don't fail the whole operation if external service fails
+        const { data, error } = await supabase.functions.invoke('unsubscribe', {
+          body: {
+            token,
+            reason: parseInt(reason),
+            feedback: '' // Empty since we removed the field
+          }
+        })
+
+        console.log('📨 Edge function response:', { data, error })
+
+        if (error) {
+          console.error('Edge function error:', error)
+          throw new Error('Edge function failed')
+        }
+
+        if (data?.success) {
+          console.log('✅ Edge function unsubscribe successful')
+          setSuccess(true)
+          toast.success('Successfully unsubscribed from newsletter')
+          return
+        } else {
+          throw new Error(data?.error || 'Edge function returned unsuccessful')
+        }
+      } catch (edgeFunctionError) {
+        console.warn('⚠️ Edge function failed, trying direct database update:', edgeFunctionError)
+        
+        // Option 2: Fallback to direct database update
+        console.log('🔄 Attempting direct database update...')
+        
+        // First, let's verify the token exists in the database
+        const { data: tokenCheck, error: tokenError } = await supabase
+          .from('email_subscribers')
+          .select('id, email, status, unsubscribe_token')
+          .eq('unsubscribe_token', token)
+
+        console.log('🔍 Token verification:', { token, tokenCheck, tokenError })
+
+        if (!tokenCheck || tokenCheck.length === 0) {
+          throw new Error(`No subscriber found with unsubscribe_token: ${token}`)
+        }
+
+        // Try the update with a more explicit approach
+        console.log('🔧 Trying alternative update approach...')
+        
+        // First, get the exact record ID
+        const subscriberRecord = tokenCheck[0]
+        console.log('📋 Record to update:', subscriberRecord)
+        
+        // Try updating by ID instead of token with correct data types
+        const { data: updateByIdResult, error: updateByIdError } = await supabase
+          .from('email_subscribers')
+          .update({
+            status: 'unsubscribed',
+            unsubscribed_at: new Date().toISOString(), // timestamp with time zone
+            unsubscribe_reason: reason, // character varying (keep as string)
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', subscriberRecord.id)
+          .select()
+
+        console.log('📝 Update by ID result:', { updateByIdResult, updateByIdError })
+
+        if (updateByIdError) {
+          console.error('❌ Database update by ID error:', updateByIdError)
+          throw updateByIdError
+        }
+
+        if (!updateByIdResult || updateByIdResult.length === 0) {
+          console.error('❌ No records were updated by ID. This suggests RLS/permissions issue')
+          throw new Error('Update blocked - likely Row Level Security or permissions issue')
+        }
+
+        console.log('✅ Direct database update successful - Updated records:', updateByIdResult.length)
+        setSuccess(true)
+        toast.success('Successfully unsubscribed from newsletter')
+        
+        // Try to remove from Resend as well
+        try {
+          console.log('🔄 Attempting to remove from Resend...')
+          // This would need to be done server-side since Resend API key should be secret
+          // For now, the database update is the most important part
+        } catch (resendError) {
+          console.warn('⚠️ Resend removal failed:', resendError)
+          // Don't fail the whole operation
+        }
       }
 
     } catch (err) {
-      console.error('Unsubscribe error:', err)
+      console.error('❌ Complete unsubscribe failure:', err)
       setError('Failed to unsubscribe. Please try again.')
       toast.error('Failed to unsubscribe. Please try again.')
     } finally {
       setSubmitting(false)
     }
   }
-
+  
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
