@@ -1,4 +1,4 @@
-// src/pages/AuthCallback.tsx - Following Official Supabase PKCE Documentation
+// src/pages/AuthCallback.tsx - FIXED: Handle implicit flow tokens from URL hash
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -15,6 +15,16 @@ interface CallbackState {
   errorDescription?: string
 }
 
+interface OAuthTokens {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: string
+  expires_in?: string
+  provider_token?: string
+  provider_refresh_token?: string
+  token_type?: string
+}
+
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -28,16 +38,18 @@ const AuthCallback: React.FC = () => {
     const handleAuthCallback = async () => {
       try {
         const currentUrl = window.location.href
+        const urlHash = window.location.hash
         const code = searchParams.get('code')
         const error = searchParams.get('error')
         const errorDescription = searchParams.get('error_description')
         
         console.log('🔍 AuthCallback: Starting OAuth callback processing...')
         console.log('🔍 AuthCallback: Current URL:', currentUrl)
+        console.log('🔍 AuthCallback: Hash fragment:', urlHash)
         console.log('🔍 AuthCallback: Code parameter:', code ? 'present' : 'missing')
         console.log('🔍 AuthCallback: Error parameter:', error || 'none')
         
-        // ✅ OFFICIAL SUPABASE: Handle OAuth errors first
+        // ✅ Handle OAuth errors first
         if (error) {
           console.error('🔍 AuthCallback: OAuth error found:', error, errorDescription)
           setCallbackState({
@@ -50,7 +62,106 @@ const AuthCallback: React.FC = () => {
           return
         }
         
-        // ✅ OFFICIAL SUPABASE: Handle PKCE code exchange
+        // ✅ CRITICAL: Handle implicit flow tokens in hash fragment
+        if (urlHash && urlHash.includes('access_token')) {
+          console.log('🔍 AuthCallback: Implicit flow tokens detected in hash fragment')
+          
+          setCallbackState({
+            status: 'processing',
+            message: 'Processing OAuth tokens...'
+          })
+
+          // Parse tokens from hash fragment
+          const tokens = parseTokensFromHash(urlHash)
+          console.log('🔍 AuthCallback: Parsed tokens:', {
+            hasAccessToken: !!tokens.access_token,
+            hasRefreshToken: !!tokens.refresh_token,
+            expiresAt: tokens.expires_at,
+            tokenType: tokens.token_type
+          })
+
+          if (tokens.access_token) {
+            // ✅ IMPLICIT FLOW: Tokens are already available, just need to set session
+            console.log('🔍 AuthCallback: Setting session with implicit flow tokens...')
+            
+            try {
+              // For implicit flow, the session should already be set by Supabase
+              // Let's verify the session exists
+              const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+              
+              if (sessionError) {
+                console.error('🔍 AuthCallback: Session verification error:', sessionError)
+                setCallbackState({
+                  status: 'error',
+                  message: 'Failed to verify authentication session',
+                  details: sessionError,
+                  errorCode: sessionError.code,
+                  errorDescription: sessionError.message
+                })
+                return
+              }
+
+              if (sessionData.session && sessionData.session.user) {
+                const user = sessionData.session.user
+                const session = sessionData.session
+                
+                console.log('🔍 AuthCallback: Implicit flow session verified!')
+                console.log('🔍 AuthCallback: User ID:', user.id)
+                console.log('🔍 AuthCallback: Email:', user.email)
+                console.log('🔍 AuthCallback: Provider:', user.app_metadata?.provider)
+                console.log('🔍 AuthCallback: Session expires:', new Date(session.expires_at! * 1000).toISOString())
+                
+                setCallbackState({
+                  status: 'success',
+                  message: `Welcome ${user.email || 'back'}! Setting up your dashboard...`,
+                  details: {
+                    userId: user.id,
+                    email: user.email,
+                    provider: user.app_metadata?.provider,
+                    expiresAt: session.expires_at,
+                    flowType: 'implicit'
+                  }
+                })
+
+                // Clear the hash fragment from URL for security
+                if (window.history.replaceState) {
+                  window.history.replaceState(null, '', window.location.pathname)
+                }
+
+                // ✅ Redirect after successful authentication
+                setTimeout(() => {
+                  console.log('🔍 AuthCallback: Redirecting to dashboard...')
+                  setCallbackState({
+                    status: 'redirecting',
+                    message: 'Taking you to your dashboard...'
+                  })
+                  
+                  const redirectPath = config.auth.redirectPath || '/dashboard'
+                  navigate(redirectPath, { replace: true })
+                }, 1500)
+                
+              } else {
+                // Session not found, but tokens are present - this shouldn't happen
+                console.error('🔍 AuthCallback: Tokens present but no session found')
+                setCallbackState({
+                  status: 'error',
+                  message: 'Authentication tokens received but session could not be established',
+                  details: { tokens, noSession: true }
+                })
+              }
+            } catch (sessionError) {
+              console.error('🔍 AuthCallback: Session processing error:', sessionError)
+              setCallbackState({
+                status: 'error',
+                message: 'Error processing authentication session',
+                details: sessionError
+              })
+            }
+            return
+          }
+        }
+        
+        // ✅ Handle PKCE flow (code parameter)
         if (code) {
           console.log('🔍 AuthCallback: PKCE code found, exchanging for session...')
           setCallbackState({
@@ -58,7 +169,6 @@ const AuthCallback: React.FC = () => {
             message: 'Exchanging authorization code for session...'
           })
 
-          // Following official Supabase documentation for code exchange
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
           
           if (exchangeError) {
@@ -81,7 +191,6 @@ const AuthCallback: React.FC = () => {
             console.log('🔍 AuthCallback: User ID:', user.id)
             console.log('🔍 AuthCallback: Email:', user.email)
             console.log('🔍 AuthCallback: Provider:', user.app_metadata?.provider)
-            console.log('🔍 AuthCallback: Session expires:', new Date(session.expires_at! * 1000).toISOString())
             
             setCallbackState({
               status: 'success',
@@ -90,11 +199,11 @@ const AuthCallback: React.FC = () => {
                 userId: user.id,
                 email: user.email,
                 provider: user.app_metadata?.provider,
-                expiresAt: session.expires_at
+                expiresAt: session.expires_at,
+                flowType: 'pkce'
               }
             })
 
-            // ✅ Redirect after successful authentication
             setTimeout(() => {
               console.log('🔍 AuthCallback: Redirecting to dashboard...')
               setCallbackState({
@@ -105,20 +214,12 @@ const AuthCallback: React.FC = () => {
               const redirectPath = config.auth.redirectPath || '/dashboard'
               navigate(redirectPath, { replace: true })
             }, 1500)
-            
-          } else {
-            console.error('🔍 AuthCallback: Code exchange succeeded but no session/user returned')
-            setCallbackState({
-              status: 'error',
-              message: 'Authentication succeeded but session could not be established',
-              details: { data, noSession: true }
-            })
           }
           return
         }
         
-        // ✅ FALLBACK: Try to get existing session (implicit flow or session already exists)
-        console.log('🔍 AuthCallback: No code parameter, checking for existing session...')
+        // ✅ FALLBACK: Try to get existing session
+        console.log('🔍 AuthCallback: No tokens or code found, checking for existing session...')
         setCallbackState({
           status: 'processing',
           message: 'Checking authentication status...'
@@ -131,9 +232,7 @@ const AuthCallback: React.FC = () => {
           setCallbackState({
             status: 'error',
             message: 'Failed to verify authentication session',
-            details: sessionError,
-            errorCode: sessionError.code,
-            errorDescription: sessionError.message
+            details: sessionError
           })
           return
         }
@@ -149,7 +248,8 @@ const AuthCallback: React.FC = () => {
             details: {
               userId: user.id,
               email: user.email,
-              provider: user.app_metadata?.provider
+              provider: user.app_metadata?.provider,
+              flowType: 'existing'
             }
           })
           
@@ -175,6 +275,24 @@ const AuthCallback: React.FC = () => {
           details: error
         })
       }
+    }
+
+    // Parse tokens from URL hash fragment (implicit flow)
+    const parseTokensFromHash = (hash: string): OAuthTokens => {
+      const tokens: OAuthTokens = {}
+      
+      // Remove the # and parse as URLSearchParams
+      const params = new URLSearchParams(hash.slice(1))
+      
+      tokens.access_token = params.get('access_token') || undefined
+      tokens.refresh_token = params.get('refresh_token') || undefined
+      tokens.expires_at = params.get('expires_at') || undefined
+      tokens.expires_in = params.get('expires_in') || undefined
+      tokens.provider_token = params.get('provider_token') || undefined
+      tokens.provider_refresh_token = params.get('provider_refresh_token') || undefined
+      tokens.token_type = params.get('token_type') || undefined
+      
+      return tokens
     }
 
     // Small delay to let the page settle
@@ -208,13 +326,12 @@ const AuthCallback: React.FC = () => {
     window.location.href = '/'
   }
 
-  // ✅ SUPABASE: Error message mapping based on OAuth error codes
+  // ✅ Error message mapping
   const getErrorMessage = (): string => {
     const { errorCode, errorDescription } = callbackState
     
     if (!errorCode) return callbackState.message
     
-    // Map OAuth error codes to user-friendly messages
     switch (errorCode) {
       case 'access_denied':
         return 'You cancelled the sign-in process. Please try again if you want to continue.'
@@ -247,7 +364,10 @@ const AuthCallback: React.FC = () => {
               {callbackState.message}
             </h2>
             <p className="text-gray-600">
-              Following official Supabase OAuth flow...
+              {callbackState.message.includes('tokens') 
+                ? 'Processing OAuth tokens from Google...'
+                : 'Following Supabase OAuth flow...'
+              }
             </p>
           </div>
         )
@@ -268,7 +388,7 @@ const AuthCallback: React.FC = () => {
             </p>
             {callbackState.details && (
               <div className="mt-4 text-sm text-gray-500">
-                Signed in via {callbackState.details.provider}
+                Signed in via {callbackState.details.provider} ({callbackState.details.flowType} flow)
               </div>
             )}
           </div>
@@ -323,13 +443,6 @@ const AuthCallback: React.FC = () => {
                 Return Home
               </button>
             </div>
-            
-            {/* Error details for debugging */}
-            {callbackState.errorCode && (
-              <div className="mt-4 text-xs text-gray-500">
-                Error Code: {callbackState.errorCode}
-              </div>
-            )}
             
             {/* Debug info in development */}
             {process.env.NODE_ENV === 'development' && callbackState.details && (
