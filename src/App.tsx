@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './lib/authContext'
-import UnsubscribePage from './pages/UnsubscribePage'
+// import UnsubscribePage from './pages/UnsubscribePage'
 // ✅ Import the clean query client
 import { queryClient } from './lib/queryClient'
 
@@ -110,7 +110,7 @@ const PublicApp: React.FC = () => {
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
-                 <Route path="/unsubscribe" element={<UnsubscribePage />} />
+                 {/* <Route path="/unsubscribe" element={<UnsubscribePage />} /> */}
                 <Route path="*" element={
                   <div className="min-h-screen flex items-center justify-center pt-20">
                     <div className="text-center">
