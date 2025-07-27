@@ -25,6 +25,7 @@ const Terms = React.lazy(() => import('./pages/Terms'))
 const Privacy = React.lazy(() => import('./pages/Privacy'))
 const AuthCallback = React.lazy(() => import('./pages/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
+const Unsubscribe = React.lazy(() => import('./pages/Unsubscribe'))
 
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
 const MyDeals = React.lazy(() => import('./pages/dashboard/MyDeals'))
@@ -105,7 +106,7 @@ const PublicApp: React.FC = () => {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
-                
+                <Route path="/unsubscribe" element={<Unsubscribe/>} />
                 <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 
