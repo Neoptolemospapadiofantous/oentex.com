@@ -1,4 +1,4 @@
 node_modules/
-.env
-src/components/debug/
-src/pages/AuthTestPage.tsx
+supabase/
+package-lock.json
+debug/

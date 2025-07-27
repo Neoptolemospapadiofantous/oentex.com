@@ -1,7 +1,5 @@
-// src/lib/services/authService.ts - Updated for OAuth-only
 import { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../supabase'
-import { logger } from '../../utils/logger'
 import { config } from '../../config'
 import { AuthError as CustomAuthError, AuthErrorType } from '../../types/auth'
 
@@ -14,8 +12,6 @@ class AuthService {
   private readonly MAX_RETRIES = 3
   private readonly RETRY_DELAY = 1000
   private readonly profileCreationCache = new Map<string, Promise<CreateUserProfileResult>>()
-
-  // ✅ OAUTH METHODS ONLY - Removed email/password and Solana methods
 
   async signInWithGoogle() {
     try {
@@ -31,14 +27,11 @@ class AuthService {
       })
       
       if (error) {
-        logger.error('Google OAuth error:', error)
         return { error: this.handleAuthError(error) }
       }
       
-      logger.info('Google sign in initiated')
       return { error: null }
     } catch (error) {
-      logger.error('Unexpected Google OAuth error:', error)
       return { error: this.handleAuthError(error) }
     }
   }
@@ -56,40 +49,32 @@ class AuthService {
       })
       
       if (error) {
-        logger.error('Microsoft OAuth error:', error)
         return { error: this.handleAuthError(error) }
       }
       
-      logger.info('Microsoft sign in initiated')
       return { error: null }
     } catch (error) {
-      logger.error('Unexpected Microsoft OAuth error:', error)
       return { error: this.handleAuthError(error) }
     }
   }
 
   async signOut() {
     try {
-      // Clear profile creation cache
       this.profileCreationCache.clear()
       
       const { error } = await supabase.auth.signOut()
       
       if (error) {
-        logger.error('Error during signOut:', error)
         return { error: this.handleAuthError(error) }
       }
       
-      logger.info('Successfully signed out')
       return { error: null }
     } catch (error) {
-      logger.error('Unexpected signOut error:', error)
       return { error: this.handleAuthError(error) }
     }
   }
 
   async createUserProfile(user: User): Promise<CreateUserProfileResult> {
-    // Use cache to prevent duplicate profile creation attempts
     if (this.profileCreationCache.has(user.id)) {
       return this.profileCreationCache.get(user.id)!
     }
@@ -99,14 +84,12 @@ class AuthService {
 
     try {
       const result = await profileCreationPromise
-      // Keep successful results in cache for 5 minutes
       setTimeout(() => {
         this.profileCreationCache.delete(user.id)
       }, 5 * 60 * 1000)
       
       return result
     } catch (error) {
-      // Remove failed attempts from cache immediately
       this.profileCreationCache.delete(user.id)
       throw error
     }
@@ -114,7 +97,6 @@ class AuthService {
 
   private async performProfileCreation(user: User, retries = 0): Promise<CreateUserProfileResult> {
     try {
-      // Check if profile already exists
       const { data: existingProfile, error: checkError } = await supabase
         .from('user_profiles')
         .select('id')
@@ -122,7 +104,6 @@ class AuthService {
         .maybeSingle()
 
       if (checkError) {
-        logger.error('Error checking existing profile:', checkError)
         if (retries < this.MAX_RETRIES) {
           await this.delay(this.RETRY_DELAY * (retries + 1))
           return this.performProfileCreation(user, retries + 1)
@@ -131,11 +112,9 @@ class AuthService {
       }
 
       if (existingProfile) {
-        logger.info('User profile already exists')
         return { success: true }
       }
 
-      // Create new profile
       const profileData = {
         id: user.id,
         email: user.email || '',
@@ -152,11 +131,8 @@ class AuthService {
 
       if (error) {
         if (error.code === '23505') {
-          // Duplicate key - profile already exists
-          logger.info('User profile already exists (duplicate key)')
           return { success: true }
         } else {
-          logger.error('Error creating user profile:', error)
           if (retries < this.MAX_RETRIES) {
             await this.delay(this.RETRY_DELAY * (retries + 1))
             return this.performProfileCreation(user, retries + 1)
@@ -165,10 +141,8 @@ class AuthService {
         }
       }
 
-      logger.info('User profile created successfully')
       return { success: true }
     } catch (error) {
-      logger.error('Unexpected error creating user profile:', error)
       if (retries < this.MAX_RETRIES) {
         await this.delay(this.RETRY_DELAY * (retries + 1))
         return this.performProfileCreation(user, retries + 1)
@@ -212,7 +186,6 @@ class AuthService {
         case 'email_address_not_authorized':
           return this.createError(AuthErrorType.AUTHORIZATION_ERROR, 'This email address is not authorized')
         default:
-          logger.error('Unhandled auth error code:', authError.code, authError.message)
           return this.createError(AuthErrorType.UNKNOWN_ERROR, 'An unexpected error occurred. Please try again')
       }
     }
