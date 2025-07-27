@@ -15,10 +15,19 @@ class AuthService {
 
   async signInWithGoogle() {
     try {
+      const redirectUrl = `${config.baseUrl}/auth/callback`
+      
+      // 🔍 DEBUG: Log the redirect URL
+      console.log('🔧 DEBUG - OAuth Config:', {
+        baseUrl: config.baseUrl,
+        redirectUrl: redirectUrl,
+        environment: config.environment || 'unknown'
+      })
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${config.baseUrl}/auth/callback`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -27,21 +36,32 @@ class AuthService {
       })
       
       if (error) {
+        console.error('🔧 DEBUG - Google OAuth error:', error)
         return { error: this.handleAuthError(error) }
       }
       
+      console.log('🔧 DEBUG - Google OAuth initiated with redirect:', redirectUrl)
       return { error: null }
     } catch (error) {
+      console.error('🔧 DEBUG - Google OAuth exception:', error)
       return { error: this.handleAuthError(error) }
     }
   }
 
   async signInWithMicrosoft() {
     try {
+      const redirectUrl = `${config.baseUrl}/auth/callback`
+      
+      console.log('🔧 DEBUG - Microsoft OAuth Config:', {
+        baseUrl: config.baseUrl,
+        redirectUrl: redirectUrl,
+        environment: config.environment || 'unknown'
+      })
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          redirectTo: `${config.baseUrl}/auth/callback`,
+          redirectTo: redirectUrl,
           queryParams: {
             prompt: 'select_account',
           }
@@ -49,11 +69,14 @@ class AuthService {
       })
       
       if (error) {
+        console.error('🔧 DEBUG - Microsoft OAuth error:', error)
         return { error: this.handleAuthError(error) }
       }
       
+      console.log('🔧 DEBUG - Microsoft OAuth initiated with redirect:', redirectUrl)
       return { error: null }
     } catch (error) {
+      console.error('🔧 DEBUG - Microsoft OAuth exception:', error)
       return { error: this.handleAuthError(error) }
     }
   }
