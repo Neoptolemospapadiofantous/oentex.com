@@ -1,178 +1,392 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/authContext'
 import { config } from '../config'
 import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ErrorBoundary } from '../components/ui/ErrorBoundary'
 
 interface CallbackState {
-  status: 'processing' | 'success' | 'error'
+  status: 'processing' | 'success' | 'error' | 'redirecting'
   message: string
+  details?: any
   errorCode?: string
+  errorDescription?: string
+}
+
+interface OAuthTokens {
+  access_token?: string
+  refresh_token?: string
+  expires_at?: string
+  expires_in?: string
+  provider_token?: string
+  provider_refresh_token?: string
+  token_type?: string
 }
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { retryAuth } = useAuth()
   const [callbackState, setCallbackState] = useState<CallbackState>({
     status: 'processing',
     message: 'Processing authentication...'
   })
 
   useEffect(() => {
-    const handleAuth = async () => {
+    const handleAuthCallback = async () => {
       try {
-        // Check for OAuth errors first
-        const oauthError = searchParams.get('error')
-        if (oauthError) {
+        const currentUrl = window.location.href
+        const urlHash = window.location.hash
+        const code = searchParams.get('code')
+        const error = searchParams.get('error')
+        const errorDescription = searchParams.get('error_description')
+        
+        // Handle OAuth errors immediately
+        if (error) {
           setCallbackState({
             status: 'error',
-            message: oauthError === 'access_denied' 
-              ? 'Sign-in cancelled. Please try again.' 
-              : 'Authentication failed. Please try again.',
-            errorCode: oauthError
+            message: 'Authentication failed',
+            details: { error, errorDescription },
+            errorCode: error,
+            errorDescription: errorDescription || undefined
+          })
+          return
+        }
+        
+        // Handle implicit flow (hash-based tokens)
+        if (urlHash && urlHash.includes('access_token')) {
+          setCallbackState({
+            status: 'processing',
+            message: 'Verifying authentication...'
+          })
+
+          const tokens = parseTokensFromHash(urlHash)
+
+          if (tokens.access_token) {
+            try {
+              const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+              
+              if (sessionError) {
+                setCallbackState({
+                  status: 'error',
+                  message: 'Failed to verify authentication session',
+                  details: sessionError,
+                  errorCode: sessionError.code,
+                  errorDescription: sessionError.message
+                })
+                return
+              }
+
+              if (sessionData.session?.user) {
+                const user = sessionData.session.user
+                
+                // Clean up URL hash immediately
+                if (window.history.replaceState) {
+                  window.history.replaceState(null, '', window.location.pathname)
+                }
+
+                // Brief success message then immediate redirect
+                setCallbackState({
+                  status: 'success',
+                  message: `Welcome ${user.email || 'back'}!`,
+                  details: {
+                    userId: user.id,
+                    email: user.email,
+                    provider: user.app_metadata?.provider,
+                    flowType: 'implicit'
+                  }
+                })
+
+                // Immediate redirect with minimal delay for UX
+                setTimeout(() => {
+                  const redirectPath = config.auth.redirectPath || '/dashboard'
+                  navigate(redirectPath, { replace: true })
+                }, 100)
+                
+              } else {
+                setCallbackState({
+                  status: 'error',
+                  message: 'Authentication tokens received but session could not be established',
+                  details: { tokens, noSession: true }
+                })
+              }
+            } catch (sessionError) {
+              setCallbackState({
+                status: 'error',
+                message: 'Error processing authentication session',
+                details: sessionError
+              })
+            }
+            return
+          }
+        }
+        
+        // Handle authorization code flow (PKCE)
+        if (code) {
+          setCallbackState({
+            status: 'processing',
+            message: 'Completing sign-in...'
+          })
+
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          
+          if (exchangeError) {
+            setCallbackState({
+              status: 'error',
+              message: 'Failed to complete authentication',
+              details: exchangeError,
+              errorCode: exchangeError.code,
+              errorDescription: exchangeError.message
+            })
+            return
+          }
+
+          if (data.session?.user) {
+            const user = data.user
+            
+            setCallbackState({
+              status: 'success',
+              message: `Welcome ${user.email || 'back'}!`,
+              details: {
+                userId: user.id,
+                email: user.email,
+                provider: user.app_metadata?.provider,
+                flowType: 'pkce'
+              }
+            })
+
+            // Immediate redirect
+            setTimeout(() => {
+              const redirectPath = config.auth.redirectPath || '/dashboard'
+              navigate(redirectPath, { replace: true })
+            }, 100)
+          }
+          return
+        }
+        
+        // Fallback: check for existing session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        
+        if (sessionError) {
+          setCallbackState({
+            status: 'error',
+            message: 'Failed to verify authentication session',
+            details: sessionError
           })
           return
         }
 
-        // Handle authorization code (PKCE flow)
-        const code = searchParams.get('code')
-        if (code) {
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-          if (exchangeError) throw exchangeError
-          if (data.session?.user) {
-            setCallbackState({
-              status: 'success',
-              message: `Welcome back! Redirecting...`
-            })
-            const redirectPath = config.auth.redirectPath || '/dashboard'
-            setTimeout(() => {
-              navigate(redirectPath, { replace: true })
-            }, 300) // 300ms delay - just enough to show success
-            return
-          }
-        }
-
-        // Handle hash tokens (implicit flow)
-        const hash = window.location.hash
-        if (hash.includes('access_token')) {
-          const { data, error: sessionError } = await supabase.auth.getSession()
-          if (sessionError) throw sessionError
-          if (data.session?.user) {
-            // Clean up URL hash
-            window.history.replaceState(null, '', window.location.pathname)
-            setCallbackState({
-              status: 'success',
-              message: `Welcome back! Redirecting...`
-            })
-            const redirectPath = config.auth.redirectPath || '/dashboard'
-            setTimeout(() => {
-              navigate(redirectPath, { replace: true })
-            }, 300) // 300ms delay - just enough to show success
-            return
-          }
-        }
-
-        // Check for existing session
-        const { data, error: finalSessionError } = await supabase.auth.getSession()
-        if (finalSessionError) throw finalSessionError
-        
-        if (data.session?.user) {
+        if (sessionData.session?.user) {
+          const user = sessionData.session.user
+          
           setCallbackState({
             status: 'success',
-            message: `Welcome back! Redirecting...`
+            message: `Welcome back ${user.email}!`,
+            details: {
+              userId: user.id,
+              email: user.email,
+              provider: user.app_metadata?.provider,
+              flowType: 'existing'
+            }
           })
-          const redirectPath = config.auth.redirectPath || '/dashboard'
+          
+          // Immediate redirect for existing sessions
           setTimeout(() => {
+            const redirectPath = config.auth.redirectPath || '/dashboard'
             navigate(redirectPath, { replace: true })
-          }, 300) // 300ms delay - just enough to show success
+          }, 100)
+          
         } else {
           setCallbackState({
             status: 'error',
-            message: 'No active session found. Please sign in again.'
+            message: 'No authentication session found. Please try signing in again.',
+            details: { noSession: true, url: currentUrl }
           })
         }
-
-      } catch (authError) {
-        console.error('Auth error:', authError)
+        
+      } catch (error) {
         setCallbackState({
           status: 'error',
-          message: 'Authentication failed. Please try again.'
+          message: 'An unexpected error occurred during authentication.',
+          details: error
         })
       }
     }
 
-    handleAuth()
+    const parseTokensFromHash = (hash: string): OAuthTokens => {
+      const tokens: OAuthTokens = {}
+      const params = new URLSearchParams(hash.slice(1))
+      
+      tokens.access_token = params.get('access_token') || undefined
+      tokens.refresh_token = params.get('refresh_token') || undefined
+      tokens.expires_at = params.get('expires_at') || undefined
+      tokens.expires_in = params.get('expires_in') || undefined
+      tokens.provider_token = params.get('provider_token') || undefined
+      tokens.provider_refresh_token = params.get('provider_refresh_token') || undefined
+      tokens.token_type = params.get('token_type') || undefined
+      
+      return tokens
+    }
+
+    // Start auth callback handling immediately (no delay)
+    handleAuthCallback()
   }, [navigate, searchParams])
 
-  const handleGoHome = () => navigate('/', { replace: true })
-  const handleTryAgain = () => window.location.href = '/'
+  const handleRetry = async () => {
+    setCallbackState({
+      status: 'processing',
+      message: 'Retrying authentication...'
+    })
+    
+    try {
+      await retryAuth()
+    } catch (error) {
+      setCallbackState({
+        status: 'error',
+        message: 'Retry failed. Please try signing in again.',
+        details: error
+      })
+    }
+  }
+
+  const handleGoHome = () => {
+    navigate('/', { replace: true })
+  }
+
+  const handleTryAgain = () => {
+    window.location.href = '/'
+  }
+
+  const getErrorMessage = (): string => {
+    const { errorCode, errorDescription } = callbackState
+    
+    if (!errorCode) return callbackState.message
+    
+    switch (errorCode) {
+      case 'access_denied':
+        return 'You cancelled the sign-in process. Please try again if you want to continue.'
+      case 'invalid_request':
+        return 'Invalid authentication request. Please try signing in again.'
+      case 'unsupported_response_type':
+        return 'Authentication method not supported. Please contact support.'
+      case 'invalid_scope':
+        return 'Invalid permissions requested. Please contact support.'
+      case 'server_error':
+        return 'Authentication server error. Please try again in a moment.'
+      case 'temporarily_unavailable':
+        return 'Authentication service temporarily unavailable. Please try again later.'
+      default:
+        if (errorCode.startsWith('4')) {
+          return `Authentication failed: ${errorDescription || 'Please try again'}`
+        }
+        return errorDescription || 'Authentication failed. Please try again.'
+    }
+  }
+
+  const renderContent = () => {
+    switch (callbackState.status) {
+      case 'processing':
+        return (
+          <div className="text-center">
+            <LoadingSpinner className="mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              {callbackState.message}
+            </h2>
+            <p className="text-gray-600">
+              Please wait a moment...
+            </p>
+          </div>
+        )
+
+      case 'success':
+        return (
+          <div className="text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Authentication Successful!
+            </h2>
+            <p className="text-gray-600">
+              {callbackState.message}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Redirecting to dashboard...
+            </p>
+            {callbackState.details && (
+              <div className="mt-4 text-sm text-gray-500">
+                Signed in via {callbackState.details.provider}
+              </div>
+            )}
+          </div>
+        )
+
+      case 'error':
+        return (
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Authentication Failed
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {getErrorMessage()}
+            </p>
+            
+            <div className="space-y-3">
+              {callbackState.errorCode === 'access_denied' ? (
+                <button
+                  onClick={handleTryAgain}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Try Signing In Again
+                </button>
+              ) : (
+                <button
+                  onClick={handleRetry}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Retry Authentication
+                </button>
+              )}
+              
+              <button
+                onClick={handleGoHome}
+                className="w-full bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Return Home
+              </button>
+            </div>
+            
+            {process.env.NODE_ENV === 'development' && callbackState.details && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">
+                  Debug Info (Development Only)
+                </summary>
+                <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+                  {JSON.stringify(callbackState.details, null, 2)}
+                </pre>
+              </details>
+            )}
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
 
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center">
-            {callbackState.status === 'processing' && (
-              <>
-                <LoadingSpinner className="mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  {callbackState.message}
-                </h2>
-                <p className="text-gray-600">
-                  Please wait while we sign you in...
-                </p>
-              </>
-            )}
-
-            {callbackState.status === 'success' && (
-              <>
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  Authentication Successful!
-                </h2>
-                <p className="text-gray-600">
-                  {callbackState.message}
-                </p>
-              </>
-            )}
-
-            {callbackState.status === 'error' && (
-              <>
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  Authentication Failed
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {callbackState.message}
-                </p>
-                
-                <div className="space-y-3">
-                  <button
-                    onClick={callbackState.errorCode === 'access_denied' ? handleTryAgain : handleTryAgain}
-                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Try Again
-                  </button>
-                  
-                  <button
-                    onClick={handleGoHome}
-                    className="w-full bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-                  >
-                    Return Home
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          {renderContent()}
         </div>
       </div>
     </ErrorBoundary>
