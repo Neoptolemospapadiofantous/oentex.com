@@ -23,14 +23,14 @@ const AuthCallback: React.FC = () => {
     const handleAuth = async () => {
       try {
         // Check for OAuth errors first
-        const error = searchParams.get('error')
-        if (error) {
+        const oauthError = searchParams.get('error')
+        if (oauthError) {
           setCallbackState({
             status: 'error',
-            message: error === 'access_denied' 
+            message: oauthError === 'access_denied' 
               ? 'Sign-in cancelled. Please try again.' 
               : 'Authentication failed. Please try again.',
-            errorCode: error
+            errorCode: oauthError
           })
           return
         }
@@ -38,8 +38,8 @@ const AuthCallback: React.FC = () => {
         // Handle authorization code (PKCE flow)
         const code = searchParams.get('code')
         if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-          if (error) throw error
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          if (exchangeError) throw exchangeError
           if (data.session?.user) {
             setCallbackState({
               status: 'success',
@@ -54,8 +54,8 @@ const AuthCallback: React.FC = () => {
         // Handle hash tokens (implicit flow)
         const hash = window.location.hash
         if (hash.includes('access_token')) {
-          const { data, error } = await supabase.auth.getSession()
-          if (error) throw error
+          const { data, error: sessionError } = await supabase.auth.getSession()
+          if (sessionError) throw sessionError
           if (data.session?.user) {
             // Clean up URL hash
             window.history.replaceState(null, '', window.location.pathname)
@@ -70,8 +70,8 @@ const AuthCallback: React.FC = () => {
         }
 
         // Check for existing session
-        const { data, error } = await supabase.auth.getSession()
-        if (error) throw error
+        const { data, error: finalSessionError } = await supabase.auth.getSession()
+        if (finalSessionError) throw finalSessionError
         
         if (data.session?.user) {
           setCallbackState({
@@ -87,8 +87,8 @@ const AuthCallback: React.FC = () => {
           })
         }
 
-      } catch (error) {
-        console.error('Auth error:', error)
+      } catch (authError) {
+        console.error('Auth error:', authError)
         setCallbackState({
           status: 'error',
           message: 'Authentication failed. Please try again.'
