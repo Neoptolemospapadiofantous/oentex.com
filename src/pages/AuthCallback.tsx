@@ -7,7 +7,7 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner'
 import { ErrorBoundary } from '../components/ui/ErrorBoundary'
 
 interface CallbackState {
-  status: 'processing' | 'success' | 'error' | 'redirecting'
+  status: 'processing' | 'error'
   message: string
   details?: any
   errorCode?: string
@@ -86,23 +86,14 @@ const AuthCallback: React.FC = () => {
                   window.history.replaceState(null, '', window.location.pathname)
                 }
 
-                // Brief success message then immediate redirect
-                setCallbackState({
-                  status: 'success',
-                  message: `Welcome ${user.email || 'back'}!`,
-                  details: {
-                    userId: user.id,
-                    email: user.email,
-                    provider: user.app_metadata?.provider,
-                    flowType: 'implicit'
-                  }
-                })
+                // Clean up URL hash immediately
+                if (window.history.replaceState) {
+                  window.history.replaceState(null, '', window.location.pathname)
+                }
 
-                // Immediate redirect with minimal delay for UX
-                setTimeout(() => {
-                  const redirectPath = config.auth.redirectPath || '/dashboard'
-                  navigate(redirectPath, { replace: true })
-                }, 100)
+                // Direct redirect without any delay
+                const redirectPath = config.auth.redirectPath || '/dashboard'
+                navigate(redirectPath, { replace: true })
                 
               } else {
                 setCallbackState({
@@ -143,24 +134,9 @@ const AuthCallback: React.FC = () => {
           }
 
           if (data.session?.user) {
-            const user = data.user
-            
-            setCallbackState({
-              status: 'success',
-              message: `Welcome ${user.email || 'back'}!`,
-              details: {
-                userId: user.id,
-                email: user.email,
-                provider: user.app_metadata?.provider,
-                flowType: 'pkce'
-              }
-            })
-
-            // Immediate redirect
-            setTimeout(() => {
-              const redirectPath = config.auth.redirectPath || '/dashboard'
-              navigate(redirectPath, { replace: true })
-            }, 100)
+            // Direct redirect without showing success state
+            const redirectPath = config.auth.redirectPath || '/dashboard'
+            navigate(redirectPath, { replace: true })
           }
           return
         }
@@ -178,25 +154,9 @@ const AuthCallback: React.FC = () => {
         }
 
         if (sessionData.session?.user) {
-          const user = sessionData.session.user
-          
-          setCallbackState({
-            status: 'success',
-            message: `Welcome back ${user.email}!`,
-            details: {
-              userId: user.id,
-              email: user.email,
-              provider: user.app_metadata?.provider,
-              flowType: 'existing'
-            }
-          })
-          
-          // Immediate redirect for existing sessions
-          setTimeout(() => {
-            const redirectPath = config.auth.redirectPath || '/dashboard'
-            navigate(redirectPath, { replace: true })
-          }, 100)
-          
+          // Direct redirect for existing sessions
+          const redirectPath = config.auth.redirectPath || '/dashboard'
+          navigate(redirectPath, { replace: true })
         } else {
           setCallbackState({
             status: 'error',
@@ -296,31 +256,6 @@ const AuthCallback: React.FC = () => {
             <p className="text-gray-600">
               Please wait a moment...
             </p>
-          </div>
-        )
-
-      case 'success':
-        return (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Authentication Successful!
-            </h2>
-            <p className="text-gray-600">
-              {callbackState.message}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Redirecting to dashboard...
-            </p>
-            {callbackState.details && (
-              <div className="mt-4 text-sm text-gray-500">
-                Signed in via {callbackState.details.provider}
-              </div>
-            )}
           </div>
         )
 
