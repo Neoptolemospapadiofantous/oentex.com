@@ -19,8 +19,7 @@ const Unsubscribe = () => {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [reason, setReason] = useState('1') // Use numeric values
-  // Remove feedback since column doesn't exist
+  const [reason, setReason] = useState('1')
 
   useEffect(() => {
     if (!token) {
@@ -35,7 +34,6 @@ const Unsubscribe = () => {
     try {
       console.log('🔍 Fetching subscriber for token:', token)
       
-      // Query the database directly for the subscriber
       const { data, error } = await supabase
         .from('email_subscribers')
         .select('email, status, unsubscribe_token')
@@ -71,28 +69,26 @@ const Unsubscribe = () => {
     }
   }
 
-const handleUnsubscribe = async (e: React.FormEvent) => {
+  const handleUnsubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
 
     try {
       console.log('📧 Processing unsubscribe for token:', token, 'reason:', reason)
       
-      // Check if already unsubscribed
       if (subscriber?.status === 'unsubscribed') {
         setSuccess(true)
         toast.success('Already unsubscribed')
         return
       }
 
-      // Option 1: Try calling the edge function (which handles both DB and Resend)
+      // Try calling the edge function with correct name
       console.log('🔄 Attempting edge function call...')
       try {
-        const { data, error } = await supabase.functions.invoke('unsubscribe', {
+        const { data, error } = await supabase.functions.invoke('newsletter-unsubscribe', {
           body: {
             token,
-            reason: parseInt(reason),
-            feedback: '' // Empty since we removed the field
+            reason
           }
         })
 
@@ -114,10 +110,9 @@ const handleUnsubscribe = async (e: React.FormEvent) => {
       } catch (edgeFunctionError) {
         console.warn('⚠️ Edge function failed, trying direct database update:', edgeFunctionError)
         
-        // Option 2: Fallback to direct database update
+        // Fallback to direct database update
         console.log('🔄 Attempting direct database update...')
         
-        // First, let's verify the token exists in the database
         const { data: tokenCheck, error: tokenError } = await supabase
           .from('email_subscribers')
           .select('id, email, status, unsubscribe_token')
@@ -129,20 +124,15 @@ const handleUnsubscribe = async (e: React.FormEvent) => {
           throw new Error(`No subscriber found with unsubscribe_token: ${token}`)
         }
 
-        // Try the update with a more explicit approach
-        console.log('🔧 Trying alternative update approach...')
-        
-        // First, get the exact record ID
         const subscriberRecord = tokenCheck[0]
         console.log('📋 Record to update:', subscriberRecord)
         
-        // Try updating by ID instead of token with correct data types
         const { data: updateByIdResult, error: updateByIdError } = await supabase
           .from('email_subscribers')
           .update({
             status: 'unsubscribed',
-            unsubscribed_at: new Date().toISOString(), // timestamp with time zone
-            unsubscribe_reason: reason, // character varying (keep as string)
+            unsubscribed_at: new Date().toISOString(),
+            unsubscribe_reason: reason,
             updated_at: new Date().toISOString()
           })
           .eq('id', subscriberRecord.id)
@@ -163,16 +153,6 @@ const handleUnsubscribe = async (e: React.FormEvent) => {
         console.log('✅ Direct database update successful - Updated records:', updateByIdResult.length)
         setSuccess(true)
         toast.success('Successfully unsubscribed from newsletter')
-        
-        // Try to remove from Resend as well
-        try {
-          console.log('🔄 Attempting to remove from Resend...')
-          // This would need to be done server-side since Resend API key should be secret
-          // For now, the database update is the most important part
-        } catch (resendError) {
-          console.warn('⚠️ Resend removal failed:', resendError)
-          // Don't fail the whole operation
-        }
       }
 
     } catch (err) {
