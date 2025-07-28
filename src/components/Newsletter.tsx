@@ -95,7 +95,7 @@ const Newsletter = () => {
       }
 
       if (data?.success) {
-        toast.success(data.message || 'Successfully subscribed! Check your email for a welcome message.')
+        toast.success(data.message || 'Successfully subscribed!')
         setEmail('')
       } else {
         toast.error('Failed to subscribe. Please try again later.')

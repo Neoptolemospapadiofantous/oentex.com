@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/authContext'
@@ -32,6 +32,53 @@ const AuthCallback: React.FC = () => {
     status: 'processing',
     message: 'Processing OAuth callback...'
   })
+  
+  // Use refs to track timeouts for cleanup
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const initialTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current)
+      }
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Function to handle successful authentication with consistent 1.5s delay
+  const handleSuccessfulAuth = (user: any, session: any, flowType: string) => {
+    setCallbackState({
+      status: 'success',
+      message: `Welcome ${user.email || 'back'}! Setting up your dashboard...`,
+      details: {
+        userId: user.id,
+        email: user.email,
+        provider: user.app_metadata?.provider,
+        expiresAt: session.expires_at,
+        flowType
+      }
+    })
+
+    // Clear any existing redirect timeout
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current)
+    }
+
+    // Set redirect timeout to exactly 1 second
+    redirectTimeoutRef.current = setTimeout(() => {
+      setCallbackState({
+        status: 'redirecting',
+        message: 'Taking you to your dashboard...'
+      })
+      
+      const redirectPath = config.auth.redirectPath || '/dashboard'
+      navigate(redirectPath, { replace: true })
+    }, 1000) // Exactly 1 second
+  }
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -42,6 +89,7 @@ const AuthCallback: React.FC = () => {
         const error = searchParams.get('error')
         const errorDescription = searchParams.get('error_description')
         
+        // Handle OAuth errors
         if (error) {
           setCallbackState({
             status: 'error',
@@ -53,6 +101,7 @@ const AuthCallback: React.FC = () => {
           return
         }
         
+        // Handle implicit flow (hash-based tokens)
         if (urlHash && urlHash.includes('access_token')) {
           setCallbackState({
             status: 'processing',
@@ -80,31 +129,12 @@ const AuthCallback: React.FC = () => {
                 const user = sessionData.session.user
                 const session = sessionData.session
                 
-                setCallbackState({
-                  status: 'success',
-                  message: `Welcome ${user.email || 'back'}! Setting up your dashboard...`,
-                  details: {
-                    userId: user.id,
-                    email: user.email,
-                    provider: user.app_metadata?.provider,
-                    expiresAt: session.expires_at,
-                    flowType: 'implicit'
-                  }
-                })
-
+                // Clean up the URL hash
                 if (window.history.replaceState) {
                   window.history.replaceState(null, '', window.location.pathname)
                 }
 
-                setTimeout(() => {
-                  setCallbackState({
-                    status: 'redirecting',
-                    message: 'Taking you to your dashboard...'
-                  })
-                  
-                  const redirectPath = config.auth.redirectPath || '/dashboard'
-                  navigate(redirectPath, { replace: true })
-                }, 500)
+                handleSuccessfulAuth(user, session, 'implicit')
                 
               } else {
                 setCallbackState({
@@ -124,6 +154,7 @@ const AuthCallback: React.FC = () => {
           }
         }
         
+        // Handle PKCE flow (code exchange)
         if (code) {
           setCallbackState({
             status: 'processing',
@@ -147,31 +178,12 @@ const AuthCallback: React.FC = () => {
             const user = data.user
             const session = data.session
             
-            setCallbackState({
-              status: 'success',
-              message: `Welcome ${user.email || 'back'}! Setting up your dashboard...`,
-              details: {
-                userId: user.id,
-                email: user.email,
-                provider: user.app_metadata?.provider,
-                expiresAt: session.expires_at,
-                flowType: 'pkce'
-              }
-            })
-
-            setTimeout(() => {
-              setCallbackState({
-                status: 'redirecting',
-                message: 'Taking you to your dashboard...'
-              })
-              
-              const redirectPath = config.auth.redirectPath || '/dashboard'
-              navigate(redirectPath, { replace: true })
-            }, 1500)
+            handleSuccessfulAuth(user, session, 'pkce')
           }
           return
         }
         
+        // Check for existing session
         setCallbackState({
           status: 'processing',
           message: 'Checking authentication status...'
@@ -190,22 +202,9 @@ const AuthCallback: React.FC = () => {
 
         if (sessionData.session && sessionData.session.user) {
           const user = sessionData.session.user
+          const session = sessionData.session
           
-          setCallbackState({
-            status: 'success',
-            message: `Welcome back ${user.email}! Redirecting...`,
-            details: {
-              userId: user.id,
-              email: user.email,
-              provider: user.app_metadata?.provider,
-              flowType: 'existing'
-            }
-          })
-          
-          setTimeout(() => {
-            const redirectPath = config.auth.redirectPath || '/dashboard'
-            navigate(redirectPath, { replace: true })
-          }, 1000)
+          handleSuccessfulAuth(user, session, 'existing')
           
         } else {
           setCallbackState({
@@ -216,6 +215,7 @@ const AuthCallback: React.FC = () => {
         }
         
       } catch (error) {
+        console.error('Auth callback error:', error)
         setCallbackState({
           status: 'error',
           message: 'An unexpected error occurred during authentication.',
@@ -240,11 +240,22 @@ const AuthCallback: React.FC = () => {
       return tokens
     }
 
-    const timer = setTimeout(handleAuthCallback, 300)
-    return () => clearTimeout(timer)
+    // Small delay before processing to ensure DOM is ready
+    initialTimeoutRef.current = setTimeout(handleAuthCallback, 300)
+    
+    return () => {
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current)
+      }
+    }
   }, [navigate, searchParams])
 
   const handleRetry = async () => {
+    // Clear any existing timeouts
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current)
+    }
+    
     setCallbackState({
       status: 'processing',
       message: 'Retrying authentication...'
@@ -262,10 +273,18 @@ const AuthCallback: React.FC = () => {
   }
 
   const handleGoHome = () => {
+    // Clear any existing timeouts
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current)
+    }
     navigate('/', { replace: true })
   }
 
   const handleTryAgain = () => {
+    // Clear any existing timeouts
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current)
+    }
     window.location.href = '/'
   }
 
