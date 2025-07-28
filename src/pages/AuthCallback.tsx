@@ -46,7 +46,9 @@ const AuthCallback: React.FC = () => {
               message: `Welcome back! Redirecting...`
             })
             const redirectPath = config.auth.redirectPath || '/dashboard'
-            navigate(redirectPath, { replace: true })
+            setTimeout(() => {
+              navigate(redirectPath, { replace: true })
+            }, 300) // 300ms delay - just enough to show success
             return
           }
         }
@@ -64,7 +66,9 @@ const AuthCallback: React.FC = () => {
               message: `Welcome back! Redirecting...`
             })
             const redirectPath = config.auth.redirectPath || '/dashboard'
-            navigate(redirectPath, { replace: true })
+            setTimeout(() => {
+              navigate(redirectPath, { replace: true })
+            }, 300) // 300ms delay - just enough to show success
             return
           }
         }
@@ -79,7 +83,9 @@ const AuthCallback: React.FC = () => {
             message: `Welcome back! Redirecting...`
           })
           const redirectPath = config.auth.redirectPath || '/dashboard'
-          navigate(redirectPath, { replace: true })
+          setTimeout(() => {
+            navigate(redirectPath, { replace: true })
+          }, 300) // 300ms delay - just enough to show success
         } else {
           setCallbackState({
             status: 'error',
