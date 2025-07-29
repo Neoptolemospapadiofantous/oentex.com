@@ -2,6 +2,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Twitter, Linkedin, Github } from 'lucide-react'
+import logo from '../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
@@ -41,10 +42,12 @@ const Footer: React.FC = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">TR</span>
-              </div>
-              <span className="font-bold text-xl text-text">TradingRater</span>
+              <img 
+                src={logo} 
+                alt="Oentex Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <span className="font-bold text-xl text-text">Oentex</span>
             </Link>
             <p className="text-textSecondary text-sm mb-6 max-w-md">
               Discover and rate the best trading platforms, exchanges, and financial services. 
@@ -121,7 +124,7 @@ const Footer: React.FC = () => {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-textSecondary text-sm">
-            © {currentYear} TradingRater. All rights reserved.
+            © {currentYear} Oentex. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="text-textSecondary hover:text-text transition-colors text-sm">

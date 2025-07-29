@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { AuthButton } from './auth/AuthButton'
+import logo from '../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -21,10 +22,12 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TR</span>
-            </div>
-            <span className="font-bold text-xl text-text">TradingRater</span>
+            <img 
+              src={logo} 
+              alt="Oentex Logo" 
+              className="w-12 h-12 object-contain"
+            />
+            <span className="font-bold text-xl text-text">Oentex</span>
           </Link>
 
           {/* Desktop Navigation */}

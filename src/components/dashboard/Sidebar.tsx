@@ -13,6 +13,7 @@ import {
   BarChart3
 } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
+import logo from '../../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
 
 interface SidebarProps {
   isMobileOpen: boolean
@@ -67,11 +68,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <Link to="/dashboard" className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">TR</span>
-          </div>
+          <img 
+            src={logo} 
+            alt="Oentex Logo" 
+            className="w-12 h-12 object-contain"
+          />
           <span className="font-bold text-xl" style={{ color: 'var(--text)' }}>
-            TradingRater
+            Oentex
           </span>
         </Link>
         
