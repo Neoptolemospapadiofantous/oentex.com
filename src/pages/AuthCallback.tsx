@@ -1,3 +1,4 @@
+// AuthCallback.tsx - MINIMAL FIX: Just add Microsoft email error detection
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -12,9 +13,18 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuth = async () => {
       try {
-        // Check for URL error first (no API call needed)
+        // 🎯 SIMPLE FIX: Check for Microsoft email error first
         const urlError = searchParams.get('error')
+        const errorCode = searchParams.get('error_code')
+        const errorDescription = searchParams.get('error_description')
+        
         if (urlError) {
+          // Special handling for Microsoft email error
+          if (errorCode === 'unexpected_failure' && errorDescription?.includes('email')) {
+            setError('Microsoft email access required. Please verify your email at account.microsoft.com or try Google sign-in.')
+            return
+          }
+          
           setError('Authentication failed. Please try again.')
           return
         }
@@ -22,34 +32,39 @@ const AuthCallback: React.FC = () => {
         // Get redirect destination
         const redirectTo = searchParams.get('redirect_to') || config.auth?.redirectPath || '/dashboard'
 
-        // Handle auth code (most common case) - SINGLE API call
+        // Handle auth code (most common case)
         const code = searchParams.get('code')
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
           
           if (exchangeError) {
+            // 🎯 SIMPLE FIX: Check for Microsoft email error in exchange
+            if (exchangeError.message?.includes('email') && 
+                exchangeError.message?.includes('external provider')) {
+              setError('Microsoft email access required. Please verify your email at account.microsoft.com or try Google sign-in.')
+              return
+            }
+            
             setError('Authentication failed. Please try again.')
             return
           }
 
-          // Success - redirect immediately (no additional session check needed)
+          // Success - redirect immediately
           navigate(redirectTo, { replace: true })
           return
         }
 
-        // Handle hash tokens (less common) - SINGLE API call
+        // Handle hash tokens (less common)
         if (window.location.hash.includes('access_token')) {
-          // Clean URL hash
           if (window.history.replaceState) {
             window.history.replaceState(null, '', window.location.pathname)
           }
           
-          // Supabase automatically handles hash tokens, just redirect
           navigate(redirectTo, { replace: true })
           return
         }
 
-        // Fallback: Check existing session - SINGLE API call
+        // Fallback: Check existing session
         const { data } = await supabase.auth.getSession()
         if (data.session) {
           navigate(redirectTo, { replace: true })

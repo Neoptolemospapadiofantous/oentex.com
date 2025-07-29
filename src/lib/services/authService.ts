@@ -1,4 +1,4 @@
-// src/lib/services/authService.ts - Following Official Supabase Documentation
+// src/lib/services/authService.ts - MINIMAL FIX: Just add email scope to Microsoft OAuth
 import { User, AuthError } from '@supabase/supabase-js'
 import { supabase } from '../supabase'
 import { config } from '../../config'
@@ -19,7 +19,7 @@ class AuthService {
   private readonly RETRY_DELAY = 1000
   private readonly profileCreationCache = new Map<string, Promise<CreateUserProfileResult>>()
 
-  // ✅ OFFICIAL SUPABASE: Google OAuth following documentation
+  // ✅ UNCHANGED: Google OAuth (already working)
   async signInWithGoogle(): Promise<OAuthResult> {
     try {
       const redirectUrl = `${config.baseUrl}/auth/callback`
@@ -32,14 +32,13 @@ class AuthService {
         currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'server'
       })
 
-      // ✅ OFFICIAL: Following Supabase documentation for PKCE flow
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl, // This URL MUST be in Additional Redirect URLs
+          redirectTo: redirectUrl,
           queryParams: {
-            access_type: 'offline', // Required for refresh tokens
-            prompt: 'consent',      // Required for refresh tokens
+            access_type: 'offline',
+            prompt: 'consent',
           }
         }
       })
@@ -70,12 +69,12 @@ class AuthService {
     }
   }
 
-  // ✅ OFFICIAL SUPABASE: Microsoft OAuth following same pattern
+  // 🎯 SIMPLE FIX: Just add email scope to Microsoft OAuth
   async signInWithMicrosoft(): Promise<OAuthResult> {
     try {
       const redirectUrl = `${config.baseUrl}/auth/callback`
       
-      console.log('🔧 Microsoft OAuth Configuration (Official Supabase):', {
+      console.log('🔧 Microsoft OAuth Configuration (WITH EMAIL SCOPE):', {
         environment: config.environment,
         baseUrl: config.baseUrl,
         redirectUrl: redirectUrl,
@@ -88,6 +87,8 @@ class AuthService {
           redirectTo: redirectUrl,
           queryParams: {
             prompt: 'select_account',
+            // 🎯 ONLY CHANGE: Add email scope to fix the issue
+            scope: 'openid email profile User.Read'
           }
         }
       })
@@ -113,6 +114,7 @@ class AuthService {
     }
   }
 
+  // ✅ UNCHANGED: All other methods remain exactly the same
   async signOut() {
     try {
       this.profileCreationCache.clear()
@@ -129,7 +131,6 @@ class AuthService {
     }
   }
 
-  // ✅ OFFICIAL SUPABASE: Session handling following documentation
   async getSession() {
     try {
       const { data, error } = await supabase.auth.getSession()
@@ -146,7 +147,6 @@ class AuthService {
     }
   }
 
-  // ✅ OFFICIAL SUPABASE: Code exchange for PKCE flow (for callback handling)
   async exchangeCodeForSession(code: string) {
     try {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
@@ -169,7 +169,6 @@ class AuthService {
     }
   }
 
-  // ✅ VALIDATION: Check OAuth configuration following Supabase recommendations
   async validateOAuthConfig(): Promise<{
     isValid: boolean
     issues: string[]
@@ -181,7 +180,6 @@ class AuthService {
     try {
       const redirectUrl = `${config.baseUrl}/auth/callback`
       
-      // Check current environment setup
       if (typeof window !== 'undefined') {
         const currentOrigin = window.location.origin
         const expectedBaseUrl = config.baseUrl
@@ -192,14 +190,12 @@ class AuthService {
         }
       }
       
-      // Test Supabase connection
       const { data, error } = await supabase.auth.getSession()
       if (error) {
         issues.push(`Supabase auth connection issue: ${error.message}`)
         recommendations.push('Check Supabase URL and anon key')
       }
       
-      // Log configuration for debugging
       console.log('🔧 OAuth Validation:', {
         environment: config.environment,
         baseUrl: config.baseUrl,
