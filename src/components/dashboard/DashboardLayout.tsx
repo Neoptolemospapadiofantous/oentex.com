@@ -1,19 +1,18 @@
-// src/components/dashboard/DashboardLayout.tsx
-import React, { useState } from 'react';
+// src/components/dashboard/DashboardLayout.tsx (WITH TOAST)
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Zap, 
   Home, 
   Star, 
-  BarChart3, 
   Menu, 
-  X, 
   LogOut, 
-  Settings, 
   User,
-  Search
+  Search,
+  Chrome
 } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
+import toast from 'react-hot-toast';
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -165,6 +164,62 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, session } = useAuth();
+
+  // ✅ WELCOME TOAST: Show welcome toast once per session
+  useEffect(() => {
+    if (!user || !session?.user?.app_metadata?.provider) return
+
+    const provider = session.user.app_metadata.provider
+    const userId = session.user.id
+    const toastKey = `welcome_toast_${userId}`
+
+    // Check if already shown
+    if (sessionStorage.getItem(toastKey)) return
+
+    // Mark as shown
+    sessionStorage.setItem(toastKey, 'true')
+
+    const providerName = provider === 'google' ? 'Google' : 
+                        provider === 'azure' ? 'Microsoft' : 'OAuth'
+
+    const Icon = Chrome;
+
+    // Show toast after small delay
+    setTimeout(() => {
+      toast.success(
+        <div className="flex items-center gap-3">
+          <Icon className="w-5 h-5" />
+          <div>
+            <div className="font-semibold">Welcome to Oentex!</div>
+            <div className="text-sm text-gray-600">Successfully signed in with {providerName}</div>
+          </div>
+        </div>,
+        {
+          id: `welcome-${userId}`,
+          duration: 5000,
+          position: 'top-right',
+          style: {
+            background: '#10B981',
+            color: 'white',
+            padding: '16px',
+            borderRadius: '12px',
+          }
+        }
+      );
+    }, 500);
+  }, [user?.id, session?.user?.app_metadata?.provider])
+
+  // ✅ CLEANUP: When user signs out
+  useEffect(() => {
+    if (!user) {
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('welcome_toast_')) {
+          sessionStorage.removeItem(key)
+        }
+      })
+    }
+  }, [user])
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
