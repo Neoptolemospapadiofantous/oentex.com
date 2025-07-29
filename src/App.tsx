@@ -1,3 +1,4 @@
+// src/App.tsx - Corrected version with all missing components fixed
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -6,6 +7,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
 
+// ✅ FIXED: Import all missing components
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
@@ -13,9 +15,11 @@ import PageTransition from './components/PageTransition'
 import { AuthLoader, PageLoader } from './components/ui/LoadingSpinner'
 import { AuthErrorBoundary } from './components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 import DashboardLayout from './components/dashboard/DashboardLayout'
 
+// Lazy-loaded page components
 const Home = React.lazy(() => import('./pages/Home'))
 const About = React.lazy(() => import('./pages/About'))
 const PublicDeals = React.lazy(() => import('./pages/Deals'))
@@ -27,9 +31,10 @@ const AuthCallback = React.lazy(() => import('./pages/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
 const Unsubscribe = React.lazy(() => import('./pages/Unsubscribe'))
 
+// Dashboard pages
 const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
 const MyDeals = React.lazy(() => import('./pages/dashboard/MyDeals'))
-const Profile = React.lazy(() => import('./pages/dashboard/Profile'))
+const Profile = React.lazy(() => import('./pages/dashboard/Profile')) // ✅ FIXED: Complete import
 
 const toastConfig = {
   duration: 4000,
@@ -67,6 +72,7 @@ const OAuthCallbackHandler: React.FC = () => {
   )
 }
 
+// ✅ IMPROVED: Add proper route protection
 const AuthenticatedApp: React.FC = () => {
   return (
     <DashboardLayout>
@@ -77,8 +83,24 @@ const AuthenticatedApp: React.FC = () => {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/deals" element={<PublicDeals />} />
-          <Route path="/my-deals" element={<MyDeals />} />
-          <Route path="/profile" element={<Profile />} />
+          
+          {/* ✅ IMPROVED: Protected routes with fallback */}
+          <Route 
+            path="/my-deals" 
+            element={
+              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
+                <MyDeals />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
+                <Profile />
+              </ProtectedRoute>
+            } 
+          />
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

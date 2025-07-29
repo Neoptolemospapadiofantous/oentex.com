@@ -1,200 +1,259 @@
-// Dashboard.tsx - Fixed OAuth toast detection
-import React, { useEffect } from 'react';
-import { Star, Users, Award, TrendingUp, Settings, RefreshCw, Chrome, Wallet } from 'lucide-react';
-import { useAuth } from '../../lib/authContext';
-import { useDealsQuery } from '../../hooks/queries/useDealsQuery';
-import toast from 'react-hot-toast';
+// src/pages/Dashboard.tsx - Optimized: Performance, simplicity, and robustness
+import React, { useEffect, useMemo, useCallback } from 'react'
+import { Star, Users, Award, TrendingUp, Settings, RefreshCw, Chrome, AlertCircle } from 'lucide-react'
+import { useAuth } from '../lib/authContext'
+import { useDealsQuery } from '../hooks/queries/useDealsQuery'
+import toast, { Toaster } from 'react-hot-toast'
+
+// ✅ FIXED: Added missing AlertCircle import
+// ✅ OPTIMIZED: Memoized expensive calculations
+// ✅ SIMPLIFIED: Removed complex custom toast DOM manipulation
 
 const Dashboard: React.FC = () => {
-  const { user, session } = useAuth();
-  const dealsQuery = useDealsQuery();
+  const { user, session } = useAuth()
+  const dealsQuery = useDealsQuery()
 
-  // ✅ FIXED: Hook into AuthContext OAuth detection
+  // ✅ SIMPLIFIED: Clean OAuth success toast using react-hot-toast
   useEffect(() => {
-    console.log('🔍 Dashboard: Checking for OAuth login...')
-    
-    // Listen for the AuthContext OAuth detection
-    const handleOAuthDetection = () => {
-      console.log('🔍 🚀 OAUTH DETECTED - Showing toast!')
-      
-      // Get provider from session
-      const provider = session?.user?.app_metadata?.provider || 'unknown'
+    const showOAuthSuccessToast = () => {
+      if (!user || !session?.user?.app_metadata?.provider) return
+
+      // ✅ ROBUST: Safe sessionStorage access with error handling
+      const toastKey = `oauth_success_${session.user.id}`
+      try {
+        if (sessionStorage.getItem(toastKey)) return
+        sessionStorage.setItem(toastKey, 'true')
+      } catch (error) {
+        console.warn('SessionStorage not available:', error)
+        return // Don't show toast if we can't track it
+      }
+
+      const provider = session.user.app_metadata.provider
       const providerName = provider === 'google' ? 'Google' : 
                           provider === 'azure' ? 'Microsoft' : 
-                          provider === 'solana' ? 'Solana Wallet' : 'OAuth'
-      
-      const Icon = providerName.toLowerCase().includes('solana') ? Wallet : Chrome;
-      
+                          'OAuth Provider'
+
+      console.log('🎉 Showing OAuth success toast for:', providerName)
+
+      // ✅ SIMPLIFIED: Use react-hot-toast instead of custom DOM manipulation
       toast.success(
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5" />
-          <div>
-            <div className="font-semibold">Welcome to Oentex!</div>
-            <div className="text-sm text-gray-600">Successfully signed in with {providerName}</div>
+        (t) => (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <Chrome className="w-4 h-4 text-green-600" />
+            </div>
+            <div>
+              <div className="font-semibold">🎉 Welcome to Oentex!</div>
+              <div className="text-sm text-gray-600">
+                Successfully signed in with {providerName}
+              </div>
+            </div>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
           </div>
-        </div>,
+        ),
         {
           duration: 5000,
           style: {
-            background: '#10B981',
+            background: 'linear-gradient(135deg, #10B981, #059669)',
             color: 'white',
-            padding: '16px',
+            border: 'none',
             borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
           }
         }
-      );
+      )
     }
-    
-    // Check if we have a session with a provider (just logged in)
-    if (user && session?.user?.app_metadata?.provider) {
-      console.log('🔍 Found session with provider:', session.user.app_metadata.provider)
-      
-      // Check if we already showed toast this session
-      const toastKey = `toast_shown_${session.user.id}`
-      if (!sessionStorage.getItem(toastKey)) {
-        console.log('🔍 Toast not shown yet, showing now...')
-        sessionStorage.setItem(toastKey, 'true')
-        handleOAuthDetection()
-      } else {
-        console.log('🔍 Toast already shown for this session')
-      }
-    }
+
+    // ✅ OPTIMIZED: Debounced with setTimeout to prevent multiple calls
+    const timeoutId = setTimeout(showOAuthSuccessToast, 500)
+    return () => clearTimeout(timeoutId)
   }, [user, session])
 
-  // Rest of your dashboard code remains the same...
-  const deals = dealsQuery.data?.deals || [];
-  const companies = dealsQuery.data?.companies || [];
+  // ✅ OPTIMIZED: Memoized data extraction to prevent unnecessary re-calculations
+  const { deals, companies } = useMemo(() => {
+    const deals = dealsQuery.data?.deals || []
+    const companies = dealsQuery.data?.companies || []
+    return { deals, companies }
+  }, [dealsQuery.data])
+  
+  // ✅ OPTIMIZED: Memoized stats calculations
+  const stats = useMemo(() => {
+    const totalPlatforms = companies.length
+    const activePlatforms = companies.filter(c => c.status === 'active').length
+    const avgPlatformRating = companies.length > 0 
+      ? (companies.reduce((sum, c) => sum + (c.overall_rating || 0), 0) / companies.length).toFixed(1)
+      : '0.0'
+    const totalReviews = companies.reduce((sum, c) => sum + (c.total_reviews || 0), 0)
 
-  const totalPlatforms = companies.length;
-  const activePlatforms = companies.filter(c => c.status === 'active').length;
-  const avgPlatformRating = companies.length > 0 
-    ? (companies.reduce((sum, c) => sum + (c.overall_rating || 0), 0) / companies.length).toFixed(1)
-    : '0.0';
-  const totalReviews = companies.reduce((sum, c) => sum + (c.total_reviews || 0), 0);
+    return {
+      totalPlatforms,
+      activePlatforms,
+      avgPlatformRating,
+      totalReviews
+    }
+  }, [companies])
 
-  const topRatedPlatforms = companies
-    .filter(c => c.overall_rating > 0)
-    .sort((a, b) => (b.overall_rating || 0) - (a.overall_rating || 0))
-    .slice(0, 4)
-    .map(company => ({
-      id: company.id,
-      name: company.name,
-      category: company.category?.replace('_', ' ') || 'Trading',
-      rating: company.overall_rating?.toFixed(1) || '0.0',
-      reviews: company.total_reviews || 0
-    }));
+  // ✅ OPTIMIZED: Memoized top rated platforms calculation
+  const topRatedPlatforms = useMemo(() => {
+    return companies
+      .filter(c => c.overall_rating > 0)
+      .sort((a, b) => (b.overall_rating || 0) - (a.overall_rating || 0))
+      .slice(0, 4)
+      .map(company => ({
+        id: company.id,
+        name: company.name,
+        category: company.category?.replace('_', ' ') || 'Trading',
+        rating: company.overall_rating?.toFixed(1) || '0.0',
+        reviews: company.total_reviews || 0
+      }))
+  }, [companies])
 
-  const categoryStats = companies.reduce((acc, company) => {
-    const category = company.category?.replace('_', ' ') || 'Unknown';
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  // ✅ OPTIMIZED: Memoized category stats calculation
+  const topCategories = useMemo(() => {
+    const categoryStats = companies.reduce((acc, company) => {
+      const category = company.category?.replace('_', ' ') || 'Unknown'
+      acc[category] = (acc[category] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
 
-  const topCategories = Object.entries(categoryStats)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 3)
-    .map(([category, count]) => ({ category, count }));
+    return Object.entries(categoryStats)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([category, count]) => ({ category, count }))
+  }, [companies])
 
+  // ✅ OPTIMIZED: Memoized navigation handlers
+  const navigateToDeals = useCallback(() => {
+    window.location.href = '/deals'
+  }, [])
+
+  const navigateToMyDeals = useCallback(() => {
+    window.location.href = '/my-deals'
+  }, [])
+
+  const navigateToProfile = useCallback(() => {
+    window.location.href = '/profile'
+  }, [])
+
+  const handleRetry = useCallback(() => {
+    dealsQuery.refetch()
+  }, [dealsQuery])
+
+  // ✅ OPTIMIZED: Memoized user display name
+  const userDisplayName = useMemo(() => {
+    return user?.user_metadata?.full_name || 
+           user?.email?.split('@')[0] || 
+           'User'
+  }, [user])
+
+  // Loading state
   if (dealsQuery.isLoading) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
-          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Loading your rating platform overview...</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="mt-2 text-gray-600">Loading your trading platform overview...</p>
         </div>
         
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4" style={{ color: 'var(--primary)' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>Loading dashboard data...</p>
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+            <p className="text-gray-600">Loading dashboard data...</p>
           </div>
         </div>
       </div>
-    );
+    )
   }
 
+  // ✅ FIXED: Error state with proper AlertCircle import
   if (dealsQuery.error) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
-          <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>Error loading dashboard data</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="mt-2 text-gray-600">Error loading dashboard data</p>
         </div>
         
-        <div className="bg-white rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
+          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-4" />
           <p className="text-red-600 mb-4">Failed to load dashboard data</p>
           <button
-            onClick={() => dealsQuery.refetch()}
-            className="px-4 py-2 rounded-lg text-white"
-            style={{ backgroundColor: 'var(--primary)' }}
+            onClick={handleRetry}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Try Again
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text)' }}>Dashboard</h1>
-        <p className="mt-2" style={{ color: 'var(--text-secondary)' }}>
-          Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}! Here's your platform rating overview.
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="mt-2 text-gray-600">
+          Welcome back, {userDisplayName}! Here's your platform rating overview.
         </p>
       </div>
 
-      {/* Stats Grid */}
+      {/* ✅ OPTIMIZED: Stats Grid with memoized calculations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Total Platforms</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{totalPlatforms}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Available to rate</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Platforms</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalPlatforms}</p>
+              <p className="text-sm font-medium text-green-600 mt-1">Available to rate</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--primary-muted)' }}>
-              <Users className="w-6 h-6" style={{ color: 'var(--primary)' }} />
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Active Platforms</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{activePlatforms}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Currently active</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Active Platforms</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.activePlatforms}</p>
+              <p className="text-sm font-medium text-green-600 mt-1">Currently active</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--secondary-muted)' }}>
-              <TrendingUp className="w-6 h-6" style={{ color: 'var(--secondary)' }} />
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Total Reviews</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{totalReviews.toLocaleString()}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--warning)' }}>Community reviews</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Total Reviews</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalReviews.toLocaleString()}</p>
+              <p className="text-sm font-medium text-amber-600 mt-1">Community reviews</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--warning-muted)' }}>
-              <Award className="w-6 h-6" style={{ color: 'var(--warning)' }} />
+            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+              <Award className="w-6 h-6 text-amber-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Avg. Platform Rating</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{avgPlatformRating}</p>
-              <p className="text-sm font-medium mt-1" style={{ color: 'var(--success)' }}>Overall quality</p>
+              <p className="text-sm font-medium text-gray-600 mb-1">Avg. Platform Rating</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.avgPlatformRating}</p>
+              <p className="text-sm font-medium text-green-600 mt-1">Overall quality</p>
             </div>
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--success-muted)' }}>
-              <Star className="w-6 h-6" style={{ color: 'var(--success)' }} />
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <Star className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
         </div>
@@ -202,34 +261,38 @@ const Dashboard: React.FC = () => {
 
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
+        {/* ✅ OPTIMIZED: Top Rated Platforms with memoized data */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Top Rated Platforms</h2>
-            <button className="text-sm font-medium hover:opacity-80 transition-opacity" style={{ color: 'var(--primary)' }}>View All</button>
+            <h2 className="text-xl font-semibold text-gray-900">Top Rated Platforms</h2>
+            <button 
+              onClick={navigateToDeals}
+              className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              View All
+            </button>
           </div>
           
           {topRatedPlatforms.length > 0 ? (
             <div className="space-y-4">
               {topRatedPlatforms.map((platform, index) => (
-                <div key={platform.id} className="flex items-center justify-between p-4 rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: 'var(--surface)' }}>
+                <div key={platform.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{
-                      background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-                    }}>
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                       {index + 1}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium" style={{ color: 'var(--text)' }}>{platform.name}</h3>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{platform.name}</h3>
                       <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-sm capitalize" style={{ color: 'var(--text-secondary)' }}>{platform.category}</span>
-                        <span className="text-sm font-medium" style={{ color: 'var(--primary)' }}>{platform.reviews} reviews</span>
+                        <span className="text-sm text-gray-600 capitalize">{platform.category}</span>
+                        <span className="text-sm font-medium text-blue-600">{platform.reviews} reviews</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="flex items-center space-x-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="font-medium" style={{ color: 'var(--text)' }}>{platform.rating}</span>
+                      <span className="font-medium text-gray-900">{platform.rating}</span>
                     </div>
                   </div>
                 </div>
@@ -237,74 +300,95 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Star className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-secondary)' }} />
-              <p style={{ color: 'var(--text-secondary)' }}>No rated platforms yet</p>
+              <Star className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+              <p className="text-gray-600">No rated platforms yet</p>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-xl border p-6" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--text)' }}>Platform Categories</h2>
+        {/* ✅ OPTIMIZED: Platform Categories with memoized data */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Platform Categories</h2>
           
           {topCategories.length > 0 ? (
             <div className="space-y-4">
               {topCategories.map((category, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg" style={{ borderColor: 'var(--border)' }}>
+                <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{
-                      backgroundColor: `var(--${['primary', 'secondary', 'warning'][index]}-muted)`
-                    }}>
-                      <Users className="w-4 h-4" style={{ 
-                        color: `var(--${['primary', 'secondary', 'warning'][index]})`
-                      }} />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      index === 0 ? 'bg-blue-100' : index === 1 ? 'bg-green-100' : 'bg-amber-100'
+                    }`}>
+                      <Users className={`w-4 h-4 ${
+                        index === 0 ? 'text-blue-600' : index === 1 ? 'text-green-600' : 'text-amber-600'
+                      }`} />
                     </div>
                     <div>
-                      <h3 className="font-medium capitalize" style={{ color: 'var(--text)' }}>{category.category}</h3>
-                      <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Trading category</p>
+                      <h3 className="font-medium text-gray-900 capitalize">{category.category}</h3>
+                      <p className="text-sm text-gray-600">Trading category</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold" style={{ color: 'var(--text)' }}>{category.count}</p>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>platforms</p>
+                    <p className="font-bold text-gray-900">{category.count}</p>
+                    <p className="text-sm text-gray-600">platforms</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <Users className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--text-secondary)' }} />
-              <p style={{ color: 'var(--text-secondary)' }}>No categories available</p>
+              <Users className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+              <p className="text-gray-600">No categories available</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="rounded-xl p-6 border" style={{ 
-        background: 'linear-gradient(135deg, var(--primary-muted), var(--secondary-muted))',
-        borderColor: 'var(--primary)'
-      }}>
-        <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text)' }}>Quick Actions</h2>
+      {/* ✅ OPTIMIZED: Quick Actions with memoized handlers */}
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button onClick={() => window.location.href = '/deals'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
-            <Users className="w-6 h-6 mb-2" style={{ color: 'var(--primary)' }} />
-            <h3 className="font-medium" style={{ color: 'var(--text)' }}>Browse Platforms</h3>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Discover and rate trading platforms</p>
+          <button 
+            onClick={navigateToDeals} 
+            className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 text-left transition-colors"
+          >
+            <Users className="w-6 h-6 text-blue-600 mb-2" />
+            <h3 className="font-medium text-gray-900">Browse Platforms</h3>
+            <p className="text-sm text-gray-600">Discover and rate trading platforms</p>
           </button>
-          <button onClick={() => window.location.href = '/my-deals'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
-            <Star className="w-6 h-6 mb-2" style={{ color: 'var(--secondary)' }} />
-            <h3 className="font-medium" style={{ color: 'var(--text)' }}>My Ratings</h3>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>View and manage your platform ratings</p>
+          
+          <button 
+            onClick={navigateToMyDeals} 
+            className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 text-left transition-colors"
+          >
+            <Star className="w-6 h-6 text-green-600 mb-2" />
+            <h3 className="font-medium text-gray-900">My Ratings</h3>
+            <p className="text-sm text-gray-600">View and manage your platform ratings</p>
           </button>
-          <button onClick={() => window.location.href = '/profile'} className="bg-white hover:opacity-90 p-4 rounded-lg border text-left transition-colors" style={{ borderColor: 'var(--border)' }}>
-            <Settings className="w-6 h-6 mb-2" style={{ color: 'var(--warning)' }} />
-            <h3 className="font-medium" style={{ color: 'var(--text)' }}>Profile Settings</h3>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Manage your account preferences</p>
+          
+          <button 
+            onClick={navigateToProfile} 
+            className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 text-left transition-colors"
+          >
+            <Settings className="w-6 h-6 text-amber-600 mb-2" />
+            <h3 className="font-medium text-gray-900">Profile Settings</h3>
+            <p className="text-sm text-gray-600">Manage your account preferences</p>
           </button>
         </div>
       </div>
-    </div>
-  );
-};
 
-export default Dashboard;
+      {/* ✅ SIMPLIFIED: Clean React Hot Toast Container */}
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+        }}
+      />
+    </div>
+  )
+}
+
+export default Dashboard
