@@ -1,44 +1,44 @@
-// src/components/Footer.tsx
+// src/components/Footer.tsx - Final version
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Mail, Twitter, Linkedin, Github } from 'lucide-react'
-import logo from '../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
+import { Mail } from 'lucide-react'
+import logo from '../assets/logo.png'
+
+// Custom X (Twitter) icon since Lucide doesn't have the new X logo
+const XIcon = () => (
+  <svg 
+    viewBox="0 0 24 24" 
+    className="w-5 h-5" 
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+  </svg>
+)
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
 
   const links = {
     product: [
-      { name: 'Features', href: '/about' },
       { name: 'Deals', href: '/deals' },
-      { name: 'Security', href: '/about#security' },
       { name: 'FAQ', href: '/faq' },
     ],
     company: [
       { name: 'About', href: '/about' },
       { name: 'Contact', href: '/contact' },
-      { name: 'Privacy', href: '/privacy' },
-      { name: 'Terms', href: '/terms' },
-    ],
-    resources: [
-      { name: 'Help Center', href: '/faq' },
-      { name: 'Blog', href: '#' },
-      { name: 'Guides', href: '#' },
-      { name: 'API', href: '#' },
     ],
   }
 
   const socialLinks = [
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#' },
-    { name: 'GitHub', icon: Github, href: '#' },
+    { name: 'X', icon: XIcon, href: 'https://x.com/oentex' },
     { name: 'Email', icon: Mail, href: 'mailto:contact@oentex.com' },
   ]
 
   return (
     <footer className="bg-surface border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
@@ -63,13 +63,13 @@ const Footer: React.FC = () => {
                   rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={item.name}
                 >
-                  <item.icon className="w-5 h-5" />
+                  <item.icon />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Links */}
+          {/* Product Links */}
           <div>
             <h3 className="font-semibold text-text mb-4">Product</h3>
             <ul className="space-y-3">
@@ -86,6 +86,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
+          {/* Company Links */}
           <div>
             <h3 className="font-semibold text-text mb-4">Company</h3>
             <ul className="space-y-3">
@@ -97,24 +98,6 @@ const Footer: React.FC = () => {
                   >
                     {link.name}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-text mb-4">Resources</h3>
-            <ul className="space-y-3">
-              {links.resources.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-textSecondary hover:text-text transition-colors text-sm"
-                    target={link.href.startsWith('http') ? '_blank' : undefined}
-                    rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                  >
-                    {link.name}
-                  </a>
                 </li>
               ))}
             </ul>

@@ -64,26 +64,6 @@ const AnimatedInnovation: React.FC<AnimatedInnovationProps> = ({ className = '' 
               <span className="title-line title-line-1">Innovation</span>
               <span className="title-line title-line-2">Driven</span>
             </h2>
-            <div className="since-container">
-              <span className="since-text">Since</span>
-              <span className="year-text">2017</span>
-            </div>
-          </div>
-
-          {/* Interactive Elements */}
-          <div className="innovation-stats">
-            <div className="stat-item stat-item-1">
-              <span className="stat-number">7+</span>
-              <span className="stat-label">Years</span>
-            </div>
-            <div className="stat-item stat-item-2">
-              <span className="stat-number">50+</span>
-              <span className="stat-label">Innovations</span>
-            </div>
-            <div className="stat-item stat-item-3">
-              <span className="stat-number">10K+</span>
-              <span className="stat-label">Partners</span>
-            </div>
           </div>
         </div>
 
