@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
-import { X, Chrome } from 'lucide-react'
+// src/components/auth/AuthModals.tsx - REPLACE THIS FILE SIXTH (OPTIONAL - Better UX)
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { X, Chrome, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
-import { useBodyScrollLock } from '../../hooks/useBodyScrollLock'
-import { FocusManager } from '../ui/FocusManager'
-import { LoadingSpinner } from '../ui/LoadingSpinner'
-import toast from 'react-hot-toast'
+import { isDevelopment } from '../../config'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -13,18 +12,66 @@ interface AuthModalProps {
   onModeChange: (mode: 'login' | 'register') => void
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChange }) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
-  const [loginSuccess, setLoginSuccess] = useState(false)
+// ✅ SIMPLIFIED: Clean state management
+interface ModalState {
+  isLoading: boolean
+  loadingProvider: string | null
+  success: boolean
+  error: string | null
+}
+
+export const AuthModal: React.FC<AuthModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  mode, 
+  onModeChange 
+}) => {
+  const [state, setState] = useState<ModalState>({
+    isLoading: false,
+    loadingProvider: null,
+    success: false,
+    error: null
+  })
 
   const { signInWithGoogle, signInWithMicrosoft } = useAuth()
+  const modalRef = useRef<HTMLDivElement>(null)
+  const focusTrapRef = useRef<HTMLButtonElement>(null)
 
-  useBodyScrollLock(isOpen)
+  // ✅ OPTIMIZED: Memoized state updaters
+  const updateState = useCallback((updates: Partial<ModalState>) => {
+    setState(prev => ({ ...prev, ...updates }))
+  }, [])
 
+  const clearError = useCallback(() => {
+    updateState({ error: null })
+  }, [updateState])
+
+  const resetState = useCallback(() => {
+    setState({
+      isLoading: false,
+      loadingProvider: null,
+      success: false,
+      error: null
+    })
+  }, [])
+
+  // ✅ ACCESSIBILITY: Focus management
+  useEffect(() => {
+    if (isOpen) {
+      // Clear state when modal opens
+      resetState()
+      
+      // Focus the first focusable element
+      setTimeout(() => {
+        focusTrapRef.current?.focus()
+      }, 100)
+    }
+  }, [isOpen, resetState])
+
+  // ✅ ACCESSIBILITY: Escape key handler
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !isLoading) {
+      if (e.key === 'Escape' && isOpen && !state.isLoading) {
         onClose()
       }
     }
@@ -33,56 +80,96 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
       document.addEventListener('keydown', handleEscape)
       return () => document.removeEventListener('keydown', handleEscape)
     }
-  }, [isOpen, onClose, isLoading])
+  }, [isOpen, onClose, state.isLoading])
 
-  const handleOAuthSignIn = async (provider: 'google' | 'microsoft') => {
-    if (isLoading) return
+  // ✅ ACCESSIBILITY: Focus trap
+  useEffect(() => {
+    if (!isOpen) return
+
+    const modal = modalRef.current
+    if (!modal) return
+
+    const focusableElements = modal.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+
+    const firstElement = focusableElements[0] as HTMLElement
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault()
+          lastElement?.focus()
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault()
+          firstElement?.focus()
+        }
+      }
+    }
+
+    modal.addEventListener('keydown', handleTabKey)
+    return () => modal.removeEventListener('keydown', handleTabKey)
+  }, [isOpen, state.success, state.error])
+
+  // ✅ OPTIMIZED: OAuth sign-in handler
+  const handleOAuthSignIn = useCallback(async (provider: 'google' | 'microsoft') => {
+    if (state.isLoading) return
     
-    setIsLoading(true)
-    setLoadingProvider(provider)
+    clearError()
+    updateState({ 
+      isLoading: true, 
+      loadingProvider: provider 
+    })
     
     try {
-      let result
-      
-      switch (provider) {
-        case 'google':
-          result = await signInWithGoogle()
-          break
-        case 'microsoft':
-          result = await signInWithMicrosoft()
-          break
-        default:
-          throw new Error('Unknown provider')
-      }
+      const result = provider === 'google' 
+        ? await signInWithGoogle()
+        : await signInWithMicrosoft()
 
-      if (!result.error) {
-        setLoginSuccess(true)
-        
-        setTimeout(() => {
-          onClose()
-          setLoginSuccess(false)
-        }, 1000)
+      if (result.error) {
+        updateState({ 
+          isLoading: false, 
+          loadingProvider: null, 
+          error: result.error.message || `Failed to sign in with ${provider}. Please try again.`
+        })
       } else {
-        toast.error(result.error.message)
+        updateState({ 
+          isLoading: false, 
+          loadingProvider: null, 
+          success: true 
+        })
+        
+        // Auto-close after success
+        setTimeout(onClose, 2000)
       }
     } catch (error) {
-      toast.error(`Failed to sign in with ${provider}. Please try again.`)
-    } finally {
-      setIsLoading(false)
-      setLoadingProvider(null)
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : `Failed to sign in with ${provider}. Please try again.`
+      
+      updateState({ 
+        isLoading: false, 
+        loadingProvider: null, 
+        error: errorMessage
+      })
     }
-  }
+  }, [state.isLoading, clearError, updateState, signInWithGoogle, signInWithMicrosoft, onClose])
 
-  if (!isOpen) return null
-
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !isLoading) {
+  // ✅ OPTIMIZED: Backdrop click handler
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === e.currentTarget && !state.isLoading) {
       onClose()
     }
-  }
+  }, [onClose, state.isLoading])
 
+  // ✅ ACCESSIBILITY: Microsoft icon component
   const MicrosoftIcon = () => (
-    <svg className="w-5 h-5" viewBox="0 0 21 21" fill="none">
+    <svg className="w-5 h-5" viewBox="0 0 21 21" fill="none" aria-hidden="true">
       <path d="M10 1H1v9h9V1z" fill="#f25022"/>
       <path d="M20 1h-9v9h9V1z" fill="#7fba00"/>
       <path d="M10 11H1v9h9v-9z" fill="#00a4ef"/>
@@ -90,84 +177,152 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
     </svg>
   )
 
-  return (
-    <FocusManager>
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-        onClick={handleOverlayClick}
+  // ✅ OPTIMIZED: Provider button component
+  const ProviderButton: React.FC<{
+    provider: 'google' | 'microsoft'
+    icon: React.ReactNode
+    label: string
+    className: string
+  }> = ({ provider, icon, label, className }) => {
+    const isProviderLoading = state.loadingProvider === provider
+    const isDisabled = state.isLoading
+    
+    return (
+      <button
+        onClick={() => handleOAuthSignIn(provider)}
+        disabled={isDisabled}
+        aria-label={`${label} - ${mode === 'login' ? 'Sign in' : 'Create account'}`}
+        className={`
+          relative w-full py-4 px-6 rounded-xl font-medium transition-all duration-300 
+          flex items-center justify-center gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+          ${className}
+          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg transform hover:-translate-y-0.5'}
+        `}
       >
-        <div className="bg-surface border border-border rounded-xl max-w-md w-full">
-          <div className="flex items-center justify-between p-6 border-b border-border">
-            <div className="text-center flex-1">
-              <h2 className="text-xl font-semibold text-text">
-                {mode === 'login' ? 'Welcome Back' : 'Join TradeBest'}
-              </h2>
-              <p className="text-sm text-textSecondary mt-1">
-                {mode === 'login' 
-                  ? 'Sign in to access exclusive trading deals' 
-                  : 'Start discovering the best trading affiliate offers'
-                }
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              disabled={isLoading}
-              className="text-textSecondary hover:text-text transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-4"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        {isProviderLoading && (
+          <div className="absolute inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin" />
           </div>
+        )}
+        
+        <div className="flex items-center gap-3">
+          {icon}
+          <span className="text-lg">
+            {isProviderLoading ? 'Connecting...' : label}
+          </span>
+        </div>
+      </button>
+    )
+  }
 
-          <div className="p-6 space-y-4">
-            {loginSuccess ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-text mb-2">Authentication Started!</h3>
-                <p className="text-textSecondary">Redirecting you to complete sign in...</p>
+  if (!isOpen) return null
+
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      {/* Backdrop */}
+      <div
+        onClick={handleBackdropClick}
+        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
+        aria-hidden="true"
+      />
+      
+      {/* Modal */}
+      <div
+        ref={modalRef}
+        className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md max-h-[90vh] overflow-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="text-center flex-1">
+            <h2 id="modal-title" className="text-2xl font-bold text-gray-900 mb-1">
+              {mode === 'login' ? 'Welcome Back' : 'Join TradingRater'}
+            </h2>
+            <p className="text-sm text-gray-600">
+              {mode === 'login' 
+                ? 'Sign in to access your trading dashboard' 
+                : 'Start discovering the best trading platforms'
+              }
+            </p>
+          </div>
+          <button
+            ref={focusTrapRef}
+            onClick={onClose}
+            disabled={state.isLoading}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Close authentication modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {state.success ? (
+            /* ✅ IMPROVED: Success State */
+            <div className="text-center py-8" role="alert" aria-live="polite">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
-            ) : (
-              <>
-                <button
-                  onClick={() => handleOAuthSignIn('google')}
-                  disabled={isLoading}
-                  className="w-full bg-white border border-border text-text py-4 px-6 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                  {loadingProvider === 'google' ? (
-                    <LoadingSpinner variant="auth" size="sm" />
-                  ) : (
-                    <Chrome className="w-6 h-6" />
-                  )}
-                  <span className="text-lg">Continue with Google</span>
-                </button>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Success!
+              </h3>
+              <p className="text-gray-600">
+                Redirecting you to your dashboard...
+              </p>
+              <div className="mt-4">
+                <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
+                  <div className="w-full h-full bg-green-600 animate-pulse" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* ✅ ACCESSIBILITY: Error Alert */}
+              {state.error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert" aria-live="assertive">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <p className="text-red-700 text-sm">{state.error}</p>
+                  </div>
+                </div>
+              )}
 
-                <button
-                  onClick={() => handleOAuthSignIn('microsoft')}
-                  disabled={isLoading}
-                  className="w-full bg-[#0078d4] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#106ebe] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                >
-                  {loadingProvider === 'microsoft' ? (
-                    <LoadingSpinner variant="auth" size="sm" />
-                  ) : (
-                    <MicrosoftIcon />
-                  )}
-                  Continue with Microsoft
-                </button>
+              {/* ✅ OPTIMIZED: OAuth Buttons */}
+              <div className="space-y-3">
+                <ProviderButton
+                  provider="google"
+                  icon={<Chrome className="w-6 h-6" />}
+                  label="Continue with Google"
+                  className="bg-white border-2 border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50"
+                />
 
-                <div className="text-center text-sm text-textSecondary pt-4 border-t border-border">
+                <ProviderButton
+                  provider="microsoft"
+                  icon={<MicrosoftIcon />}
+                  label="Continue with Microsoft"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                />
+              </div>
+
+              {/* Footer */}
+              <div className="pt-6 space-y-4">
+                {/* ✅ ACCESSIBILITY: Mode Switch */}
+                <div className="text-center text-sm text-gray-600 border-t border-gray-100 pt-4">
                   {mode === 'login' ? (
                     <>
                       New to trading affiliate deals?{' '}
                       <button
                         onClick={() => onModeChange('register')}
-                        disabled={isLoading}
-                        className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        disabled={state.isLoading}
+                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
                       >
-                        Join now
+                        Create account
                       </button>
                     </>
                   ) : (
@@ -175,8 +330,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                       Already have an account?{' '}
                       <button
                         onClick={() => onModeChange('login')}
-                        disabled={isLoading}
-                        className="text-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                        disabled={state.isLoading}
+                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
                       >
                         Sign in
                       </button>
@@ -184,19 +339,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onM
                   )}
                 </div>
 
-                <div className="text-center pt-4">
-                  <p className="text-xs text-textSecondary">
+                {/* Security Notice */}
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 mb-2">
                     🔒 Secure OAuth authentication • No passwords needed
                   </p>
-                  <p className="text-xs text-textSecondary mt-1">
-                    By continuing, you agree to our Terms of Service and Privacy Policy
+                  <p className="text-xs text-gray-400">
+                    By continuing, you agree to our{' '}
+                    <a href="/terms" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
+                      Terms
+                    </a>
+                    {' '}and{' '}
+                    <a href="/privacy" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
+                      Privacy Policy
+                    </a>
                   </p>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </FocusManager>
+    </div>
   )
+
+  return createPortal(modalContent, document.body)
 }
