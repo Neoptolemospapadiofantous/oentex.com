@@ -14,6 +14,8 @@ import {
 import { useAuth } from '../../lib/authContext';
 import toast from 'react-hot-toast';
 
+
+
 interface SidebarProps {
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
@@ -61,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
           <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-2">
               <img 
-                src="src\assets\logo.png" 
+                src="../../assets/logo.png" 
                 alt="Oentex Logo" 
                 className="w-8 h-8 object-contain"
               />
@@ -270,7 +272,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {/* Mobile Logo - Show when sidebar is closed */}
             <div className="lg:hidden flex items-center space-x-2">
               <img 
-                src="src\assets\logo.png" 
+                src="../../assets/logo.png" 
                 alt="Oentex Logo" 
                 className="w-10 h-10 object-contain"
               />
