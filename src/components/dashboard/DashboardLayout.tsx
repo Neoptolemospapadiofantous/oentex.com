@@ -30,7 +30,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
     { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard' },
     { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/deals' },
     { id: 'my-deals', name: 'My Ratings', icon: Star, path: '/my-deals' },
-    { id: 'profile', name: 'Profile', icon: User, path: '/profile' },
   ];
 
   const handleSignOut = async () => {
@@ -42,6 +41,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
       console.error('Error signing out:', error);
       navigate('/');
     }
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setIsMobileOpen(false);
   };
 
   return (
@@ -62,11 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
           {/* Header with close button for mobile */}
           <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center space-x-2">
-              <img 
-                src="../../assets/logo.png" 
-                alt="Oentex Logo" 
-                className="w-8 h-8 object-contain"
-              />
               <span className="text-xl font-bold" style={{
                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                 WebkitBackgroundClip: 'text',
@@ -87,15 +86,29 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
             </button>
           </div>
 
-          {/* User Profile - Moved to top for better mobile UX */}
+          {/* User Profile - Clickable section for better mobile UX */}
           <div className="p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center space-x-3">
+            <button
+              onClick={handleProfileClick}
+              className="w-full flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-10"
+              style={{
+                ':hover': {
+                  backgroundColor: 'var(--surface)'
+                }
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{
                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
               }}>
                 <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm sm:text-base font-medium truncate" style={{ color: 'var(--text)' }}>
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
                 </p>
@@ -103,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
                   {user?.email}
                 </p>
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Navigation - Scrollable content */}
@@ -271,11 +284,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
             {/* Mobile Logo - Show when sidebar is closed */}
             <div className="lg:hidden flex items-center space-x-2">
-              <img 
-                src="../../assets/logo.png" 
-                alt="Oentex Logo" 
-                className="w-10 h-10 object-contain"
-              />
               <span className="text-lg font-bold" style={{
                 background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                 WebkitBackgroundClip: 'text',
