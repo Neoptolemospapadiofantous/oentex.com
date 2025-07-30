@@ -18,7 +18,7 @@ interface EmailData {
   templateData?: Record<string, any>
 }
 
-// Mock email service - replace with actual email service integration
+// Email service with actual Supabase integration
 export class EmailService {
   private static instance: EmailService
   
@@ -33,13 +33,8 @@ export class EmailService {
 
   async sendEmail(data: EmailData): Promise<boolean> {
     try {
-      // In production, integrate with your preferred email service:
-      // - SendGrid: Use @sendgrid/mail package
-      // - AWS SES: Use @aws-sdk/client-ses
-      // - Mailgun: Use mailgun-js package
-      // - Postmark: Use postmark package
-      
-      // For now, we'll simulate email sending and log to console
+      // For newsletter and deal alerts, we still use mock implementation
+      // In production, integrate with your preferred email service for marketing emails
       console.log('Email Service: Sending email', {
         from: EMAIL_CONFIG.from,
         to: data.to || EMAIL_CONFIG.supportEmail,
@@ -51,24 +46,6 @@ export class EmailService {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000))
 
-      // In production, this would be the actual API call:
-      /*
-      // Example for SendGrid:
-      const sgMail = require('@sendgrid/mail')
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-      
-      const msg = {
-        to: data.to || EMAIL_CONFIG.supportEmail,
-        from: EMAIL_CONFIG.from,
-        replyTo: EMAIL_CONFIG.replyTo,
-        subject: data.subject,
-        text: data.text,
-        html: data.html,
-      }
-      
-      await sgMail.send(msg)
-      */
-
       return true
     } catch (error) {
       console.error('Email Service Error:', error)
@@ -76,37 +53,39 @@ export class EmailService {
     }
   }
 
-  // Send contact form email
+  // ✅ UPDATED: Send contact form email via Supabase edge function
   async sendContactEmail(formData: {
     name: string
     email: string
     subject: string
     message: string
   }): Promise<boolean> {
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #1a365d;">New Contact Form Submission</h2>
-        <div style="background-color: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Name:</strong> ${formData.name}</p>
-          <p><strong>Email:</strong> ${formData.email}</p>
-          <p><strong>Subject:</strong> ${formData.subject}</p>
-          <p><strong>Message:</strong></p>
-          <p style="white-space: pre-wrap;">${formData.message}</p>
-        </div>
-        <p style="color: #718096; font-size: 14px;">
-          This email was sent from the contact form at oentex.com
-        </p>
-      </div>
-    `
+    try {
+      // Call your actual Supabase edge function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-contact-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify(formData)
+      })
 
-    return this.sendEmail({
-      subject: `Contact Form: ${formData.subject}`,
-      html,
-      text: `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\nMessage: ${formData.message}`
-    })
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send message')
+      }
+
+      const result = await response.json()
+      console.log('Contact email sent successfully:', result)
+      return true
+    } catch (error) {
+      console.error('Contact form error:', error)
+      throw new Error('Failed to send message. Please try again.')
+    }
   }
 
-  // Send newsletter subscription confirmation
+  // ✅ KEPT: Send newsletter subscription confirmation
   async sendNewsletterWelcome(email: string): Promise<boolean> {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -148,7 +127,7 @@ export class EmailService {
     })
   }
 
-  // Send deal alert email
+  // ✅ KEPT: Send deal alert email (this was missing in the new version)
   async sendDealAlert(email: string, deal: {
     platform: string
     title: string

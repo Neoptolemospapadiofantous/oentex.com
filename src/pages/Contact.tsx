@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react'
+import { Mail, MessageCircle, MapPin, Send, CheckCircle } from 'lucide-react'
 import { emailService } from '../lib/email'
 import toast from 'react-hot-toast'
 
@@ -53,18 +53,17 @@ const Contact = () => {
     }
   }
 
+  const handleChatBotClick = () => {
+    // This could scroll to chatbot or highlight it
+    toast.success('Look for the chat icon on the bottom-right corner!')
+  }
+
   const contactInfo = [
     {
       icon: Mail,
       title: 'Email',
-      content: 'contact@oentex.com',
-      link: 'mailto:contact@oentex.com'
-    },
-    {
-      icon: Phone,
-      title: 'Phone',
-      content: '+1 (555) 123-4567',
-      link: 'tel:+15551234567'
+      content: 'support@oentex.com',
+      link: 'mailto:support@oentex.com'
     },
     {
       icon: MapPin,
@@ -120,12 +119,28 @@ const Contact = () => {
               </div>
 
               <div className="mt-12 p-6 bg-surface/50 rounded-2xl border border-border">
-                <h3 className="font-semibold text-text mb-3">Business Hours</h3>
+                <h3 className="font-semibold text-text mb-3">Response Times</h3>
                 <div className="space-y-2 text-textSecondary text-sm">
-                  <p>Monday - Friday: 9:00 AM - 6:00 PM PST</p>
-                  <p>Saturday: 10:00 AM - 4:00 PM PST</p>
-                  <p>Sunday: Closed</p>
+                  <p>📧 Email: Within 24 hours</p>
+                  <p>🕒 Business Hours: 9 AM - 6 PM PST</p>
                 </div>
+              </div>
+
+              {/* Chatbot Promotion */}
+              <div className="mt-6 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl border border-primary/20">
+                <div className="flex items-center mb-3">
+                  <MessageCircle className="w-6 h-6 text-primary mr-2" />
+                  <h3 className="font-semibold text-text">Quick Help</h3>
+                </div>
+                <p className="text-textSecondary text-sm mb-3">
+                  Need instant answers? Our AI chatbot is available 24/7 on the bottom-right corner of every page.
+                </p>
+                <button 
+                  onClick={handleChatBotClick}
+                  className="text-primary text-sm font-medium hover:text-primary/80 transition-colors"
+                >
+                  Try Live Chat →
+                </button>
               </div>
             </div>
 
