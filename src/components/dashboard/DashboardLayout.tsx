@@ -1,15 +1,15 @@
-// src/components/dashboard/DashboardLayout.tsx (WITH TOAST)
+// src/components/dashboard/DashboardLayout.tsx (MOBILE OPTIMIZED)
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Zap, 
   Home, 
   Star, 
   Menu, 
   LogOut, 
   User,
   Search,
-  Chrome
+  Chrome,
+  X
 } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import toast from 'react-hot-toast';
@@ -34,11 +34,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      // Redirect to home page after successful logout
+      setIsMobileOpen(false);
       navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
-      // Still redirect to home even if there's an error
       navigate('/');
     }
   };
@@ -53,29 +52,59 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
         />
       )}
 
-      {/* Sidebar - Fixed height and position */}
-      <div className={`fixed top-0 left-0 z-50 w-64 h-screen bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+      {/* Sidebar - Mobile Optimized */}
+      <div className={`fixed top-0 left-0 z-50 w-72 sm:w-80 lg:w-64 h-screen bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`} style={{ borderColor: 'var(--border)' }}>
         <div className="flex flex-col h-full">
-          {/* Logo - Using your existing branding */}
-          <div className="flex items-center space-x-2 p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ 
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-            }}>
-              <Zap className="w-5 h-5 text-white" />
+          {/* Header with close button for mobile */}
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center space-x-2">
+              <img 
+                src="src\assets\logo.png" 
+                alt="Oentex Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <span className="text-xl font-bold" style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Oentex
+              </span>
             </div>
-            <span className="text-xl font-bold" style={{
-              background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}>
-              Oentex
-            </span>
+            
+            {/* Mobile close button */}
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="lg:hidden p-2 rounded-lg transition-colors"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Navigation - Scrollable if needed */}
+          {/* User Profile - Moved to top for better mobile UX */}
+          <div className="p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
+              }}>
+                <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm sm:text-base font-medium truncate" style={{ color: 'var(--text)' }}>
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                </p>
+                <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--text-secondary)' }}>
+                  {user?.email}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation - Scrollable content */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -84,7 +113,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
                   key={item.id}
                   to={item.path}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                  className={`w-full flex items-center space-x-3 px-4 py-4 sm:py-3 rounded-lg text-left transition-all duration-200 ${
                     isActive
                       ? 'text-white border-r-2'
                       : 'hover:bg-opacity-50'
@@ -112,44 +141,21 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
                     }
                   }}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
+                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="font-medium text-sm sm:text-base">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Profile - Fixed at bottom */}
+          {/* Logout Button - Always visible at bottom */}
           <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-              }}>
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                </p>
-                <p className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
-                  {user?.email}
-                </p>
-              </div>
-            </div>
-
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors duration-200"
-              style={{ color: 'var(--text-secondary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
+              className="w-full flex items-center justify-center sm:justify-start space-x-3 px-4 py-4 sm:py-3 rounded-lg transition-colors duration-200 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="text-sm">Sign Out</span>
+              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+              <span className="text-sm sm:text-base font-medium">Sign Out</span>
             </button>
           </div>
         </div>
@@ -221,6 +227,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   }, [user])
 
+  // Close mobile menu when screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
       <Sidebar 
@@ -228,14 +246,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         setIsMobileOpen={setIsMobileMenuOpen}
       />
       
-      {/* Main Content - Fixed height and scrollable */}
+      {/* Main Content - Mobile Optimized */}
       <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
-        {/* Top Bar - Fixed height */}
-        <header className="bg-white border-b px-6 py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+        {/* Top Bar - Mobile Optimized */}
+        <header className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg transition-colors duration-200"
+              className="lg:hidden p-2 rounded-lg transition-colors duration-200 -ml-2"
               style={{ color: 'var(--text-secondary)' }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--surface)';
@@ -248,11 +266,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             >
               <Menu className="w-6 h-6" />
             </button>
+
+            {/* Mobile Logo - Show when sidebar is closed */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <img 
+                src="src\assets\logo.png" 
+                alt="Oentex Logo" 
+                className="w-10 h-10 object-contain"
+              />
+              <span className="text-lg font-bold" style={{
+                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Oentex
+              </span>
+            </div>
+
+            {/* Spacer for desktop */}
+            <div className="hidden lg:block"></div>
           </div>
         </header>
 
-        {/* Page Content - Scrollable main area */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        {/* Page Content - Mobile Optimized */}
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
           {children}
         </main>
       </div>

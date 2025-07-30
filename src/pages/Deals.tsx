@@ -1,6 +1,6 @@
-// src/pages/Deals.tsx - FINAL DYNAMIC VERSION
+// src/pages/Deals.tsx - AUTHENTICATION-BASED ADAPTIVE VERSION
 import React, { useState, useMemo, useCallback } from 'react'
-import { Search, Star, AlertCircle, RefreshCw, Gift, Users, TrendingUp, Database } from 'lucide-react'
+import { Search, AlertCircle, RefreshCw, Gift, Users, Database } from 'lucide-react'
 import { useAuth } from '../lib/authContext'
 import { DealCard } from '../components/deals/DealCard'
 import { RatingModal } from '../components/rating/RatingModal'
@@ -25,6 +25,16 @@ interface Filters {
 
 const Deals: React.FC = () => {
   const { user, isFullyReady } = useAuth()
+  
+  // ✅ PERFECT: Use authentication status to detect layout context
+  // When logged in = dashboard layout (no top padding)
+  // When not logged in = standalone with header (needs top padding)
+  const isInDashboard = !!user  // Boolean: true if user is logged in
+  
+  // ✅ CONTAINER: Different padding based on login status
+  const containerClasses = isInDashboard 
+    ? "min-h-screen bg-gray-50"           // Logged in: dashboard layout, no top padding  
+    : "min-h-screen bg-gray-50 pt-20"     // Not logged in: standalone with header, needs padding
 
   // ✅ DYNAMIC: All data from React Query
   const dealsQuery = useDealsQuery()
@@ -166,7 +176,7 @@ const Deals: React.FC = () => {
   // ✅ ERROR STATES
   if (categoriesQuery.error) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className={containerClasses}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -199,7 +209,7 @@ const Deals: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className={containerClasses}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Trading Deals & Bonuses</h1>
@@ -220,7 +230,7 @@ const Deals: React.FC = () => {
   // ✅ DEALS ERROR STATE
   if (dealsQuery.error) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className={containerClasses}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -246,7 +256,7 @@ const Deals: React.FC = () => {
   // ✅ NO CATEGORIES STATE
   if (!categories.length) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className={containerClasses}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -271,7 +281,7 @@ const Deals: React.FC = () => {
 
   // ✅ MAIN CONTENT
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className={containerClasses}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Header */}

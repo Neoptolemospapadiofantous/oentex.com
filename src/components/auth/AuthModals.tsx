@@ -3,7 +3,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Chrome, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
-import { isDevelopment } from '../../config'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -241,7 +240,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="text-center flex-1">
             <h2 id="modal-title" className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === 'login' ? 'Welcome Back' : 'Join TradingRater'}
+              {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
             </h2>
             <p className="text-sm text-gray-600">
               {mode === 'login' 
