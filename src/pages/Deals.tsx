@@ -421,28 +421,41 @@ const Deals: React.FC = () => {
         )}
 
         {/* Footer */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 text-center">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 sm:p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Users className="w-6 h-6 text-blue-600" />
             <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-4">
-            {companies.length} handpicked platforms across {categories.length - 1} categories. 
+          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+            {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
             Every company is verified, regulated, and trusted by our trading community.
           </p>
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-            {categories.filter(cat => cat.value !== 'all').slice(0, 3).map((category) => {
-              const count = categoryStats.get(category.value) || 0
-              return (
-                <span key={category.value}>
-                  ✓ {count} {category.label}
-                </span>
-              )
-            })}
-            <span>✓ Real Reviews</span>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
+            {categories
+              .filter(cat => cat.value !== 'all')
+              .filter(cat => (categoryStats.get(cat.value) || 0) > 0)
+              .slice(0, 3)
+              .map((category) => {
+                const count = categoryStats.get(category.value) || 0
+                return (
+                  <span key={category.value} className="flex items-center gap-1">
+                    <span className="text-green-500">✓</span>
+                    <span>{count} {category.label}</span>
+                  </span>
+                )
+              })}
+            {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length === 0 ? (
+              <span className="flex items-center gap-1">
+                <span className="text-green-500">✓</span>
+                <span>Verified Companies</span>
+              </span>
+            ) : null}
+            <span className="flex items-center gap-1">
+              <span className="text-green-500">✓</span>
+              <span>Real Reviews</span>
+            </span>
           </div>
         </div>
-
         {/* Empty Deals State */}
         {deals.length === 0 && !dealsQuery.isLoading && (
           <div className="text-center py-12">
