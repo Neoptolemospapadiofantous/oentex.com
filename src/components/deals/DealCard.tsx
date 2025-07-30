@@ -135,39 +135,40 @@ export const DealCard: React.FC<DealCardProps> = ({
                     <img
                       src={deal.company.logo_url}
                       alt={`${deal.company_name} logo`}
-                      className={`w-12 h-12 rounded-xl object-cover bg-background border border-border transition-all duration-300 ${
+                      className={`w-16 h-16 rounded-xl object-cover bg-background border-2 border-border group-hover:border-primary/50 transition-all duration-300 shadow-sm hover:shadow-md ${
                         isImageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                       }`}
                       onLoad={() => setIsImageLoaded(true)}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         target.style.display = 'none'
+                        setIsImageLoaded(true) // Show fallback when image fails
                       }}
                     />
                     {!isImageLoaded && (
-                      <div className="absolute inset-0 w-12 h-12 bg-gray-200 animate-pulse rounded-xl" />
+                      <div className="absolute inset-0 w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse rounded-xl border-2 border-border" />
                     )}
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border border-border">
-                    <TrendingUp className="w-6 h-6 text-primary" />
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border-2 border-border group-hover:border-primary/50 transition-all duration-300 shadow-sm">
+                    <TrendingUp className="w-8 h-8 text-primary" />
                   </div>
                 )}
                 
                 {/* Status badges */}
                 {isHighlyRated && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-sm">
-                    <Award className="w-3 h-3 text-yellow-800" />
+                  <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                    <Award className="w-4 h-4 text-yellow-800" />
                   </div>
                 )}
                 {isNewCompany && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-sm">
-                    <Sparkles className="w-3 h-3 text-green-800" />
+                  <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                    <Sparkles className="w-4 h-4 text-green-800" />
                   </div>
                 )}
                 {trustLevel.level === 'trusted' && (
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
-                    <Shield className="w-3 h-3 text-purple-800" />
+                  <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                    <Shield className="w-4 h-4 text-purple-800" />
                   </div>
                 )}
               </div>
@@ -386,28 +387,26 @@ export const DealCard: React.FC<DealCardProps> = ({
       {/* Action Buttons - Always at bottom */}
       <div className="p-6 pt-0 mt-auto">
         {/* Deal metadata - Always at bottom */}
-        <div className="flex items-center justify-between text-xs text-textSecondary mb-4 bg-background rounded-lg p-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              <span>
-                {deal.end_date 
-                  ? `Ends ${new Date(deal.end_date).toLocaleDateString()}`
-                  : 'No expiry'
-                }
-              </span>
-            </div>
-            {deal.commission_rate && (
-              <div className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                <span>{deal.commission_rate}% commission</span>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-4 text-xs text-textSecondary mb-4 bg-background rounded-lg p-3">
           <div className="flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            <span>{deal.click_count || 0} claimed</span>
+            <Clock className="w-3 h-3" />
+            <span>
+              {deal.end_date 
+                ? `Expires ${new Date(deal.end_date).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}`
+                : 'No expiration date'
+              }
+            </span>
           </div>
+          {deal.commission_rate && (
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" />
+              <span>{deal.commission_rate}% commission</span>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3">
@@ -460,7 +459,7 @@ export const DealCard: React.FC<DealCardProps> = ({
           <div className="mt-3 text-center">
             <p className="text-xs text-textSecondary">
               Help build trust - <span className="font-medium text-primary">{deal.company_name}</span> 
-              needs more community reviews
+              {' '}needs more community reviews
             </p>
           </div>
         ) : (
