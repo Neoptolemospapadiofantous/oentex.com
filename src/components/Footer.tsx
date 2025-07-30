@@ -31,8 +31,8 @@ const Footer: React.FC = () => {
   }
 
   const socialLinks = [
-    { name: 'X', icon: XIcon, href: 'https://x.com/oentex' },
-    { name: 'Email', icon: Mail, href: 'mailto:contact@oentex.com' },
+    { name: 'X', icon: XIcon, href: 'https://x.com/oentex_official' },
+    { name: 'Email', icon: Mail, href: 'mailto:support@oentex.com' },
   ]
 
   return (

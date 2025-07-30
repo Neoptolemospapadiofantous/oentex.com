@@ -1,4 +1,4 @@
-// src/pages/dashboard/MyDeals.tsx - FIXED VERSION WITH WORKING STARS
+// src/pages/dashboard/MyDeals.tsx - CLEAN VERSION (No top padding for dashboard)
 import React, { useState, useMemo, useCallback } from 'react';
 import { 
   Search, 
@@ -303,8 +303,6 @@ const MyDeals: React.FC = () => {
     }
   }, [refetch]);
 
-
-
   const handleToggleSelection = useCallback((ratingId: string) => {
     setSelectedRatings(prev => {
       const newSet = new Set(prev);
@@ -393,7 +391,7 @@ const MyDeals: React.FC = () => {
   // ✅ CATEGORIES ERROR STATE
   if (categoriesQuery.error) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -424,7 +422,7 @@ const MyDeals: React.FC = () => {
   // ✅ LOADING STATE
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">My Ratings</h1>
@@ -445,7 +443,7 @@ const MyDeals: React.FC = () => {
   // ✅ ERROR STATE
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -471,7 +469,7 @@ const MyDeals: React.FC = () => {
   // ✅ NO CATEGORIES STATE
   if (!categories.length) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
@@ -496,7 +494,7 @@ const MyDeals: React.FC = () => {
 
   // ✅ MAIN CONTENT
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Header */}
