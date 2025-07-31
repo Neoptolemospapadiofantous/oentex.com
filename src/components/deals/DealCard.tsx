@@ -598,7 +598,7 @@ export const DealCard: React.FC<DealCardProps> = ({
             <div className="mt-2 text-center">
               <p className="text-xs text-textSecondary">
                 Be the first to rate <span className="font-medium text-primary">{deal.company_name}</span> 
-                and help other traders!
+                {' '}and help other traders!
               </p>
             </div>
           ) : hasLimitedRatings ? (
