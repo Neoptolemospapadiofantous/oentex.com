@@ -198,34 +198,32 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Router>
-            <AppContent />
-            
-            <Toaster 
-              position="top-right"
-              toastOptions={toastConfig}
-              containerStyle={{
-                top: '5rem',
-                right: '1rem',
-                zIndex: 9999,
+          <AppContent />
+          
+          <Toaster 
+            position="top-right"
+            toastOptions={toastConfig}
+            containerStyle={{
+              top: '5rem',
+              right: '1rem',
+              zIndex: 9999,
+            }}
+            gutter={8}
+            reverseOrder={false}
+          />
+          
+          {process.env.NODE_ENV === 'development' && (
+            <ReactQueryDevtools 
+              initialIsOpen={false}
+              position="bottom-right"
+              toggleButtonProps={{
+                style: {
+                  marginRight: '1rem',
+                  marginBottom: '1rem',
+                }
               }}
-              gutter={8}
-              reverseOrder={false}
             />
-            
-            {process.env.NODE_ENV === 'development' && (
-              <ReactQueryDevtools 
-                initialIsOpen={false}
-                position="bottom-right"
-                toggleButtonProps={{
-                  style: {
-                    marginRight: '1rem',
-                    marginBottom: '1rem',
-                  }
-                }}
-              />
-            )}
-          </Router>
+          )}
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>

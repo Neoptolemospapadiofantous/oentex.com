@@ -1,5 +1,6 @@
 // src/components/ui/LoadingSpinner.tsx (Enhanced with better states)
 import React from 'react'
+import { Spinner } from '@heroui/react'
 import { Loader2, RefreshCw, TrendingUp, Shield, Zap } from 'lucide-react'
 
 interface LoadingSpinnerProps {
@@ -17,11 +18,11 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text,
   showIcon = true
 }) => {
-  const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-    xl: 'w-12 h-12'
+  const sizeMap = {
+    sm: 'sm',
+    md: 'md',
+    lg: 'lg',
+    xl: 'lg'
   }
 
   const textSizeClasses = {
@@ -46,23 +47,43 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     }
   }
 
+  const getSpinnerColor = () => {
+    switch (variant) {
+      case 'primary':
+        return 'primary'
+      case 'secondary':
+        return 'secondary'
+      case 'auth':
+        return 'primary'
+      case 'deals':
+        return 'success'
+      default:
+        return 'default'
+    }
+  }
+
   const getIcon = () => {
     switch (variant) {
       case 'auth':
-        return <Shield className={`${sizeClasses[size]} animate-spin`} />
+        return <Shield className="w-4 h-4 animate-spin" />
       case 'deals':
-        return <TrendingUp className={`${sizeClasses[size]} animate-spin`} />
+        return <TrendingUp className="w-4 h-4 animate-spin" />
       case 'primary':
-        return <Zap className={`${sizeClasses[size]} animate-spin`} />
+        return <Zap className="w-4 h-4 animate-spin" />
       default:
-        return <Loader2 className={`${sizeClasses[size]} animate-spin`} />
+        return <Loader2 className="w-4 h-4 animate-spin" />
     }
   }
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div className={`flex items-center gap-2 ${getVariantStyles()}`}>
-        {showIcon && getIcon()}
+        {showIcon && (
+          <Spinner 
+            size={sizeMap[size]} 
+            color={getSpinnerColor() as any}
+          />
+        )}
         {text && (
           <span className={`${textSizeClasses[size]} font-medium`}>
             {text}
@@ -98,12 +119,18 @@ export const InlineLoader: React.FC<{
   variant?: 'default' | 'primary' | 'secondary'
 }> = ({ 
   text = 'Loading...', 
-  size = 'sm',
-  variant = 'default' 
+  size = 'md',
+  variant = 'default'
 }) => {
   return (
-    <div className="flex items-center justify-center py-4">
-      <LoadingSpinner size={size} variant={variant} text={text} />
+    <div className="flex items-center gap-2">
+      <Spinner 
+        size={sizeMap[size]} 
+        color={getSpinnerColor() as any}
+      />
+      <span className={`${textSizeClasses[size]} text-textSecondary`}>
+        {text}
+      </span>
     </div>
   )
 }
