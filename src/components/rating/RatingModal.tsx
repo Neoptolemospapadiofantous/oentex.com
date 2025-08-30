@@ -1,6 +1,19 @@
-// src/components/rating/RatingModal.tsx - MODERNIZED: Uses mutation hook
 import React, { useState, useEffect } from 'react'
-import { X, Star, Loader2 } from 'lucide-react'
+import { 
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Card,
+  CardBody,
+  Tabs,
+  Tab,
+  Divider
+} from '@heroui/react'
+import { Star, Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useAuth } from '../../lib/authContext'
 import { useSubmitRatingMutation } from '../../hooks/queries/useDealsQuery'
 import { RATING_CATEGORIES, RatingSubmissionData } from '../../lib/services/ratingService'
@@ -40,8 +53,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   companyRating
 }) => {
   const { user } = useAuth()
-  
-  // ✅ MODERN: Use the mutation hook for automatic optimistic updates
   const submitRatingMutation = useSubmitRatingMutation()
 
   const [ratings, setRatings] = useState<RatingState>({
@@ -55,7 +66,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     mobile_app: 0
   })
 
-  // ✅ MODERN: Initialize with existing rating data
   useEffect(() => {
     if (existingRating) {
       const mode = existingRating.overall_rating ? 'overall' : 'categories'
@@ -73,7 +83,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     }
   }, [existingRating])
 
-  // ✅ MODERN: Handle rating submission with mutation hook
   const handleSubmit = async () => {
     if (!user) {
       toast.error('Please sign in to submit a rating')
@@ -81,7 +90,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     }
 
     try {
-      // ✅ PREPARE RATING DATA: Based on selected mode
       const ratingData: RatingSubmissionData = {}
       
       if (ratings.mode === 'overall') {
@@ -91,7 +99,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         }
         ratingData.overall_rating = ratings.overall_rating
       } else {
-        // Categories mode - include all non-zero category ratings
         if (ratings.platform_usability > 0) ratingData.platform_usability = ratings.platform_usability
         if (ratings.customer_support > 0) ratingData.customer_support = ratings.customer_support
         if (ratings.fees_commissions > 0) ratingData.fees_commissions = ratings.fees_commissions
@@ -99,7 +106,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         if (ratings.educational_resources > 0) ratingData.educational_resources = ratings.educational_resources
         if (ratings.mobile_app > 0) ratingData.mobile_app = ratings.mobile_app
 
-        // Validate at least one category is rated
         const hasAnyRating = Object.values(ratingData).some(rating => rating && rating > 0)
         if (!hasAnyRating) {
           toast.error('Please rate at least one category')
@@ -107,9 +113,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         }
       }
 
-      console.log('🔄 Modern rating submission via mutation hook...')
-
-      // ✅ MODERN: Use mutation hook - handles ALL optimistic updates automatically
       await submitRatingMutation.mutateAsync({
         userId: user.id,
         companyId,
@@ -117,15 +120,11 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         existingRating
       })
 
-      // ✅ SUCCESS: Close modal and notify parent
       onClose()
       onRatingSubmitted?.()
 
-      console.log('✅ Modern rating submission completed successfully')
-
     } catch (error) {
-      console.error('❌ Modern rating submission failed:', error)
-      // Error toast is handled by the mutation hook
+      console.error('Rating submission failed:', error)
     }
   }
 
@@ -135,147 +134,126 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     label: string
   }> = ({ rating, onRatingChange, label }) => (
     <div className="flex items-center justify-between py-3">
-      <span className="text-sm font-medium text-text">{label}</span>
+      <span className="text-small font-medium">{label}</span>
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <button
+          <motion.button
             key={star}
             type="button"
             onClick={() => onRatingChange(star)}
-            className="p-1 hover:scale-110 transition-transform"
+            className="p-1 rounded-small"
             disabled={submitRatingMutation.isPending}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             <Star
               className={`w-6 h-6 transition-colors ${
                 star <= rating
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-gray-300 hover:text-yellow-400'
+                  ? 'fill-warning text-warning'
+                  : 'text-default-300 hover:text-warning'
               }`}
             />
-          </button>
+          </motion.button>
         ))}
-        <span className="ml-2 text-sm text-textSecondary min-w-[3ch]">
+        <span className="ml-2 text-small text-default-500 min-w-[3ch]">
           {rating > 0 ? rating.toFixed(1) : ''}
         </span>
       </div>
     </div>
   )
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div>
-            <h2 className="text-xl font-bold text-text">Rate {companyName}</h2>
-            {companyRating && (
-              <p className="text-sm text-textSecondary">
-                Current: {companyRating.averageRating.toFixed(1)}⭐ ({companyRating.totalRatings} reviews)
-              </p>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-surface rounded-lg transition-colors"
-            disabled={submitRatingMutation.isPending}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Rating Mode Selection */}
-        <div className="p-6 border-b border-border">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setRatings(prev => ({ ...prev, mode: 'overall' }))}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                ratings.mode === 'overall'
-                  ? 'bg-primary text-white'
-                  : 'bg-surface text-textSecondary hover:bg-primary/10'
-              }`}
-              disabled={submitRatingMutation.isPending}
-            >
-              Overall Rating
-            </button>
-            <button
-              type="button"
-              onClick={() => setRatings(prev => ({ ...prev, mode: 'categories' }))}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                ratings.mode === 'categories'
-                  ? 'bg-primary text-white'
-                  : 'bg-surface text-textSecondary hover:bg-primary/10'
-              }`}
-              disabled={submitRatingMutation.isPending}
-            >
-              Detailed Rating
-            </button>
-          </div>
-        </div>
-
-        {/* Rating Content */}
-        <div className="p-6">
-          {ratings.mode === 'overall' ? (
-            <div>
-              <p className="text-sm text-textSecondary mb-4">
-                Rate your overall experience with {companyName}
-              </p>
-              <StarRating
-                rating={ratings.overall_rating}
-                onRatingChange={(rating) => setRatings(prev => ({ ...prev, overall_rating: rating }))}
-                label="Overall Experience"
-              />
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm text-textSecondary mb-4">
-                Rate different aspects of {companyName} (optional categories)
-              </p>
-              <div className="space-y-1">
-                {RATING_CATEGORIES.map((category) => (
-                  <StarRating
-                    key={category.key}
-                    rating={ratings[category.key as keyof RatingState] as number}
-                    onRatingChange={(rating) => 
-                      setRatings(prev => ({ ...prev, [category.key]: rating }))
-                    }
-                    label={category.label}
-                  />
-                ))}
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      size="md"
+      backdrop="blur"
+    >
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader>
+              <div>
+                <h2 className="text-xl font-bold">Rate {companyName}</h2>
+                {companyRating && (
+                  <p className="text-small text-default-500">
+                    Current: {companyRating.averageRating.toFixed(1)}⭐ ({companyRating.totalRatings} reviews)
+                  </p>
+                )}
               </div>
-            </div>
-          )}
-        </div>
+            </ModalHeader>
 
-        {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-border">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-border rounded-lg text-textSecondary hover:bg-surface transition-colors"
-            disabled={submitRatingMutation.isPending}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitRatingMutation.isPending}
-            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {submitRatingMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Submit Rating'
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+            <ModalBody>
+              {/* Rating Mode Selection */}
+              <Tabs 
+                selectedKey={ratings.mode}
+                onSelectionChange={(key) => setRatings(prev => ({ ...prev, mode: key as 'overall' | 'categories' }))}
+                variant="underlined"
+                color="primary"
+                className="w-full"
+                isDisabled={submitRatingMutation.isPending}
+              >
+                <Tab key="overall" title="Overall Rating" />
+                <Tab key="categories" title="Detailed Rating" />
+              </Tabs>
+
+              <Divider />
+
+              {/* Rating Content */}
+              <div className="py-4">
+                {ratings.mode === 'overall' ? (
+                  <div>
+                    <p className="text-small text-default-600 mb-4">
+                      Rate your overall experience with {companyName}
+                    </p>
+                    <StarRating
+                      rating={ratings.overall_rating}
+                      onRatingChange={(rating) => setRatings(prev => ({ ...prev, overall_rating: rating }))}
+                      label="Overall Experience"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-small text-default-600 mb-4">
+                      Rate different aspects of {companyName} (optional categories)
+                    </p>
+                    <div className="space-y-1">
+                      {RATING_CATEGORIES.map((category) => (
+                        <StarRating
+                          key={category.key}
+                          rating={ratings[category.key as keyof RatingState] as number}
+                          onRatingChange={(rating) => 
+                            setRatings(prev => ({ ...prev, [category.key]: rating }))
+                          }
+                          label={category.label}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ModalBody>
+
+            <ModalFooter>
+              <Button
+                variant="light"
+                onPress={onClose}
+                isDisabled={submitRatingMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                color="primary"
+                onPress={handleSubmit}
+                isLoading={submitRatingMutation.isPending}
+                startContent={!submitRatingMutation.isPending && <Star className="w-4 h-4" />}
+              >
+                {submitRatingMutation.isPending ? 'Submitting...' : 'Submit Rating'}
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
 }

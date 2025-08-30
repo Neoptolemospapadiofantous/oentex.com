@@ -1,7 +1,17 @@
-// src/components/auth/AuthModals.tsx - REPLACE THIS FILE SIXTH (OPTIONAL - Better UX)
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Chrome, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { 
+  Modal, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalFooter,
+  Button,
+  Card,
+  CardBody,
+  Divider
+} from '@heroui/react'
+import { Chrome, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 
 interface AuthModalProps {
@@ -11,7 +21,6 @@ interface AuthModalProps {
   onModeChange: (mode: 'login' | 'register') => void
 }
 
-// ✅ SIMPLIFIED: Clean state management
 interface ModalState {
   isLoading: boolean
   loadingProvider: string | null
@@ -33,10 +42,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   })
 
   const { signInWithGoogle, signInWithMicrosoft } = useAuth()
-  const modalRef = useRef<HTMLDivElement>(null)
-  const focusTrapRef = useRef<HTMLButtonElement>(null)
 
-  // ✅ OPTIMIZED: Memoized state updaters
   const updateState = useCallback((updates: Partial<ModalState>) => {
     setState(prev => ({ ...prev, ...updates }))
   }, [])
@@ -54,68 +60,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     })
   }, [])
 
-  // ✅ ACCESSIBILITY: Focus management
-  useEffect(() => {
-    if (isOpen) {
-      // Clear state when modal opens
-      resetState()
-      
-      // Focus the first focusable element
-      setTimeout(() => {
-        focusTrapRef.current?.focus()
-      }, 100)
-    }
-  }, [isOpen, resetState])
-
-  // ✅ ACCESSIBILITY: Escape key handler
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !state.isLoading) {
-        onClose()
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isOpen, onClose, state.isLoading])
-
-  // ✅ ACCESSIBILITY: Focus trap
-  useEffect(() => {
-    if (!isOpen) return
-
-    const modal = modalRef.current
-    if (!modal) return
-
-    const focusableElements = modal.querySelectorAll(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )
-
-    const firstElement = focusableElements[0] as HTMLElement
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement
-
-    const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          e.preventDefault()
-          lastElement?.focus()
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          e.preventDefault()
-          firstElement?.focus()
-        }
-      }
-    }
-
-    modal.addEventListener('keydown', handleTabKey)
-    return () => modal.removeEventListener('keydown', handleTabKey)
-  }, [isOpen, state.success, state.error])
-
-  // ✅ OPTIMIZED: OAuth sign-in handler
   const handleOAuthSignIn = useCallback(async (provider: 'google' | 'microsoft') => {
     if (state.isLoading) return
     
@@ -143,7 +87,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           success: true 
         })
         
-        // Auto-close after success
         setTimeout(onClose, 2000)
       }
     } catch (error) {
@@ -159,14 +102,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [state.isLoading, clearError, updateState, signInWithGoogle, signInWithMicrosoft, onClose])
 
-  // ✅ OPTIMIZED: Backdrop click handler
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !state.isLoading) {
-      onClose()
-    }
-  }, [onClose, state.isLoading])
-
-  // ✅ ACCESSIBILITY: Microsoft icon component
   const MicrosoftIcon = () => (
     <svg className="w-5 h-5" viewBox="0 0 21 21" fill="none" aria-hidden="true">
       <path d="M10 1H1v9h9V1z" fill="#f25022"/>
@@ -176,191 +111,136 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     </svg>
   )
 
-  // ✅ OPTIMIZED: Provider button component
-  const ProviderButton: React.FC<{
-    provider: 'google' | 'microsoft'
-    icon: React.ReactNode
-    label: string
-    className: string
-  }> = ({ provider, icon, label, className }) => {
-    const isProviderLoading = state.loadingProvider === provider
-    const isDisabled = state.isLoading
-    
-    return (
-      <button
-        onClick={() => handleOAuthSignIn(provider)}
-        disabled={isDisabled}
-        aria-label={`${label} - ${mode === 'login' ? 'Sign in' : 'Create account'}`}
-        className={`
-          relative w-full py-4 px-6 rounded-xl font-medium transition-all duration-300 
-          flex items-center justify-center gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          ${className}
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg transform hover:-translate-y-0.5'}
-        `}
-      >
-        {isProviderLoading && (
-          <div className="absolute inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin" />
-          </div>
-        )}
-        
-        <div className="flex items-center gap-3">
-          {icon}
-          <span className="text-lg">
-            {isProviderLoading ? 'Connecting...' : label}
-          </span>
-        </div>
-      </button>
-    )
-  }
-
-  if (!isOpen) return null
-
-  const modalContent = (
-    <div 
-      className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+  return (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      placement="center"
+      backdrop="blur"
+      classNames={{
+        backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20"
+      }}
     >
-      {/* Backdrop */}
-      <div
-        onClick={handleBackdropClick}
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
-        aria-hidden="true"
-      />
-      
-      {/* Modal */}
-      <div
-        ref={modalRef}
-        className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md max-h-[90vh] overflow-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="text-center flex-1">
-            <h2 id="modal-title" className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
-            </h2>
-            <p className="text-sm text-gray-600">
-              {mode === 'login' 
-                ? 'Sign in to access your trading dashboard' 
-                : 'Start discovering the best trading platforms'
-              }
-            </p>
-          </div>
-          <button
-            ref={focusTrapRef}
-            onClick={onClose}
-            disabled={state.isLoading}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Close authentication modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {state.success ? (
-            /* ✅ IMPROVED: Success State */
-            <div className="text-center py-8" role="alert" aria-live="polite">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Success!
-              </h3>
-              <p className="text-gray-600">
-                Redirecting you to your dashboard...
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1 text-center">
+              <h2 className="text-2xl font-bold">
+                {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
+              </h2>
+              <p className="text-small text-default-500">
+                {mode === 'login' 
+                  ? 'Sign in to access your trading dashboard' 
+                  : 'Start discovering the best trading platforms'
+                }
               </p>
-              <div className="mt-4">
-                <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
-                  <div className="w-full h-full bg-green-600 animate-pulse" />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* ✅ ACCESSIBILITY: Error Alert */}
-              {state.error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert" aria-live="assertive">
-                  <div className="flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <p className="text-red-700 text-sm">{state.error}</p>
+            </ModalHeader>
+            
+            <ModalBody>
+              {state.success ? (
+                <Card className="bg-success-50 border-success-200">
+                  <CardBody className="text-center py-8">
+                    <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-success mb-2">
+                      Success!
+                    </h3>
+                    <p className="text-success-600">
+                      Redirecting you to your dashboard...
+                    </p>
+                  </CardBody>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {state.error && (
+                    <Card className="bg-danger-50 border-danger-200">
+                      <CardBody>
+                        <div className="flex items-center gap-3">
+                          <AlertCircle className="w-5 h-5 text-danger flex-shrink-0" />
+                          <p className="text-danger text-small">{state.error}</p>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  )}
+
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full"
+                      variant="bordered"
+                      size="lg"
+                      startContent={<Chrome className="w-5 h-5" />}
+                      onPress={() => handleOAuthSignIn('google')}
+                      isLoading={state.loadingProvider === 'google'}
+                      isDisabled={state.isLoading}
+                    >
+                      {state.loadingProvider === 'google' ? 'Connecting...' : 'Continue with Google'}
+                    </Button>
+
+                    <Button
+                      className="w-full"
+                      color="primary"
+                      size="lg"
+                      startContent={<MicrosoftIcon />}
+                      onPress={() => handleOAuthSignIn('microsoft')}
+                      isLoading={state.loadingProvider === 'microsoft'}
+                      isDisabled={state.isLoading}
+                    >
+                      {state.loadingProvider === 'microsoft' ? 'Connecting...' : 'Continue with Microsoft'}
+                    </Button>
                   </div>
                 </div>
               )}
-
-              {/* ✅ OPTIMIZED: OAuth Buttons */}
-              <div className="space-y-3">
-                <ProviderButton
-                  provider="google"
-                  icon={<Chrome className="w-6 h-6" />}
-                  label="Continue with Google"
-                  className="bg-white border-2 border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50"
-                />
-
-                <ProviderButton
-                  provider="microsoft"
-                  icon={<MicrosoftIcon />}
-                  label="Continue with Microsoft"
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                />
+            </ModalBody>
+            
+            <ModalFooter className="flex-col">
+              <div className="text-center text-small text-default-500">
+                {mode === 'login' ? (
+                  <>
+                    New to trading affiliate deals?{' '}
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onPress={() => onModeChange('register')}
+                      isDisabled={state.isLoading}
+                      className="p-0 h-auto min-w-0 text-primary"
+                    >
+                      Create account
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    Already have an account?{' '}
+                    <Button
+                      variant="light"
+                      size="sm"
+                      onPress={() => onModeChange('login')}
+                      isDisabled={state.isLoading}
+                      className="p-0 h-auto min-w-0 text-primary"
+                    >
+                      Sign in
+                    </Button>
+                  </>
+                )}
               </div>
-
-              {/* Footer */}
-              <div className="pt-6 space-y-4">
-                {/* ✅ ACCESSIBILITY: Mode Switch */}
-                <div className="text-center text-sm text-gray-600 border-t border-gray-100 pt-4">
-                  {mode === 'login' ? (
-                    <>
-                      New to trading affiliate deals?{' '}
-                      <button
-                        onClick={() => onModeChange('register')}
-                        disabled={state.isLoading}
-                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
-                      >
-                        Create account
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Already have an account?{' '}
-                      <button
-                        onClick={() => onModeChange('login')}
-                        disabled={state.isLoading}
-                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
-                      >
-                        Sign in
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                {/* Security Notice */}
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-2">
-                    🔒 Secure OAuth authentication • No passwords needed
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    By continuing, you agree to our{' '}
-                    <a href="/terms" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
-                      Terms
-                    </a>
-                    {' '}and{' '}
-                    <a href="/privacy" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
-                      Privacy Policy
-                    </a>
-                  </p>
-                </div>
+              
+              <div className="text-center">
+                <p className="text-tiny text-default-400 mb-2">
+                  🔒 Secure OAuth authentication • No passwords needed
+                </p>
+                <p className="text-tiny text-default-400">
+                  By continuing, you agree to our{' '}
+                  <Link to="/terms" className="text-primary hover:underline">
+                    Terms
+                  </Link>
+                  {' '}and{' '}
+                  <Link to="/privacy" className="text-primary hover:underline">
+                    Privacy Policy
+                  </Link>
+                </p>
               </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
-
-  return createPortal(modalContent, document.body)
 }

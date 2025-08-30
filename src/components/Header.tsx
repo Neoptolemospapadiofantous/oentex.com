@@ -1,12 +1,28 @@
-// src/components/Header.tsx
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { 
+  Navbar, 
+  NavbarBrand, 
+  NavbarContent, 
+  NavbarItem, 
+  NavbarMenuToggle, 
+  NavbarMenu, 
+  NavbarMenuItem,
+  Button,
+  Avatar,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem
+} from '@heroui/react'
 import { AuthButton } from './auth/AuthButton'
-import logo from '../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
+import { useAuth } from '../lib/authContext'
+import logo from '../assets/logo.png'
 
 const Header: React.FC = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const location = useLocation()
+  const { user } = useAuth()
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -16,69 +32,69 @@ const Header: React.FC = () => {
     { name: 'Contact', href: '/contact' },
   ]
 
+  const isActive = (href: string) => location.pathname === href
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+    <Navbar 
+      onMenuOpenChange={setIsMenuOpen}
+      className="bg-background/70 backdrop-blur-md border-b border-divider"
+      maxWidth="7xl"
+      position="sticky"
+    >
+      <NavbarContent>
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className="sm:hidden"
+        />
+        <NavbarBrand>
           <Link to="/" className="flex items-center space-x-2">
             <img 
               src={logo} 
               alt="Oentex Logo" 
-              className="w-12 h-12 object-contain"
+              className="w-10 h-10 object-contain"
             />
-            <span className="font-bold text-xl text-text">Oentex</span>
+            <span className="font-bold text-xl gradient-text">Oentex</span>
           </Link>
+        </NavbarBrand>
+      </NavbarContent>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-textSecondary hover:text-text transition-colors font-medium"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+        {navigation.map((item) => (
+          <NavbarItem key={item.name} isActive={isActive(item.href)}>
+            <Link
+              to={item.href}
+              className={`text-foreground hover:text-primary transition-colors ${
+                isActive(item.href) ? 'text-primary font-semibold' : ''
+              }`}
+            >
+              {item.name}
+            </Link>
+          </NavbarItem>
+        ))}
+      </NavbarContent>
 
-          {/* Auth Button */}
-          <div className="hidden md:flex items-center">
-            <AuthButton />
-          </div>
+      <NavbarContent justify="end">
+        <NavbarItem>
+          <AuthButton />
+        </NavbarItem>
+      </NavbarContent>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-textSecondary hover:text-text hover:bg-surface transition-colors"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-border bg-white">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="block px-3 py-2 text-textSecondary hover:text-text hover:bg-surface rounded-lg transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <div className="px-3 py-2 border-t border-border mt-2 pt-4">
-                <AuthButton />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </header>
+      <NavbarMenu>
+        {navigation.map((item, index) => (
+          <NavbarMenuItem key={`${item.name}-${index}`}>
+            <Link
+              to={item.href}
+              className={`w-full text-foreground hover:text-primary transition-colors ${
+                isActive(item.href) ? 'text-primary font-semibold' : ''
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {item.name}
+            </Link>
+          </NavbarMenuItem>
+        ))}
+      </NavbarMenu>
+    </Navbar>
   )
 }
 

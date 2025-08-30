@@ -1,5 +1,12 @@
 import React from 'react'
+import { 
+  Card,
+  CardBody,
+  Avatar,
+  Spinner
+} from '@heroui/react'
 import { TrendingUp, Users, Shield } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 
 const Stats = () => {
@@ -36,7 +43,6 @@ const Stats = () => {
           return sum + (typeof reviews === 'number' && reviews > 0 ? reviews : 0)
         }, 0)
 
-        // Calculate average rating from companies (weighted by reviews)
         let avgRating = 0
         let totalWeightedRating = 0
         let totalRatingWeight = 0
@@ -86,19 +92,22 @@ const Stats = () => {
             icon: TrendingUp,
             value: totalCompanies > 0 ? `${totalCompanies}` : '0',
             label: 'Products Reviewed',
-            description: `Across ${new Set(companies.map(c => c.category)).size} categories`
+            description: `Across ${new Set(companies.map(c => c.category)).size} categories`,
+            color: 'primary'
           },
           {
             icon: Users,
             value: totalReviews > 0 ? `${totalReviews.toLocaleString()}` : '0',
             label: 'Verified Reviews',
-            description: avgRating > 0 ? `${avgRating.toFixed(1)}/5 average rating` : 'No ratings yet'
+            description: avgRating > 0 ? `${avgRating.toFixed(1)}/5 average rating` : 'No ratings yet',
+            color: 'success'
           },
           {
             icon: Shield,
             value: overallSatisfaction > 0 ? `${Math.round(overallSatisfaction)}%` : '0%',
             label: 'User Satisfaction',
-            description: overallSatisfaction > 0 ? 'Users trust our recommendations' : 'Building trust with users'
+            description: overallSatisfaction > 0 ? 'Users trust our recommendations' : 'Building trust with users',
+            color: 'warning'
           }
         ]
 
@@ -115,16 +124,20 @@ const Stats = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-surface/30">
+      <section className="py-20 bg-content1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[1, 2, 3].map((index) => (
-              <div key={index} className="text-center animate-pulse">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-2xl mb-4"></div>
-                <div className="h-10 bg-gray-200 rounded mb-2 w-24 mx-auto"></div>
-                <div className="h-6 bg-gray-200 rounded mb-1 w-32 mx-auto"></div>
-                <div className="h-4 bg-gray-200 rounded w-40 mx-auto"></div>
-              </div>
+              <Card key={index}>
+                <CardBody className="text-center p-6">
+                  <div className="space-y-3">
+                    <div className="skeleton w-16 h-16 rounded-full mx-auto" />
+                    <div className="skeleton h-8 w-24 mx-auto" />
+                    <div className="skeleton h-4 w-32 mx-auto" />
+                    <div className="skeleton h-3 w-40 mx-auto" />
+                  </div>
+                </CardBody>
+              </Card>
             ))}
           </div>
         </div>
@@ -134,36 +147,50 @@ const Stats = () => {
 
   if (error) {
     return (
-      <section className="py-20 bg-surface/30">
+      <section className="py-20 bg-content1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-2xl mb-4">
-              <Shield className="w-8 h-8 text-red-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Statistics</h3>
-            <p className="text-gray-600 mb-4">We're having trouble connecting to our database.</p>
-          </div>
+          <Card>
+            <CardBody className="text-center p-6">
+              <Avatar
+                icon={<Shield className="w-8 h-8" />}
+                className="bg-danger text-danger-foreground mx-auto mb-4"
+                size="lg"
+              />
+              <h3 className="text-lg font-semibold mb-2">Unable to Load Statistics</h3>
+              <p className="text-default-600 mb-4">We're having trouble connecting to our database.</p>
+            </CardBody>
+          </Card>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="py-20 bg-surface/30">
+    <section className="py-20 bg-content1">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {stats.map((stat, index) => (
-            <div 
+            <motion.div
               key={index}
-              className="text-center group hover:transform hover:scale-105 transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -5 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl mb-4 group-hover:shadow-lg group-hover:shadow-primary/25">
-                <stat.icon className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-4xl font-bold text-text mb-2">{stat.value}</div>
-              <div className="text-lg font-semibold text-text mb-1">{stat.label}</div>
-              <div className="text-sm text-textSecondary">{stat.description}</div>
-            </div>
+              <Card className="text-center card-hover">
+                <CardBody className="p-6">
+                  <Avatar
+                    icon={<stat.icon className="w-8 h-8" />}
+                    className={`bg-${stat.color} text-${stat.color}-foreground mx-auto mb-4`}
+                    size="lg"
+                  />
+                  <div className="text-4xl font-bold mb-2">{stat.value}</div>
+                  <div className="text-lg font-semibold mb-1">{stat.label}</div>
+                  <div className="text-small text-default-600">{stat.description}</div>
+                </CardBody>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>

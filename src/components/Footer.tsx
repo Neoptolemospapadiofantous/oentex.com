@@ -1,10 +1,14 @@
-// src/components/Footer.tsx - Final version
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { 
+  Card,
+  CardBody,
+  Button,
+  Divider
+} from '@heroui/react'
 import { Mail } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-// Custom X (Twitter) icon since Lucide doesn't have the new X logo
 const XIcon = () => (
   <svg 
     viewBox="0 0 24 24" 
@@ -36,7 +40,7 @@ const Footer: React.FC = () => {
   ]
 
   return (
-    <footer className="bg-surface border-t border-border mt-auto">
+    <footer className="bg-content1 border-t border-divider mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
@@ -47,37 +51,39 @@ const Footer: React.FC = () => {
                 alt="Oentex Logo" 
                 className="w-12 h-12 object-contain"
               />
-              <span className="font-bold text-xl text-text">Oentex</span>
+              <span className="font-bold text-xl gradient-text">Oentex</span>
             </Link>
-            <p className="text-textSecondary text-sm mb-6 max-w-md">
+            <p className="text-default-600 text-small mb-6 max-w-md">
               Discover and rate the best trading platforms, exchanges, and financial services. 
               Make informed decisions with real user reviews and comprehensive ratings.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((item) => (
-                <a
+                <Button
                   key={item.name}
+                  as={Link}
                   href={item.href}
-                  className="text-textSecondary hover:text-primary transition-colors"
-                  target={item.href.startsWith('http') ? '_blank' : undefined}
-                  rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  isExternal={item.href.startsWith('http')}
                   aria-label={item.name}
                 >
                   <item.icon />
-                </a>
+                </Button>
               ))}
             </div>
           </div>
 
           {/* Product Links */}
           <div>
-            <h3 className="font-semibold text-text mb-4">Product</h3>
+            <h3 className="font-semibold mb-4">Product</h3>
             <ul className="space-y-3">
               {links.product.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-textSecondary hover:text-text transition-colors text-sm"
+                    className="text-default-600 hover:text-foreground transition-colors text-small"
                   >
                     {link.name}
                   </Link>
@@ -88,13 +94,13 @@ const Footer: React.FC = () => {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-semibold text-text mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-3">
               {links.company.map((link) => (
                 <li key={link.name}>
                   <Link
                     to={link.href}
-                    className="text-textSecondary hover:text-text transition-colors text-sm"
+                    className="text-default-600 hover:text-foreground transition-colors text-small"
                   >
                     {link.name}
                   </Link>
@@ -104,16 +110,18 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
+        <Divider className="my-8" />
+
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
-          <p className="text-textSecondary text-sm">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <p className="text-default-500 text-small">
             © {currentYear} Oentex. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
-            <Link to="/privacy" className="text-textSecondary hover:text-text transition-colors text-sm">
+            <Link to="/privacy" className="text-default-500 hover:text-foreground transition-colors text-small">
               Privacy Policy
             </Link>
-            <Link to="/terms" className="text-textSecondary hover:text-text transition-colors text-sm">
+            <Link to="/terms" className="text-default-500 hover:text-foreground transition-colors text-small">
               Terms of Service
             </Link>
           </div>

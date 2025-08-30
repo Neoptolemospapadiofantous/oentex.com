@@ -1,6 +1,13 @@
-// src/components/dashboard/DashboardLayout.tsx (MOBILE OPTIMIZED)
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  Card,
+  CardBody,
+  Button,
+  Avatar,
+  Divider,
+  Chip
+} from '@heroui/react';
 import { 
   Home, 
   Star, 
@@ -8,13 +15,11 @@ import {
   LogOut, 
   User,
   Search,
-  Chrome,
   X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../lib/authContext';
 import toast from 'react-hot-toast';
-
-
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -27,9 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
   const navigate = useNavigate();
 
   const navItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/deals' },
-    { id: 'my-deals', name: 'My Ratings', icon: Star, path: '/my-deals' },
+    { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard', description: 'Overview & stats' },
+    { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/deals', description: 'Discover platforms' },
+    { id: 'my-deals', name: 'My Ratings', icon: Star, path: '/my-deals', description: 'Your platform ratings' },
   ];
 
   const handleSignOut = async () => {
@@ -48,136 +53,135 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
     setIsMobileOpen(false);
   };
 
-  return (
-    <>
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
+  const isActiveRoute = (href: string) => {
+    if (href === '/dashboard') {
+      return location.pathname === href
+    }
+    return location.pathname.startsWith(href)
+  }
 
-      {/* Sidebar - Mobile Optimized */}
-      <div className={`fixed top-0 left-0 z-50 w-72 sm:w-80 lg:w-64 h-screen bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`} style={{ borderColor: 'var(--border)' }}>
-        <div className="flex flex-col h-full">
-          {/* Header with close button for mobile */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
-                Oentex
-              </span>
-            </div>
-            
-            {/* Mobile close button */}
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="lg:hidden p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-content1">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-divider">
+        <Link to="/dashboard" className="flex items-center" onClick={() => setIsMobileOpen(false)}>
+          <span className="font-bold text-2xl gradient-text">
+            Oentex
+          </span>
+        </Link>
+        
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => setIsMobileOpen(false)}
+          className="lg:hidden"
+        >
+          <X className="w-5 h-5" />
+        </Button>
+      </div>
 
-          {/* User Profile - Clickable section for better mobile UX */}
-          <div className="p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleProfileClick}
-              className="w-full flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-10"
-              style={{
-                ':hover': {
-                  backgroundColor: 'var(--surface)'
-                }
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-              }}>
-                <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm sm:text-base font-medium truncate" style={{ color: 'var(--text)' }}>
+      {/* User Profile */}
+      <div className="p-6 border-b border-divider">
+        <Card 
+          isPressable
+          onPress={handleProfileClick}
+          className="bg-content2 hover:bg-content3 transition-colors"
+        >
+          <CardBody className="p-4">
+            <div className="flex items-center space-x-3">
+              <Avatar
+                icon={<User className="w-6 h-6" />}
+                className="bg-gradient-to-r from-primary to-secondary text-white"
+                size="md"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--text-secondary)' }}>
+                <p className="text-small text-default-500 truncate">
                   {user?.email}
                 </p>
               </div>
-            </button>
-          </div>
-
-          {/* Navigation - Scrollable content */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={`w-full flex items-center space-x-3 px-4 py-4 sm:py-3 rounded-lg text-left transition-all duration-200 ${
-                    isActive
-                      ? 'text-white border-r-2'
-                      : 'hover:bg-opacity-50'
-                  }`}
-                  style={isActive ? {
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                    borderColor: 'var(--primary)'
-                  } : {
-                    color: 'var(--text-secondary)',
-                    ':hover': {
-                      backgroundColor: 'var(--surface)',
-                      color: 'var(--primary)'
-                    }
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'var(--surface)';
-                      e.currentTarget.style.color = 'var(--primary)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'var(--text-secondary)';
-                    }
-                  }}
-                >
-                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  <span className="font-medium text-sm sm:text-base">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Logout Button - Always visible at bottom */}
-          <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center justify-center sm:justify-start space-x-3 px-4 py-4 sm:py-3 rounded-lg transition-colors duration-200 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200"
-            >
-              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
-              <span className="text-sm sm:text-base font-medium">Sign Out</span>
-            </button>
-          </div>
-        </div>
+            </div>
+          </CardBody>
+        </Card>
       </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        {navItems.map((item) => {
+          const active = isActiveRoute(item.path);
+          return (
+            <Button
+              key={item.id}
+              as={Link}
+              to={item.path}
+              variant={active ? "solid" : "light"}
+              color={active ? "primary" : "default"}
+              className={`w-full justify-start h-auto p-4 ${active ? '' : 'hover:bg-content2'}`}
+              startContent={<item.icon className="w-5 h-5" />}
+              onPress={() => setIsMobileOpen(false)}
+            >
+              <div className="flex flex-col items-start">
+                <span className="font-medium">{item.name}</span>
+                <span className="text-tiny text-default-500">{item.description}</span>
+              </div>
+            </Button>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-divider">
+        <Button
+          color="danger"
+          variant="flat"
+          className="w-full"
+          startContent={<LogOut className="w-4 h-4" />}
+          onPress={handleSignOut}
+        >
+          Sign Out
+        </Button>
+      </div>
+    </div>
+  )
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 z-40">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div 
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileOpen(false)}
+            />
+            
+            {/* Sidebar */}
+            <motion.div 
+              className="fixed inset-y-0 left-0 w-80 z-50 lg:hidden"
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            >
+              <SidebarContent />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
-  );
-};
+  )
+}
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -187,7 +191,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, session } = useAuth();
 
-  // ✅ WELCOME TOAST: Show welcome toast once per session
+  // Welcome toast
   useEffect(() => {
     if (!user || !session?.user?.app_metadata?.provider) return
 
@@ -195,43 +199,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const userId = session.user.id
     const toastKey = `welcome_toast_${userId}`
 
-    // Check if already shown
     if (sessionStorage.getItem(toastKey)) return
 
-    // Mark as shown
     sessionStorage.setItem(toastKey, 'true')
 
     const providerName = provider === 'google' ? 'Google' : 
                         provider === 'azure' ? 'Microsoft' : 'OAuth'
 
-    const Icon = Chrome;
-
-    // Show toast after small delay
     setTimeout(() => {
       toast.success(
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5" />
-          <div>
-            <div className="font-semibold">Welcome to Oentex!</div>
-            <div className="text-sm text-gray-600">Successfully signed in with {providerName}</div>
-          </div>
-        </div>,
+        `Welcome to Oentex! Successfully signed in with ${providerName}`,
         {
           id: `welcome-${userId}`,
           duration: 5000,
           position: 'top-right',
-          style: {
-            background: '#10B981',
-            color: 'white',
-            padding: '16px',
-            borderRadius: '12px',
-          }
         }
       );
     }, 500);
   }, [user?.id, session?.user?.app_metadata?.provider])
 
-  // ✅ CLEANUP: When user signs out
   useEffect(() => {
     if (!user) {
       Object.keys(sessionStorage).forEach(key => {
@@ -242,7 +228,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     }
   }, [user])
 
-  // Close mobile menu when screen size changes
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -255,53 +240,46 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
+    <div className="h-screen flex overflow-hidden bg-background">
       <Sidebar 
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}
       />
       
-      {/* Main Content - Mobile Optimized */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
-        {/* Top Bar - Mobile Optimized */}
-        <header className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+        {/* Top Bar */}
+        <header className="bg-content1 border-b border-divider px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg transition-colors duration-200 -ml-2"
-              style={{ color: 'var(--text-secondary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-                e.currentTarget.style.color = 'var(--text)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = 'var(--text-secondary)';
-              }}
+            <Button
+              isIconOnly
+              variant="light"
+              onPress={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden"
             >
               <Menu className="w-6 h-6" />
-            </button>
+            </Button>
 
-            {/* Mobile Logo - Show when sidebar is closed */}
+            {/* Mobile Logo */}
             <div className="lg:hidden flex items-center space-x-2">
-              <span className="text-lg font-bold" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
+              <span className="text-lg font-bold gradient-text">
                 Oentex
               </span>
             </div>
 
-            {/* Spacer for desktop */}
             <div className="hidden lg:block"></div>
           </div>
         </header>
 
-        {/* Page Content - Mobile Optimized */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-          {children}
+        {/* Page Content */}
+        <main className="flex-1 p-6 overflow-y-auto bg-background">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {children}
+          </motion.div>
         </main>
       </div>
     </div>

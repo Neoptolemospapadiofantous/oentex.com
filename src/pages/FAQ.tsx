@@ -1,9 +1,16 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { 
+  Card,
+  CardBody,
+  Button,
+  Accordion,
+  AccordionItem
+} from '@heroui/react'
+import { ChevronDown } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 const FAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
   const navigate = useNavigate()
 
   const faqs = [
@@ -57,84 +64,99 @@ const FAQ = () => {
     }
   ]
 
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
-  }
-
-  const handleContactSupport = () => {
-    navigate('/contact')
-  }
-
   return (
-    <div className="min-h-screen pt-20">
+    <motion.div 
+      className="min-h-screen pt-20"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
-        <div className="text-center mb-16">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="gradient-text">
               Frequently Asked Questions
             </span>
           </h1>
-          <p className="text-xl text-textSecondary">
+          <p className="text-xl text-default-600">
             Find answers to common questions about Oentex, our affiliate partnerships, platform reviews, and how to get the best deals.
           </p>
-        </div>
+        </motion.div>
 
         {/* FAQ List */}
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div key={index} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
-              <button
-                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-surface/70 transition-all duration-300"
-                onClick={() => toggleFAQ(index)}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Accordion variant="splitted" className="space-y-4">
+            {faqs.map((faq, index) => (
+              <AccordionItem
+                key={index}
+                aria-label={faq.question}
+                title={
+                  <h3 className="text-lg font-semibold text-left">{faq.question}</h3>
+                }
+                indicator={<ChevronDown className="w-5 h-5" />}
+                className="bg-content1"
               >
-                <h3 className="text-lg font-semibold text-text pr-4">{faq.question}</h3>
-                <div className="flex-shrink-0">
-                  {openIndex === index ? (
-                    <ChevronUp className="w-5 h-5 text-primary" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-textSecondary" />
-                  )}
+                <div className="pb-4">
+                  <p className="text-default-600 leading-relaxed">{faq.answer}</p>
                 </div>
-              </button>
-              
-              <div className={`overflow-hidden transition-all duration-300 ${
-                openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}>
-                <div className="px-6 pb-6">
-                  <p className="text-textSecondary leading-relaxed">{faq.answer}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </motion.div>
 
         {/* Important Disclosure */}
-        <div className="mt-12 p-6 bg-gradient-to-r from-warning/10 to-accent/10 rounded-2xl border border-warning/30">
-          <h2 className="text-lg font-semibold text-text mb-3">Important Disclosure</h2>
-          <p className="text-textSecondary text-sm leading-relaxed mb-3">
-            <strong>Oentex operates as an affiliate marketing platform.</strong> We earn commissions from our partner platforms when you sign up through our referral links. This allows us to offer our platform for free and provide you with exclusive bonuses. We maintain editorial independence and only partner with platforms we believe provide genuine value to our users.
-          </p>
-          <p className="text-textSecondary text-xs">
-            All cryptocurrency and trading activities involve significant risk. Past performance does not guarantee future results. Please read all terms and conditions and risk disclosures before using any financial services.
-          </p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          <Card className="mt-12 bg-warning-50 border-warning-200">
+            <CardBody className="p-6">
+              <h2 className="text-lg font-semibold mb-3">Important Disclosure</h2>
+              <p className="text-default-600 text-small leading-relaxed mb-3">
+                <strong>Oentex operates as an affiliate marketing platform.</strong> We earn commissions from our partner platforms when you sign up through our referral links. This allows us to offer our platform for free and provide you with exclusive bonuses. We maintain editorial independence and only partner with platforms we believe provide genuine value to our users.
+              </p>
+              <p className="text-default-600 text-tiny">
+                All cryptocurrency and trading activities involve significant risk. Past performance does not guarantee future results. Please read all terms and conditions and risk disclosures before using any financial services.
+              </p>
+            </CardBody>
+          </Card>
+        </motion.div>
 
         {/* Contact CTA */}
-        <div className="mt-16 text-center p-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl border border-primary/20">
-          <h2 className="text-2xl font-bold text-text mb-4">Still have questions?</h2>
-          <p className="text-textSecondary mb-6">
-            Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
-          </p>
-          <button 
-            onClick={handleContactSupport}
-            className="bg-gradient-to-r from-primary to-secondary px-8 py-3 rounded-full text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
-          >
-            Contact Support
-          </button>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <Card className="mt-16 bg-gradient-to-r from-primary-50 to-secondary-50 border-primary-200">
+            <CardBody className="text-center p-8">
+              <h2 className="text-2xl font-bold mb-4">Still have questions?</h2>
+              <p className="text-default-600 mb-6">
+                Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
+              </p>
+              <Button 
+                color="primary"
+                size="lg"
+                onPress={() => navigate('/contact')}
+              >
+                Contact Support
+              </Button>
+            </CardBody>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
