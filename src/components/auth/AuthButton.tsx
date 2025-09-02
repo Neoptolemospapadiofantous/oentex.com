@@ -1,8 +1,17 @@
 import React, { useState, useCallback } from 'react'
 import { User, LogOut, AlertCircle } from 'lucide-react'
+import {
+  Button,
+  Avatar,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Chip,
+  Spinner
+} from '@heroui/react'
 import { useAuth } from '../../lib/authContext'
 import { AuthModal } from './AuthModals'
-import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { ErrorBoundary } from '../ui/ErrorBoundary'
 
 export const AuthButton: React.FC = () => {
@@ -34,51 +43,113 @@ export const AuthButton: React.FC = () => {
   }, [])
 
   if (loading) {
-    return <LoadingSpinner variant="auth" size="sm" text="Loading..." />
+    return (
+      <div className="flex items-center space-x-2">
+        <Spinner size="sm" color="primary" />
+        <span className="text-sm text-foreground-500 hidden sm:block">Loading...</span>
+      </div>
+    )
   }
 
   if (error) {
     return (
       <div className="flex items-center space-x-2">
-        <AlertCircle className="w-4 h-4 text-red-500" />
-        <button
-          onClick={retryAuth}
-          className="text-sm text-red-500 hover:text-red-700 underline"
+        <AlertCircle className="w-4 h-4 text-danger" />
+        <Button
+          size="sm"
+          variant="light"
+          color="danger"
+          onPress={retryAuth}
+          className="text-sm underline"
         >
           Retry
-        </button>
+        </Button>
       </div>
     )
   }
 
   if (user) {
+    const userName = user.user_metadata?.full_name || 
+                    user.email?.split('@')[0] || 
+                    'User'
+
+                    const userInitials = userName
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)
+
     return (
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2 text-textSecondary">
-          <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-sm font-medium hidden sm:block">
-            {user.user_metadata?.full_name || 
-             user.email?.split('@')[0] || 
-             'User'}
-          </span>
-        </div>
-        <button
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          className="flex items-center space-x-1 text-textSecondary hover:text-text transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-surface hover:bg-background border border-border rounded-lg px-3 py-2"
-          title="Sign Out"
-        >
-          {isSigningOut ? (
-            <LoadingSpinner variant="auth" size="sm" showIcon={true} />
-          ) : (
-            <LogOut className="w-4 h-4" />
-          )}
-          <span className="text-sm hidden sm:block">
-            {isSigningOut ? 'Signing out...' : 'Sign Out'}
-          </span>
-        </button>
+        <Dropdown placement="bottom-end">
+          <DropdownTrigger>
+            <div className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+              <Avatar
+                name={userInitials}
+                src={user.user_metadata?.avatar_url}
+                size="sm"
+                className="bg-gradient-to-r from-primary to-secondary text-white"
+              />
+              <span className="text-sm font-medium hidden sm:block text-foreground">
+                {userName}
+              </span>
+            </div>
+          </DropdownTrigger>
+          
+          <DropdownMenu aria-label="User menu">
+            <DropdownItem
+              key="profile"
+              className="h-14 gap-2"
+              textValue={`Signed in as ${userName}`}
+            >
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">Signed in as</span>
+                <span className="text-sm text-foreground-500">{user.email}</span>
+              </div>
+            </DropdownItem>
+            
+            <DropdownItem
+              key="dashboard"
+              href="/dashboard"
+              className="text-foreground"
+            >
+              Dashboard
+            </DropdownItem>
+            
+            <DropdownItem
+              key="profile-page"
+              href="/profile"
+              className="text-foreground"
+            >
+              Profile Settings
+            </DropdownItem>
+            
+            <DropdownItem
+              key="my-deals"
+              href="/my-deals"
+              className="text-foreground"
+            >
+              My Deals
+            </DropdownItem>
+            
+            <DropdownItem
+              key="logout"
+              color="danger"
+              className="text-danger"
+              onPress={handleSignOut}
+              startContent={
+                isSigningOut ? (
+                  <Spinner size="sm" color="danger" />
+                ) : (
+                  <LogOut className="w-4 h-4" />
+                )
+              }
+            >
+              {isSigningOut ? 'Signing out...' : 'Sign Out'}
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </div>
     )
   }
@@ -86,18 +157,22 @@ export const AuthButton: React.FC = () => {
   return (
     <ErrorBoundary>
       <div className="flex items-center space-x-3">
-        <button
-          onClick={handleShowLogin}
-          className="text-textSecondary hover:text-text transition-colors duration-300 font-medium px-3 py-2 rounded-lg hover:bg-surface"
+        <Button
+          variant="light"
+          onPress={handleShowLogin}
+          className="text-foreground hover:text-primary font-medium"
         >
           Sign In
-        </button>
-        <button
-          onClick={handleShowRegister}
-          className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-lg font-medium hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 transform hover:scale-105"
+        </Button>
+        
+        <Button
+          color="primary"
+          variant="solid"
+          onPress={handleShowRegister}
+          className="bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transform hover:scale-105 transition-all"
         >
           Get Started
-        </button>
+        </Button>
       </div>
 
       {showModal && (
