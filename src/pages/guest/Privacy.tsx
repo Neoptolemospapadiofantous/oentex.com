@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Eye, Users, Cookie, Lock, Globe, UserCheck, Mail, AlertTriangle, Settings, Download, Trash2 } from 'lucide-react';
-import GuestLayout from '../layouts/GuestLayout';
+import GuestLayout from '../../layouts/GuestLayout';
 
 const Privacy = () => {
   const sections = [
