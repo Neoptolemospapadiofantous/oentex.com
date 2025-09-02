@@ -1,12 +1,13 @@
-// src/App.tsx - Corrected version with all missing components fixed
+// src/App.tsx - Updated with HeroUI integration
+import { HeroUIProvider } from '@heroui/react'
 import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'react-hot-toast'
+
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
-
 // ✅ FIXED: Import all missing components
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -17,7 +18,7 @@ import { AuthErrorBoundary } from './components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
-import DashboardLayout from './components/dashboard/DashboardLayout'
+import DashboardLayout from './layouts/DashboardLayout'
 
 // Lazy-loaded page components
 const Home = React.lazy(() => import('./pages/Home'))
@@ -195,38 +196,42 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
+    
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <AppContent />
-            
-            <Toaster 
-              position="top-right"
-              toastOptions={toastConfig}
-              containerStyle={{
-                top: '5rem',
-                right: '1rem',
-                zIndex: 9999,
-              }}
-              gutter={8}
-              reverseOrder={false}
-            />
-            
-            {process.env.NODE_ENV === 'development' && (
-              <ReactQueryDevtools 
-                initialIsOpen={false}
-                position="bottom-right"
-                toggleButtonProps={{
-                  style: {
-                    marginRight: '1rem',
-                    marginBottom: '1rem',
-                  }
+        {/* ✅ HeroUI Provider wraps the entire application */}
+        <HeroUIProvider>
+          <AuthProvider>
+            <Router>
+              <AppContent />
+              
+              <Toaster 
+                position="top-right"
+                toastOptions={toastConfig}
+                containerStyle={{
+                  top: '5rem',
+                  right: '1rem',
+                  zIndex: 9999,
                 }}
+                gutter={8}
+                reverseOrder={false}
               />
-            )}
-          </Router>
-        </AuthProvider>
+              
+              {process.env.NODE_ENV === 'development' && (
+                <ReactQueryDevtools 
+                  initialIsOpen={false}
+                  position="bottom-right"
+                  toggleButtonProps={{
+                    style: {
+                      marginRight: '1rem',
+                      marginBottom: '1rem',
+                    }
+                  }}
+                />
+              )}
+            </Router>
+          </AuthProvider>
+        </HeroUIProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   )
