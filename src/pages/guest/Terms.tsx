@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, Users, AlertTriangle, Star, Link, FileText, Mail, Clock } from 'lucide-react';
-import GuestLayout from '../layouts/GuestLayout';
+import GuestLayout from '../../layouts/GuestLayout';
 
 const Terms = () => {
   const sections = [

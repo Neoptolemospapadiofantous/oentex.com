@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
-import { useAuth } from '../lib/authContext'
+import { useAuth } from '../../lib/authContext'
 import toast from 'react-hot-toast'
-import { supabase } from '../lib/supabase'
-import GuestLayout from '../layouts/GuestLayout'
+import { supabase } from '../../lib/supabase'
+import GuestLayout from '../../layouts/GuestLayout'
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('')

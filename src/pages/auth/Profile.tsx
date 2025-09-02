@@ -90,7 +90,7 @@ const Profile: React.FC = () => {
 
   const cancelEdit = () => {
     setFormData({
-      fullName: user?.user_metadata?.full_name || '',
+        fullName: user?.user_metadata?.full_name || '',
       email: user?.email || ''
     })
     setIsEditing(false)
@@ -111,9 +111,9 @@ const Profile: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
         <p className="mt-2 text-gray-600">
           Manage your account information and security settings
-        </p>
-      </div>
-
+            </p>
+          </div>
+          
       {/* Profile Information */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
@@ -130,7 +130,7 @@ const Profile: React.FC = () => {
             >
               <Edit3 className="w-4 h-4" />
               Edit
-            </button>
+              </button>
           )}
         </div>
 
@@ -138,34 +138,34 @@ const Profile: React.FC = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Full Name
-            </label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
+              </label>
+              {isEditing ? (
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your full name"
+                    placeholder="Enter your full name"
               />
             ) : (
               <p className="text-gray-900">
                 {user?.user_metadata?.full_name || 'Not set'}
-              </p>
-            )}
-          </div>
+                </p>
+              )}
+            </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+                Email Address
+              </label>
             <p className="text-gray-900 flex items-center gap-2">
               <Mail className="w-4 h-4 text-gray-400" />
               {user?.email}
             </p>
             <p className="text-sm text-gray-500 mt-1">
               Email address cannot be changed
-            </p>
-          </div>
+              </p>
+            </div>
 
           {isEditing && (
             <div className="flex gap-3 pt-4">
@@ -196,7 +196,7 @@ const Profile: React.FC = () => {
               <Shield className="w-5 h-5 text-green-600" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900">Security Settings</h2>
-          </div>
+                </div>
           {!isChangingPassword && (
             <button
               onClick={() => setIsChangingPassword(true)}
@@ -205,8 +205,8 @@ const Profile: React.FC = () => {
               <Key className="w-4 h-4" />
               Change Password
             </button>
-          )}
-        </div>
+              )}
+            </div>
 
         {isChangingPassword ? (
           <div className="space-y-4">
@@ -261,7 +261,7 @@ const Profile: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm New Password
               </label>
-              <input
+                  <input
                 type="password"
                 value={passwordData.confirmPassword}
                 onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
@@ -286,8 +286,8 @@ const Profile: React.FC = () => {
                 Cancel
               </button>
             </div>
-          </div>
-        ) : (
+                </div>
+              ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
@@ -296,8 +296,8 @@ const Profile: React.FC = () => {
               </div>
               <div className="text-sm text-gray-500">
                 • • • • • • • •
-              </div>
             </div>
+          </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
@@ -308,8 +308,8 @@ const Profile: React.FC = () => {
                 Not enabled
               </div>
             </div>
-          </div>
-        )}
+            </div>
+          )}
       </div>
 
       {/* Account Information */}

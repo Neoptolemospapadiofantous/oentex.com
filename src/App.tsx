@@ -15,21 +15,21 @@ import PageTransition from './components/PageTransition'
 import { AuthLoader, PageLoader } from './components/ui/LoadingSpinner'
 import { AuthErrorBoundary } from './components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
-import { ProtectedRoute } from './components/auth/ProtectedRoute'
+// import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 import AuthLayout from './layouts/AuthLayout'
 
 // Lazy-loaded page components
-const Home = React.lazy(() => import('./pages/Home'))
-const About = React.lazy(() => import('./pages/About'))
-const PublicDeals = React.lazy(() => import('./pages/Deals'))
-const FAQ = React.lazy(() => import('./pages/FAQ'))
-const Contact = React.lazy(() => import('./pages/Contact'))
-const Terms = React.lazy(() => import('./pages/Terms'))
-const Privacy = React.lazy(() => import('./pages/Privacy'))
-const AuthCallback = React.lazy(() => import('./pages/AuthCallback'))
-const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
-const Unsubscribe = React.lazy(() => import('./pages/Unsubscribe'))
+const Home = React.lazy(() => import('./pages/guest/Home'))
+const About = React.lazy(() => import('./pages/guest/About'))
+const PublicDeals = React.lazy(() => import('./pages/guest/Deals'))
+const FAQ = React.lazy(() => import('./pages/guest/FAQ'))
+const Contact = React.lazy(() => import('./pages/guest/Contact'))
+const Terms = React.lazy(() => import('./pages/guest/Terms'))
+const Privacy = React.lazy(() => import('./pages/guest/Privacy'))
+const AuthCallback = React.lazy(() => import('./pages/guest/AuthCallback'))
+const ResetPassword = React.lazy(() => import('./pages/guest/ResetPassword'))
+const Unsubscribe = React.lazy(() => import('./pages/guest/Unsubscribe'))
 
 // Dashboard pages
 const Dashboard = React.lazy(() => import('./pages/auth/Dashboard'))
@@ -83,26 +83,12 @@ const AuthenticatedApp: React.FC = () => {
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/deals" element={<AuthDeals />} />
+          <Route path="/dashboard/deals" element={<AuthDeals />} /> {/* ✅ FIXED: Correct path */}
+          <Route path="/my-deals" element={<MyDeals />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           
-          {/* ✅ IMPROVED: Protected routes with fallback */}
-          <Route 
-            path="/my-deals" 
-            element={
-              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
-                <MyDeals />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          
+          {/* ✅ IMPROVED: Catch-all redirect for authenticated users */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>
@@ -203,7 +189,17 @@ function App() {
         <HeroUIProvider>
           <AuthProvider>
             <Router>
-              <AppContent />
+              <Routes>
+                <Route 
+                  path="/unsubscribe" 
+                  element={
+                    <Suspense fallback={<PageLoader message="Loading unsubscribe..." />}>
+                      <Unsubscribe />
+                    </Suspense>
+                  } 
+                />
+                <Route path="/*" element={<AppContent />} />
+              </Routes>
               
               <Toaster 
                 position="top-right"

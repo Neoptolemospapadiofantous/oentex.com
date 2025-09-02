@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Mail, MessageCircle, MapPin, Send, CheckCircle } from 'lucide-react'
-import { emailService } from '../lib/email'
+import { emailService } from '../../lib/email'
 import toast from 'react-hot-toast'
-import GuestLayout from '../layouts/GuestLayout'
+import GuestLayout from '../../layouts/GuestLayout'
 
 const Contact = () => {
   const [formData, setFormData] = useState({

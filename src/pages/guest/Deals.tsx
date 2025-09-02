@@ -1,22 +1,22 @@
 // src/pages/Deals.tsx - AUTHENTICATION-BASED ADAPTIVE VERSION
 import React, { useState, useMemo, useCallback } from 'react'
 import { Search, AlertCircle, RefreshCw, Gift, Users, Database } from 'lucide-react'
-import { useAuth } from '../lib/authContext'
-import { DealCard } from '../components/deals/DealCard'
-import { RatingModal } from '../components/rating/RatingModal'
-import { AuthModal } from '../components/auth/AuthModals'
+import { useAuth } from '../../lib/authContext'
+import { DealCard } from '../../components/deals/DealCard'
+import { RatingModal } from '../../components/rating/RatingModal'
+import { AuthModal } from '../../components/auth/AuthModals'
 import { 
   useDealsQuery, 
   useUserRatingsQuery, 
   useUpdateDealClickMutation,
   useSubmitRatingMutation 
-} from '../hooks/queries/useDealsQuery'
+} from '../../hooks/queries/useDealsQuery'
 import { 
   useCategoriesQuery, 
   useCategoryStatsQuery, 
   useCategoryInfoQuery 
-} from '../hooks/queries/useCategoriesQuery'
-import GuestLayout from '../layouts/GuestLayout'
+} from '../../hooks/queries/useCategoriesQuery'
+import GuestLayout from '../../layouts/GuestLayout'
 
 interface Filters {
   searchTerm: string

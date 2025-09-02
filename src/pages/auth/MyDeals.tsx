@@ -1,18 +1,34 @@
-// src/pages/auth/MyDeals.tsx - AUTHENTICATED VERSION
+// src/pages/auth/MyDeals.tsx - AUTHENTICATED VERSION WITH EDIT
 import React, { useState, useMemo } from 'react'
-import { Star, RefreshCw, Filter, Calendar, TrendingUp } from 'lucide-react'
+import { Star, RefreshCw, Calendar, TrendingUp } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
-import { useUserRatingsQuery } from '../../hooks/queries/useDealsQuery'
-import { useDealsQuery } from '../../hooks/queries/useDealsQuery'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../../lib/supabase'
+import { RatingModal } from '../../components/rating/RatingModal'
 
 interface Rating {
   id: string
+  user_id: string
   company_id: string
-  company_name: string
+  overall_rating?: number
   rating: number
   review: string
   created_at: string
   updated_at: string
+}
+
+// helper
+function averageFromCategories(r: any): number {
+  const nums = [
+    r.platform_usability,
+    r.customer_support,
+    r.fees_commissions,
+    r.security_trust,
+    r.educational_resources,
+    r.mobile_app,
+  ].filter((n: number) => typeof n === 'number' && n > 0)
+  if (!nums.length) return 0
+  return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10
 }
 
 const MyDeals: React.FC = () => {
@@ -20,78 +36,134 @@ const MyDeals: React.FC = () => {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'rating' | 'company'>('newest')
   const [filterRating, setFilterRating] = useState<number | 'all'>('all')
 
-  // Get user's ratings
-  const dealsQuery = useDealsQuery()
-  const deals = dealsQuery.data?.deals || []
-  const companies = dealsQuery.data?.companies || []
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [activeCompanyId, setActiveCompanyId] = useState<string | null>(null)
+  const [activeCompanyName, setActiveCompanyName] = useState<string>('')
+  const [existingRating, setExistingRating] = useState<any>(null)
+  const [activeCompanyStats, setActiveCompanyStats] = useState<{ averageRating: number; totalRatings: number } | undefined>(undefined)
 
-  const companyIds = useMemo(() => 
-    deals.map(deal => deal.company?.id).filter(Boolean) as string[], 
-    [deals]
+  // 1) Fetch user's ratings directly
+  const {
+    data: myRatings = [],
+    isLoading: ratingsLoading,
+    error: ratingsError,
+    refetch: refetchRatings
+  } = useQuery({
+    queryKey: ['my-ratings', user?.id],
+    enabled: !!user?.id,
+    queryFn: async (): Promise<Rating[]> => {
+      const { data, error } = await supabase
+        .from('ratings')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('updated_at', { ascending: false })
+
+      if (error) throw error
+
+      return (data || []).map((r: any) => ({
+        ...r,
+        rating: r.overall_rating && r.overall_rating > 0 ? r.overall_rating : averageFromCategories(r),
+      }))
+    }
+  })
+
+  // 2) Fetch companies for rated items (include rating stats for modal header)
+  const companyIds = useMemo(
+    () => Array.from(new Set(myRatings.map(r => r.company_id))),
+    [myRatings]
   )
-  
-  const userRatingsQuery = useUserRatingsQuery(user?.id, companyIds)
-  const userRatings = userRatingsQuery.data || new Map()
 
-  // Convert ratings map to array and add company info
+  const {
+    data: companies = [],
+    isLoading: companiesLoading,
+    error: companiesError,
+    refetch: refetchCompanies
+  } = useQuery({
+    queryKey: ['my-rated-companies', companyIds.sort().join(',')],
+    enabled: companyIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('trading_companies')
+        .select('id, name, slug, logo_url, category, overall_rating, total_reviews')
+        .in('id', companyIds)
+      if (error) throw error
+      return data || []
+    }
+  })
+
+  // 3) Merge ratings with company info
   const ratingsArray = useMemo(() => {
-    const ratings: (Rating & { company?: any })[] = []
-    
-    userRatings.forEach((rating, companyId) => {
-      const company = companies.find(c => c.id === companyId)
-      if (company) {
-        ratings.push({
-          ...rating,
-          company_name: company.name,
-          company
-        })
+    const byId = new Map(companies.map((c: any) => [c.id, c]))
+    return myRatings.map((r: any) => {
+      const company = byId.get(r.company_id)
+      return {
+        ...r,
+        company,
+        company_name: company?.name || 'Unknown Company'
       }
     })
+  }, [myRatings, companies])
 
-    return ratings
-  }, [userRatings, companies])
-
-  // Filter and sort ratings
+  // 4) Filter + sort
   const filteredAndSortedRatings = useMemo(() => {
     let filtered = ratingsArray
-
-    // Filter by rating
     if (filterRating !== 'all') {
-      filtered = filtered.filter(rating => rating.rating === filterRating)
+      filtered = filtered.filter(r => Number(r.rating) === Number(filterRating))
     }
-
-    // Sort ratings
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        case 'rating':
-          return b.rating - a.rating
-        case 'company':
-          return a.company_name.localeCompare(b.company_name)
-        default:
-          return 0
+        case 'newest': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'rating': return (b.rating || 0) - (a.rating || 0)
+        case 'company': return (a.company_name || '').localeCompare(b.company_name || '')
+        default: return 0
       }
     })
-
     return filtered
   }, [ratingsArray, sortBy, filterRating])
 
-  const handleRetry = () => {
-    userRatingsQuery.refetch()
-    dealsQuery.refetch()
+  const openEditModal = (r: any) => {
+    const company = companies.find((c: any) => c.id === r.company_id)
+    setActiveCompanyId(r.company_id)
+    setActiveCompanyName(company?.name || 'Unknown Company')
+    setExistingRating(r)
+    setActiveCompanyStats(
+      company
+        ? {
+            averageRating: company.overall_rating || 0,
+            totalRatings: company.total_reviews || 0
+          }
+        : undefined
+    )
+    setIsModalOpen(true)
   }
 
-  if (userRatingsQuery.isLoading || dealsQuery.isLoading) {
+  const handleModalClose = () => {
+    setIsModalOpen(false)
+    setActiveCompanyId(null)
+    setExistingRating(null)
+  }
+
+  const handleRatingSubmitted = () => {
+    // Refresh lists after edit
+    refetchRatings()
+    refetchCompanies()
+  }
+
+  const handleRetry = () => {
+    refetchRatings()
+    refetchCompanies()
+  }
+
+  if (ratingsLoading || companiesLoading) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
           <p className="mt-2 text-gray-600">Loading your platform ratings...</p>
         </div>
-        
+
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
@@ -102,14 +174,14 @@ const MyDeals: React.FC = () => {
     )
   }
 
-  if (userRatingsQuery.error) {
+  if (ratingsError || companiesError) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
           <p className="mt-2 text-gray-600">Error loading your ratings</p>
         </div>
-        
+
         <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
           <p className="text-red-600 mb-4">Failed to load your ratings</p>
           <button
@@ -124,17 +196,15 @@ const MyDeals: React.FC = () => {
   }
 
   const totalRatings = ratingsArray.length
-  const averageRating = totalRatings > 0 
-    ? (ratingsArray.reduce((sum, r) => sum + r.rating, 0) / totalRatings).toFixed(1)
+  const averageRating = totalRatings > 0
+    ? (ratingsArray.reduce((sum, r: any) => sum + (r.rating || 0), 0) / totalRatings).toFixed(1)
     : '0.0'
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
-        <p className="mt-2 text-gray-600">
-          Manage and review your platform ratings
-        </p>
+        <p className="mt-2 text-gray-600">Manage and review your platform ratings</p>
       </div>
 
       {/* Stats */}
@@ -170,8 +240,8 @@ const MyDeals: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-gray-600 mb-1">Last Updated</p>
               <p className="text-2xl font-bold text-gray-900">
-                {totalRatings > 0 
-                  ? new Date(Math.max(...ratingsArray.map(r => new Date(r.updated_at).getTime()))).toLocaleDateString()
+                {totalRatings > 0
+                  ? new Date(Math.max(...ratingsArray.map((r: any) => new Date(r.updated_at).getTime()))).toLocaleDateString()
                   : 'Never'
                 }
               </p>
@@ -222,38 +292,41 @@ const MyDeals: React.FC = () => {
       {/* Ratings List */}
       {filteredAndSortedRatings.length > 0 ? (
         <div className="space-y-4">
-          {filteredAndSortedRatings.map((rating) => (
+          {filteredAndSortedRatings.map((rating: any) => (
             <div key={rating.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
                     <h3 className="text-lg font-semibold text-gray-900">{rating.company_name}</h3>
                     <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${
-                            i < rating.rating 
-                              ? 'text-yellow-400 fill-current' 
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
+                      {[...Array(5)].map((_, i) => {
+                        const filled = Math.round(rating.rating || 0)
+                        return (
+                          <Star key={i} className={`w-4 h-4 ${i < filled ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                        )
+                      })}
                       <span className="ml-2 text-sm font-medium text-gray-600">
-                        {rating.rating}/5
+                        {(rating.rating || 0).toFixed(1)}/5
                       </span>
                     </div>
                   </div>
-                  
-                  {rating.review && (
-                    <p className="text-gray-600 mb-3">{rating.review}</p>
-                  )}
-                  
+
+                  {rating.review && <p className="text-gray-600 mb-3">{rating.review}</p>}
+
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <span>Rated on {new Date(rating.created_at).toLocaleDateString()}</span>
                     {rating.updated_at !== rating.created_at && (
                       <span>Updated on {new Date(rating.updated_at).toLocaleDateString()}</span>
                     )}
+                  </div>
+
+                  <div className="mt-4">
+                    <button
+                      onClick={() => openEditModal(rating)}
+                      className="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
+                    >
+                      Edit rating
+                    </button>
                   </div>
                 </div>
               </div>
@@ -267,10 +340,9 @@ const MyDeals: React.FC = () => {
             {filterRating !== 'all' ? `No ${filterRating}-star ratings found` : 'No ratings yet'}
           </h3>
           <p className="text-gray-600 mb-6">
-            {filterRating !== 'all' 
+            {filterRating !== 'all'
               ? 'Try adjusting your filter criteria or rate some platforms first.'
-              : 'Start rating platforms to see them appear here.'
-            }
+              : 'Start rating platforms to see them appear here.'}
           </p>
           <button
             onClick={() => window.location.href = '/deals'}
@@ -279,6 +351,19 @@ const MyDeals: React.FC = () => {
             Browse Platforms
           </button>
         </div>
+      )}
+
+      {/* Rating Modal */}
+      {isModalOpen && activeCompanyId && (
+        <RatingModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          companyId={activeCompanyId}
+          companyName={activeCompanyName}
+          existingRating={existingRating}
+          onRatingSubmitted={handleRatingSubmitted}
+          companyRating={activeCompanyStats}
+        />
       )}
     </div>
   )

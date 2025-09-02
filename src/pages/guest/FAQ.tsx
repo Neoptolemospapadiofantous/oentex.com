@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import GuestLayout from '../layouts/GuestLayout'
+import GuestLayout from '../../layouts/GuestLayout'
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
