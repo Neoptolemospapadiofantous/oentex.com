@@ -1,6 +1,6 @@
 import { Shield, Users, TrendingUp, Award, Target, Eye, Heart, Star, Search, CheckCircle, ExternalLink, AlertCircle } from 'lucide-react'
-import AnimatedInnovation from '../../components/AnimatedInnovation'
-import '../components/AnimatedInnovation.css'
+import AnimatedInnovation from '@components/AnimatedInnovation'
+import '@components/AnimatedInnovation.css'
 import GuestLayout from '../../layouts/GuestLayout'
 
 const About = () => {

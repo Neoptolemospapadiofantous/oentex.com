@@ -2,8 +2,8 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { Search, AlertCircle, RefreshCw, Gift, Users, Database } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
-import { DealCard } from '../../components/deals/DealCard'
-import { RatingModal } from '../../components/rating/RatingModal'
+import { DealCard } from '@components/deals/DealCard'
+import { RatingModal } from '@components/rating/RatingModal'
 import { 
   useDealsQuery, 
   useUserRatingsQuery, 

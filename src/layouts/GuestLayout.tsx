@@ -1,7 +1,7 @@
 // src/layouts/GuestLayout.tsx - Layout for unauthenticated users
 import React from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '@components/Header';
+import Footer from '@components/Footer';
 
 interface GuestLayoutProps {
   children: React.ReactNode;

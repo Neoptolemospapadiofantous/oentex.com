@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { config } from '../../config'
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
+import { LoadingSpinner } from '@components/ui/LoadingSpinner'
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate()

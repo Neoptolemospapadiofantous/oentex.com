@@ -4,7 +4,7 @@ import { Star, RefreshCw, Calendar, TrendingUp } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
-import { RatingModal } from '../../components/rating/RatingModal'
+import { RatingModal } from '@components/rating/RatingModal'
 
 interface Rating {
   id: string
