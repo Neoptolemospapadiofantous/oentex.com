@@ -9,7 +9,7 @@ import {
   DropdownItem,
   Chip,
   Spinner
-} from '@nextui-org/react'
+} from '@heroui/react'
 import { useAuth } from '../../lib/authContext'
 import { AuthModal } from './AuthModals'
 import { ErrorBoundary } from '../ui/ErrorBoundary'
