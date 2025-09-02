@@ -1,7 +1,6 @@
-import React from 'react'
 import { Shield, Users, TrendingUp, Award, Target, Eye, Heart, Star, Search, CheckCircle, ExternalLink, AlertCircle } from 'lucide-react'
 import AnimatedInnovation from '../components/AnimatedInnovation'
-import '../styles/AnimatedInnovation.css'
+import '../components/AnimatedInnovation.css'
 
 const About = () => {
   const stats = [
