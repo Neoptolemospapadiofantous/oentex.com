@@ -83,26 +83,11 @@ const AuthenticatedApp: React.FC = () => {
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/deals" element={<AuthDeals />} />
+          <Route path="/dashboard/deals" element={<AuthDeals />} /> {/* ✅ FIXED: Correct path */}
+          <Route path="/my-deals" element={<MyDeals />} />
+          <Route path="/profile" element={<Profile />} />
           
-          {/* ✅ IMPROVED: Protected routes with fallback */}
-          <Route 
-            path="/my-deals" 
-            element={
-              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
-                <MyDeals />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/profile" 
-            element={
-              <ProtectedRoute fallback={<Navigate to="/dashboard" replace />}>
-                <Profile />
-              </ProtectedRoute>
-            } 
-          />
-          
+          {/* ✅ IMPROVED: Catch-all redirect for authenticated users */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>
