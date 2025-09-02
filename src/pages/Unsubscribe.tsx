@@ -4,6 +4,7 @@ import { Mail, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import GuestLayout from '../layouts/GuestLayout'
 
 interface Subscriber {
   email: string
@@ -166,65 +167,138 @@ const Unsubscribe = () => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-textSecondary">Loading unsubscribe page...</p>
+      <GuestLayout>
+        <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-textSecondary">Loading unsubscribe page...</p>
+            </div>
           </div>
         </div>
-      </div>
+      </GuestLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
-          <div className="text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-text mb-4">Error</h1>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-700 font-medium">{error}</p>
+      <GuestLayout>
+        <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-text mb-4">Error</h1>
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-red-700 font-medium">{error}</p>
+              </div>
+              <p className="text-textSecondary mb-6">
+                Please contact our support team if you continue to experience issues.
+              </p>
+              <Link 
+                to="/" 
+                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Return to Oentex
+              </Link>
             </div>
-            <p className="text-textSecondary mb-6">
-              Please contact our support team if you continue to experience issues.
-            </p>
-            <Link 
-              to="/" 
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Return to Oentex
-            </Link>
           </div>
         </div>
-      </div>
+      </GuestLayout>
     )
   }
 
   if (success) {
     return (
+      <GuestLayout>
+        <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-text mb-4">Successfully Unsubscribed</h1>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p className="text-green-700 font-medium">
+                  You have been removed from our newsletter list
+                </p>
+              </div>
+              <p className="text-textSecondary mb-4">
+                We're sorry to see you go! If you change your mind, you can always 
+                resubscribe on our website.
+              </p>
+              <p className="text-sm text-textSecondary mb-6">
+                <strong>Email:</strong> {subscriber?.email}
+              </p>
+              <Link 
+                to="/" 
+                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Return to Oentex
+              </Link>
+            </div>
+          </div>
+        </div>
+      </GuestLayout>
+    )
+  }
+
+  return (
+    <GuestLayout>
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
-          <div className="text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-text mb-4">Successfully Unsubscribed</h1>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <p className="text-green-700 font-medium">
-                You have been removed from our newsletter list
-              </p>
-            </div>
-            <p className="text-textSecondary mb-4">
-              We're sorry to see you go! If you change your mind, you can always 
-              resubscribe on our website.
-            </p>
-            <p className="text-sm text-textSecondary mb-6">
+          <div className="text-center mb-6">
+            <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-text mb-2">Unsubscribe from Newsletter</h1>
+            <p className="text-textSecondary">We're sorry to see you go!</p>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <p className="text-sm text-textSecondary">
               <strong>Email:</strong> {subscriber?.email}
             </p>
+          </div>
+
+          <form onSubmit={handleUnsubscribe} className="space-y-6">
+            <div>
+              <label htmlFor="reason" className="block text-sm font-medium text-text mb-2">
+                Why are you unsubscribing? (Optional)
+              </label>
+              <select
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              >
+                <option value="1">Too many emails</option>
+                <option value="2">Content not relevant</option>
+                <option value="3">Never signed up</option>
+                <option value="4">Received spam</option>
+                <option value="5">Other reason</option>
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  🗑️ Unsubscribe Me
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="text-center mt-6">
             <Link 
               to="/" 
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              className="text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"
             >
               <ArrowLeft className="w-4 h-4" />
               Return to Oentex
@@ -232,72 +306,7 @@ const Unsubscribe = () => {
           </div>
         </div>
       </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
-        <div className="text-center mb-6">
-          <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text mb-2">Unsubscribe from Newsletter</h1>
-          <p className="text-textSecondary">We're sorry to see you go!</p>
-        </div>
-
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-textSecondary">
-            <strong>Email:</strong> {subscriber?.email}
-          </p>
-        </div>
-
-        <form onSubmit={handleUnsubscribe} className="space-y-6">
-          <div>
-            <label htmlFor="reason" className="block text-sm font-medium text-text mb-2">
-              Why are you unsubscribing? (Optional)
-            </label>
-            <select
-              id="reason"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-            >
-              <option value="1">Too many emails</option>
-              <option value="2">Content not relevant</option>
-              <option value="3">Never signed up</option>
-              <option value="4">Received spam</option>
-              <option value="5">Other reason</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Processing...
-              </>
-            ) : (
-              <>
-                🗑️ Unsubscribe Me
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="text-center mt-6">
-          <Link 
-            to="/" 
-            className="text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Return to Oentex
-          </Link>
-        </div>
-      </div>
-    </div>
+    </GuestLayout>
   )
 }
 

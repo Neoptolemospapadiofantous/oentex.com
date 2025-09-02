@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
 
   const navItems = [
     { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/deals' },
+    { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/dashboard/deals' },
     { id: 'my-deals', name: 'My Ratings', icon: Star, path: '/my-deals' },
   ];
 
@@ -91,11 +91,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
             <button
               onClick={handleProfileClick}
               className="w-full flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-10"
-              style={{
-                ':hover': {
-                  backgroundColor: 'var(--surface)'
-                }
-              }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--surface)';
               }}
@@ -137,11 +132,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
                     background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
                     borderColor: 'var(--primary)'
                   } : {
-                    color: 'var(--text-secondary)',
-                    ':hover': {
-                      backgroundColor: 'var(--surface)',
-                      color: 'var(--primary)'
-                    }
+                    color: 'var(--text-secondary)'
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {

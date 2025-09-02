@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Users, AlertTriangle, Star, Link, FileText, Mail, Clock } from 'lucide-react';
+import GuestLayout from '../layouts/GuestLayout';
 
 const Terms = () => {
   const sections = [
@@ -277,60 +278,62 @@ const Terms = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-20 pb-12">
-      {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl lg:text-5xl font-bold text-text mb-6">
-            Terms of Service
-          </h1>
-          <p className="text-xl text-textSecondary max-w-3xl mx-auto mb-4">
-            Please read these terms carefully before using our service
-          </p>
-          <p className="text-textSecondary">Last updated: January 30, 2025</p>
-        </div>
-      </section>
-
-      {/* Content */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-8">
-            {sections.map((section, index) => (
-              <div key={section.id} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
-                <div className="p-8">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
-                      {section.icon}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-text">
-                        {index + 1}. {section.title}
-                      </h2>
-                    </div>
-                  </div>
-                  {section.content}
-                </div>
-              </div>
-            ))}
+    <GuestLayout>
+      <div className="min-h-screen pb-12">
+        {/* Hero Section */}
+        <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold text-text mb-6">
+              Terms of Service
+            </h1>
+            <p className="text-xl text-textSecondary max-w-3xl mx-auto mb-4">
+              Please read these terms carefully before using our service
+            </p>
+            <p className="text-textSecondary">Last updated: January 30, 2025</p>
           </div>
+        </section>
 
-          {/* Footer Notice */}
-          <div className="mt-16 p-6 bg-warning/10 border border-warning/30 rounded-2xl">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-text mb-2">Important Legal Notice</h3>
-                <p className="text-textSecondary text-sm leading-relaxed">
-                  These Terms of Service constitute a legally binding agreement between you and RateWise LLC. 
-                  By using our service, you acknowledge that you have read, understood, and agree to be bound by these terms. 
-                  If you do not agree with any part of these terms, you must not use our service.
-                </p>
+        {/* Content */}
+        <section className="py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="space-y-8">
+              {sections.map((section, index) => (
+                <div key={section.id} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
+                  <div className="p-8">
+                    <div className="flex items-center space-x-4 mb-6">
+                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
+                        {section.icon}
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-text">
+                          {index + 1}. {section.title}
+                        </h2>
+                      </div>
+                    </div>
+                    {section.content}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Notice */}
+            <div className="mt-16 p-6 bg-warning/10 border border-warning/30 rounded-2xl">
+              <div className="flex items-start space-x-3">
+                <AlertTriangle className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-text mb-2">Important Legal Notice</h3>
+                  <p className="text-textSecondary text-sm leading-relaxed">
+                    These Terms of Service constitute a legally binding agreement between you and RateWise LLC. 
+                    By using our service, you acknowledge that you have read, understood, and agree to be bound by these terms. 
+                    If you do not agree with any part of these terms, you must not use our service.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </GuestLayout>
   );
 };
 

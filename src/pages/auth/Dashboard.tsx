@@ -1,4 +1,4 @@
-// src/pages/dashboard/Dashboard.tsx (TOAST REMOVED)
+// src/pages/auth/Dashboard.tsx - AUTHENTICATED VERSION
 import React from 'react';
 import { Star, Users, Award, TrendingUp, Settings, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
@@ -38,8 +38,8 @@ const Dashboard: React.FC = () => {
   }, {} as Record<string, number>);
 
   const topCategories = Object.entries(categoryStats)
-    .sort(([,a], [,b]) => b - a)
-    .map(([category, count]) => ({ category, count }));
+    .sort(([,a], [,b]) => (b as number) - (a as number))
+    .map(([category, count]) => ({ category, count: count as number }));
 
   if (dealsQuery.isLoading) {
     return (

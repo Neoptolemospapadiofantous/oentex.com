@@ -10,7 +10,6 @@ import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
 // ✅ FIXED: Import all missing components
 import Header from './components/Header'
-import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import PageTransition from './components/PageTransition'
 import { AuthLoader, PageLoader } from './components/ui/LoadingSpinner'
@@ -18,7 +17,7 @@ import { AuthErrorBoundary } from './components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
-import DashboardLayout from './layouts/DashboardLayout'
+import AuthLayout from './layouts/AuthLayout'
 
 // Lazy-loaded page components
 const Home = React.lazy(() => import('./pages/Home'))
@@ -33,9 +32,10 @@ const ResetPassword = React.lazy(() => import('./pages/ResetPassword'))
 const Unsubscribe = React.lazy(() => import('./pages/Unsubscribe'))
 
 // Dashboard pages
-const Dashboard = React.lazy(() => import('./pages/dashboard/Dashboard'))
-const MyDeals = React.lazy(() => import('./pages/dashboard/MyDeals'))
-const Profile = React.lazy(() => import('./pages/dashboard/Profile')) // ✅ FIXED: Complete import
+const Dashboard = React.lazy(() => import('./pages/auth/Dashboard'))
+const AuthDeals = React.lazy(() => import('./pages/auth/Deals'))
+const MyDeals = React.lazy(() => import('./pages/auth/MyDeals'))
+const Profile = React.lazy(() => import('./pages/auth/Profile')) // ✅ FIXED: Complete import
 
 const toastConfig = {
   duration: 4000,
@@ -76,14 +76,14 @@ const OAuthCallbackHandler: React.FC = () => {
 // ✅ IMPROVED: Add proper route protection
 const AuthenticatedApp: React.FC = () => {
   return (
-    <DashboardLayout>
+    <AuthLayout>
       <Suspense fallback={<PageLoader message="Loading dashboard..." />}>
         <Routes>
           <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/deals" element={<PublicDeals />} />
+          <Route path="/deals" element={<AuthDeals />} />
           
           {/* ✅ IMPROVED: Protected routes with fallback */}
           <Route 
@@ -106,7 +106,7 @@ const AuthenticatedApp: React.FC = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Suspense>
-    </DashboardLayout>
+    </AuthLayout>
   )
 }
 
@@ -153,7 +153,7 @@ const PublicApp: React.FC = () => {
         </ErrorBoundary>
       </main>
       
-      <Footer />
+
     </div>
   )
 }
@@ -220,13 +220,7 @@ function App() {
               {process.env.NODE_ENV === 'development' && (
                 <ReactQueryDevtools 
                   initialIsOpen={false}
-                  position="bottom-right"
-                  toggleButtonProps={{
-                    style: {
-                      marginRight: '1rem',
-                      marginBottom: '1rem',
-                    }
-                  }}
+                  position="bottom"
                 />
               )}
             </Router>
