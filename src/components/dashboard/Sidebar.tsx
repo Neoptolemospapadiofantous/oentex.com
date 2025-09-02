@@ -29,7 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
     },
     {
       name: 'Browse Deals',
-      href: '/deals',
+      href: '/dashboard/deals',
       icon: Gift,
       description: 'Discover platforms'
     },
