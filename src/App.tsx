@@ -34,33 +34,6 @@ const AuthDeals = React.lazy(() => import('./pages/auth/Deals'))
 const MyDeals = React.lazy(() => import('./pages/auth/MyDeals'))
 const Profile = React.lazy(() => import('./pages/auth/Profile')) // ✅ FIXED: Complete import
 
-const toastConfig = {
-  duration: 4000,
-  position: 'top-right' as const,
-  
-  success: {
-    duration: 3000,
-    style: {
-      background: '#10B981',
-      color: '#FFFFFF',
-      fontWeight: '500',
-    },
-  },
-  error: {
-    duration: 5000,
-    style: {
-      background: '#EF4444',
-      color: '#FFFFFF',
-      fontWeight: '500',
-    },
-  },
-  loading: {
-    style: {
-      background: '#3B82F6',
-      color: '#FFFFFF',
-    },
-  },
-}
 
 const OAuthCallbackHandler: React.FC = () => {
   return (
