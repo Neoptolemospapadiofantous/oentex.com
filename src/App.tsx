@@ -4,7 +4,6 @@ import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Toaster } from 'react-hot-toast'
 
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
@@ -35,33 +34,6 @@ const AuthDeals = React.lazy(() => import('./pages/auth/Deals'))
 const MyDeals = React.lazy(() => import('./pages/auth/MyDeals'))
 const Profile = React.lazy(() => import('./pages/auth/Profile')) // ✅ FIXED: Complete import
 
-const toastConfig = {
-  duration: 4000,
-  position: 'top-right' as const,
-  
-  success: {
-    duration: 3000,
-    style: {
-      background: '#10B981',
-      color: '#FFFFFF',
-      fontWeight: '500',
-    },
-  },
-  error: {
-    duration: 5000,
-    style: {
-      background: '#EF4444',
-      color: '#FFFFFF',
-      fontWeight: '500',
-    },
-  },
-  loading: {
-    style: {
-      background: '#3B82F6',
-      color: '#FFFFFF',
-    },
-  },
-}
 
 const OAuthCallbackHandler: React.FC = () => {
   return (
@@ -188,17 +160,7 @@ function App() {
                 <Route path="/*" element={<AppContent />} />
               </Routes>
               
-              <Toaster 
-                position="top-right"
-                toastOptions={toastConfig}
-                containerStyle={{
-                  top: '5rem',
-                  right: '1rem',
-                  zIndex: 9999,
-                }}
-                gutter={8}
-                reverseOrder={false}
-              />
+              {/* Toasts are rendered inside layouts via ToastContainer */}
               
               {process.env.NODE_ENV === 'development' && (
                 <ReactQueryDevtools 
