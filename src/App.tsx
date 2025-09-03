@@ -78,7 +78,6 @@ const AuthenticatedApp: React.FC = () => {
     <AuthLayout>
       <Suspense fallback={<PageLoader message="Loading dashboard..." />}>
         <Routes>
-          <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
           
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
@@ -151,14 +150,6 @@ const AppContent: React.FC = () => {
     isFullyReady,
     error: authError
   } = useAuth()
-
-  const isOAuthCallback = typeof window !== 'undefined' && 
-    (window.location.pathname === '/auth/callback' || 
-     window.location.hash.includes('access_token'))
-
-  if (isOAuthCallback) {
-    return <OAuthCallbackHandler />
-  }
 
   if (authLoading || !initialized) {
     return <AuthLoader stage="initializing" />

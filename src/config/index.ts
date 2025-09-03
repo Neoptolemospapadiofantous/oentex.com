@@ -38,7 +38,7 @@ for (const [key, value] of Object.entries(requiredEnvVars)) {
 // Environment configurations
 const environments: Record<string, EnvironmentConfig> = {
   development: {
-    baseUrl: 'http://localhost:5174', // ✅ FIXED: Use correct dev port
+    baseUrl: 'http://localhost:5173', // ✅ FIXED: Use correct dev port
     redirectPath: '/dashboard',
   },
   staging: {
