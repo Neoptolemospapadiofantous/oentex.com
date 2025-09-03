@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 import toast from 'react-hot-toast';
+import ToastContainer from '@components/ui/ToastContainer';
 
 
 
@@ -181,23 +182,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   // ✅ WELCOME TOAST: Show welcome toast once per session
   useEffect(() => {
     if (!user || !session?.user?.app_metadata?.provider) return
-
     const provider = session.user.app_metadata.provider
     const userId = session.user.id
     const toastKey = `welcome_toast_${userId}`
-
-    // Check if already shown
     if (sessionStorage.getItem(toastKey)) return
-
-    // Mark as shown
     sessionStorage.setItem(toastKey, 'true')
-
     const providerName = provider === 'google' ? 'Google' : 
                         provider === 'azure' ? 'Microsoft' : 'OAuth'
-
     const Icon = Chrome;
-
-    // Show toast after small delay
     setTimeout(() => {
       toast.success(
         <div className="flex items-center gap-3">
@@ -211,12 +203,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           id: `welcome-${userId}`,
           duration: 5000,
           position: 'top-right',
-          style: {
-            background: '#10B981',
-            color: 'white',
-            padding: '16px',
-            borderRadius: '12px',
-          }
+          style: { background: '#10B981', color: 'white', padding: '16px', borderRadius: '12px' }
         }
       );
     }, 500);
@@ -247,6 +234,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
+      <ToastContainer position="top-right" topAnchorSelector="#auth-topbar" topMargin={8} />
       <Sidebar 
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}
@@ -255,7 +243,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Main Content - Mobile Optimized */}
       <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
         {/* Top Bar - Mobile Optimized */}
-        {/* <header className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}> */}
+        <header id="auth-topbar" className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -288,7 +276,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {/* Spacer for desktop */}
             <div className="hidden lg:block"></div>
           </div>
-        {/* </header> */}
+        </header>
 
         {/* Page Content - Mobile Optimized */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
