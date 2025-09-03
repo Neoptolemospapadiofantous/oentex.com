@@ -9,7 +9,6 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
 // ✅ FIXED: Import all missing components
-import Header from '@components/Header'
 import ScrollToTop from '@components/ScrollToTop'
 import PageTransition from '@components/PageTransition'
 import { AuthLoader, PageLoader } from '@components/ui/LoadingSpinner'
@@ -97,8 +96,6 @@ const AuthenticatedApp: React.FC = () => {
 const PublicApp: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <main className="flex-1">
         <ScrollToTop />
         

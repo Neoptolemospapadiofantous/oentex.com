@@ -1,7 +1,7 @@
 // AuthCallback.tsx - MINIMAL FIX: Just add Microsoft email error detection
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import { authService } from '../../lib/services/authService'
 import { config } from '../../config'
 import { LoadingSpinner } from '@components/ui/LoadingSpinner'
 
@@ -35,12 +35,13 @@ const AuthCallback: React.FC = () => {
         // Handle auth code (most common case)
         const code = searchParams.get('code')
         if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          const { error: exchangeError } = await authService.exchangeCodeForSession(code)
           
           if (exchangeError) {
             // 🎯 SIMPLE FIX: Check for Microsoft email error in exchange
-            if (exchangeError.message?.includes('email') && 
-                exchangeError.message?.includes('external provider')) {
+            const msg = (exchangeError as any)?.message || ''
+            if (msg.includes('email') && 
+                msg.includes('external provider')) {
               setError('Microsoft email access required. Please verify your email at account.microsoft.com or try Google sign-in.')
               return
             }
@@ -50,7 +51,9 @@ const AuthCallback: React.FC = () => {
           }
 
           // Success - redirect immediately
-          navigate(redirectTo, { replace: true })
+          const stored = localStorage.getItem('returnTo')
+          if (stored) localStorage.removeItem('returnTo')
+          navigate(stored || redirectTo, { replace: true })
           return
         }
 
@@ -65,9 +68,11 @@ const AuthCallback: React.FC = () => {
         }
 
         // Fallback: Check existing session
-        const { data } = await supabase.auth.getSession()
-        if (data.session) {
-          navigate(redirectTo, { replace: true })
+        const { session } = await authService.getSession()
+        if (session) {
+          const stored = localStorage.getItem('returnTo')
+          if (stored) localStorage.removeItem('returnTo')
+          navigate(stored || redirectTo, { replace: true })
           return
         }
 

@@ -147,6 +147,18 @@ class AuthService {
     }
   }
 
+  async updatePassword(newPassword: string) {
+    try {
+      const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) {
+        return { error }
+      }
+      return { error: null, data }
+    } catch (error) {
+      return { error }
+    }
+  }
+
   async exchangeCodeForSession(code: string) {
     try {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)

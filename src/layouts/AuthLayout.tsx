@@ -255,7 +255,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       {/* Main Content - Mobile Optimized */}
       <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
         {/* Top Bar - Mobile Optimized */}
-        <header className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+        {/* <header className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}> */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -288,7 +288,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {/* Spacer for desktop */}
             <div className="hidden lg:block"></div>
           </div>
-        </header>
+        {/* </header> */}
 
         {/* Page Content - Mobile Optimized */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
