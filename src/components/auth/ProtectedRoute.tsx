@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../lib/authContext'
 import { AuthModal } from './AuthModals'
 import { useState } from 'react'
@@ -15,6 +16,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectToLogin = false 
 }) => {
   const { user, loading } = useAuth()
+  const location = useLocation()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
@@ -38,6 +40,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (redirectToLogin) {
+    try {
+      localStorage.setItem('returnTo', location.pathname + location.search)
+    } catch {}
     return (
       <>
         <div className="min-h-screen pt-20 flex items-center justify-center">

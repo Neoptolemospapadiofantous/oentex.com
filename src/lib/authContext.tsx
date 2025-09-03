@@ -22,6 +22,7 @@ interface AuthContextType extends AuthState {
   retryAuth: () => Promise<void>
   refreshSession: () => Promise<void>
   isFullyReady: boolean
+  updatePassword: (newPassword: string) => Promise<{ error: CustomAuthError | null }>
 }
 
 type AuthAction = 
@@ -260,6 +261,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [handleAuthError])
 
+  const updatePassword = useCallback(async (newPassword: string) => {
+    try {
+      const result = await authService.updatePassword(newPassword)
+      if (result.error) {
+        return { error: handleAuthError(result.error) }
+      }
+      await refreshSession()
+      return { error: null }
+    } catch (error) {
+      return { error: handleAuthError(error) }
+    }
+  }, [handleAuthError, refreshSession])
+
   useEffect(() => {
     isMountedRef.current = true
     
@@ -414,6 +428,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearError,
     retryAuth,
     refreshSession,
+    updatePassword,
   }), [
     state,
     isFullyReady,
@@ -423,6 +438,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     clearError,
     retryAuth,
     refreshSession,
+    updatePassword,
   ])
 
   return (

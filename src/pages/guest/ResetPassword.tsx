@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
 import toast from 'react-hot-toast'
-import { supabase } from '../../lib/supabase'
+import { authService } from '../../lib/services/authService'
 import GuestLayout from '../../layouts/GuestLayout'
 
 const ResetPassword = () => {
@@ -23,7 +23,7 @@ const ResetPassword = () => {
   useEffect(() => {
     // Check if we have valid session for password reset
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { session } = await authService.getSession()
       if (session) {
         setIsValidSession(true)
       } else {
