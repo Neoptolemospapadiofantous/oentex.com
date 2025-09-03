@@ -4,7 +4,6 @@ import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { Toaster } from 'react-hot-toast'
 
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
@@ -188,17 +187,7 @@ function App() {
                 <Route path="/*" element={<AppContent />} />
               </Routes>
               
-              <Toaster 
-                position="top-right"
-                toastOptions={toastConfig}
-                containerStyle={{
-                  top: '5rem',
-                  right: '1rem',
-                  zIndex: 9999,
-                }}
-                gutter={8}
-                reverseOrder={false}
-              />
+              {/* Toasts are rendered inside layouts via ToastContainer */}
               
               {process.env.NODE_ENV === 'development' && (
                 <ReactQueryDevtools 
