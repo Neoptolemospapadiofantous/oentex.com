@@ -1,20 +1,5 @@
-import React, { useState, useMemo } from 'react'
-import { 
-  Search, 
-  Gift, 
-  TrendingUp, 
-  Shield, 
-  Users, 
-  BarChart3, 
-  Star, 
-  ExternalLink, 
-  RefreshCw, 
-  AlertCircle,
-  Database,
-  ArrowRight,
-  CheckCircle,
-  Clock
-} from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Icons } from './icons'
 import { useFeaturedDealsQuery } from '../hooks/queries/useFeaturedDealsQuery'
 import { useCategoriesQuery } from '../hooks/queries/useCategoriesQuery'
 
@@ -93,37 +78,37 @@ const Features = () => {
 
   const features = [
     {
-      icon: Search,
+      icon: Icons.search,
       title: 'Compare Platforms',
       description: 'Find the perfect trading platform for your needs with our comprehensive comparison tools.',
       image: 'https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
-      icon: Gift,
+      icon: Icons.gift,
       title: 'Exclusive Bonuses',
       description: 'Access member-only deals and bonuses not available anywhere else.',
       image: 'https://images.pexels.com/photos/264547/pexels-photo-264547.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
-      icon: TrendingUp,
+      icon: Icons.arrowTrendingUp,
       title: 'Market Analysis',
       description: 'Expert reviews and analysis to help you make informed trading decisions.',
       image: 'https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
-      icon: Shield,
+      icon: Icons.shield,
       title: 'Verified Partners',
       description: 'All platforms are regulated and verified for security and reliability.',
       image: 'https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
-      icon: Users,
+      icon: Icons.users,
       title: 'Community Reviews',
       description: 'Real user reviews and ratings help you choose the right platform.',
       image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800'
     },
     {
-      icon: BarChart3,
+      icon: Icons.chart,
       title: 'Performance Tracking',
       description: 'Track the average rating for each company & deal.',
       image: 'https://images.pexels.com/photos/355948/pexels-photo-355948.jpeg?auto=compress&cs=tinysrgb&w=800'
@@ -137,7 +122,7 @@ const Features = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Database className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <Icons.database className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-text mb-2">Categories Not Available</h2>
               <p className="text-textSecondary mb-6">
                 Unable to load trading categories. Please try again later.
@@ -155,7 +140,7 @@ const Features = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <Icons.warning className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-text mb-2">Unable to Load Featured Deals</h2>
               <p className="text-textSecondary mb-6">
                 {featuredDealsQuery.error instanceof Error 
@@ -189,7 +174,7 @@ const Features = () => {
           
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <RefreshCw className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+              <Icons.refresh className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
               <p className="text-textSecondary">Loading exclusive deals and top platforms...</p>
             </div>
           </div>
@@ -229,7 +214,7 @@ const Features = () => {
                 className="inline-flex items-center text-primary hover:text-primaryHover transition-colors"
               >
                 View All Deals
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <Icons.arrowRight className="w-4 h-4 ml-1" />
               </a>
             </div>
 
@@ -300,7 +285,7 @@ const Features = () => {
                     </div>
                     <div className="text-right">
                       <div className="flex items-center">
-                        <Star className="w-3 h-3 text-warning fill-current mr-1" />
+                        <Icons.star className="w-3 h-3 text-warning fill-current mr-1" />
                         <span className="text-xs text-textSecondary">
                           {(deal.company.overall_rating || 0).toFixed(1)}
                         </span>
@@ -317,7 +302,7 @@ const Features = () => {
                     <span className={`inline-flex items-center px-3 py-1 bg-gradient-to-r border rounded-full text-xs font-medium ${
                       DEAL_TYPE_STYLES[deal.deal_type] || DEAL_TYPE_STYLES.bonus
                     }`}>
-                      <Gift className="w-3 h-3 mr-1" />
+                      <Icons.gift className="w-3 h-3 mr-1" />
                       {deal.value || deal.title}
                     </span>
                   </div>
@@ -329,7 +314,7 @@ const Features = () => {
                     className="group w-full bg-gradient-to-r from-primary to-secondary px-4 py-3 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center text-center no-underline"
                   >
                     Get Deal Now
-                    <ExternalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <Icons.externalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </a>
                 </div>
               ))}
@@ -338,7 +323,7 @@ const Features = () => {
             {/* Empty state for filtered category */}
             {filteredDeals.length === 0 && featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length > 0 && (
               <div className="text-center py-12">
-                <Gift className="w-12 h-12 mx-auto mb-4 text-textSecondary" />
+                <Icons.gift className="w-12 h-12 mx-auto mb-4 text-textSecondary" />
                 <h3 className="text-lg font-medium text-text mb-2">No deals in this category</h3>
                 <p className="text-textSecondary mb-4">Try selecting a different category or view all deals.</p>
                 <button
@@ -401,7 +386,7 @@ const Features = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
               <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-center mb-2">
-                  <Shield className="w-5 h-5 text-primary mr-2" />
+                  <Icons.shield className="w-5 h-5 text-primary mr-2" />
                   <span className="text-2xl font-bold text-text">{stats.companies}</span>
                 </div>
                 <p className="text-sm text-textSecondary">Trading Platforms</p>
@@ -409,7 +394,7 @@ const Features = () => {
               
               <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-center mb-2">
-                  <Gift className="w-5 h-5 text-secondary mr-2" />
+                  <Icons.gift className="w-5 h-5 text-secondary mr-2" />
                   <span className="text-2xl font-bold text-text">{stats.deals}</span>
                 </div>
                 <p className="text-sm text-textSecondary">Exclusive Deals</p>
@@ -417,7 +402,7 @@ const Features = () => {
               
               <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-center mb-2">
-                  <BarChart3 className="w-5 h-5 text-primary mr-2" />
+                  <Icons.chart className="w-5 h-5 text-primary mr-2" />
                   <span className="text-2xl font-bold text-text">{stats.categories}</span>
                 </div>
                 <p className="text-sm text-textSecondary">Market Categories</p>
@@ -425,7 +410,7 @@ const Features = () => {
               
               <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
                 <div className="flex items-center justify-center mb-2">
-                  <Users className="w-5 h-5 text-secondary mr-2" />
+                  <Icons.users className="w-5 h-5 text-secondary mr-2" />
                   <span className="text-2xl font-bold text-text">{stats.totalReviews}</span>
                 </div>
                 <p className="text-sm text-textSecondary">User Reviews</p>
@@ -435,15 +420,15 @@ const Features = () => {
             {/* Value Propositions */}
             <div className="grid md:grid-cols-3 gap-4 mb-8 text-left">
               <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-textSecondary">Member-exclusive bonus offers</span>
               </div>
               <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-textSecondary">Detailed platform reviews</span>
               </div>
               <div className="flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
                 <span className="text-textSecondary">Regulated broker partnerships</span>
               </div>
             </div>
@@ -487,7 +472,7 @@ const Features = () => {
             {/* Last Updated Info */}
             {featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length > 0 && (
               <div className="flex items-center justify-center space-x-2 mb-6 text-sm text-textSecondary">
-                <Clock className="w-4 h-4" />
+                <Icons.time className="w-4 h-4" />
                 <span>
                   Deals updated: {new Date(Math.max(...featuredDealsQuery.data.featuredDeals.map(deal => new Date(deal.updated_at).getTime()))).toLocaleDateString()}
                 </span>
@@ -500,7 +485,7 @@ const Features = () => {
               className="inline-flex items-center bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 no-underline group"
             >
               Browse All {stats.deals} Deals
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <Icons.arrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
 
             {/* Trust Indicators */}
@@ -509,7 +494,7 @@ const Features = () => {
                 {stats.companies} verified platforms • {stats.deals} active offers • Updated daily
                 {stats.avgRating > 0 && (
                   <span className="inline-flex items-center ml-2">
-                    • <Star className="w-3 h-3 text-warning fill-current mx-1" />
+                    • <Icons.star className="w-3 h-3 text-warning fill-current mx-1" />
                     {stats.avgRating.toFixed(1)} platform rating
                   </span>
                 )}
@@ -521,7 +506,7 @@ const Features = () => {
         {/* Empty state for no deals */}
         {featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length === 0 && (
           <div className="text-center py-12">
-            <Gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h3 className="text-xl font-semibold text-text mb-2">No Featured Deals Available</h3>
             <p className="text-textSecondary mb-6">
               Featured deals will appear here once they're added to the database.

@@ -1,14 +1,7 @@
 // src/components/dashboard/Sidebar.tsx (CLEAN - NO LOGO)
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Star, 
-  User, 
-  Gift, 
-  LogOut, 
-  X,
-} from 'lucide-react'
+import { Icons } from '../../icons'
 import { useAuth } from '../../lib/authContext'
 
 interface SidebarProps {
@@ -24,25 +17,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
     {
       name: 'Dashboard',
       href: '/dashboard',
-      icon: LayoutDashboard,
+      icon: Icons.home,
       description: 'Overview & stats'
     },
     {
       name: 'Browse Deals',
       href: '/dashboard/deals',
-      icon: Gift,
+      icon: Icons.gift,
       description: 'Discover platforms'
     },
     {
       name: 'My Ratings',
       href: '/my-deals',
-      icon: Star,
+      icon: Icons.star,
       description: 'Your platform ratings'
     },
     {
       name: 'Profile',
       href: '/profile',
-      icon: User,
+      icon: Icons.user,
       description: 'Account settings'
     }
   ]
@@ -80,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
           className="lg:hidden p-2 rounded-lg transition-colors hover:bg-gray-100"
           style={{ color: 'var(--text-secondary)' }}
         >
-          <X className="w-5 h-5" />
+          <Icons.close className="w-5 h-5" />
         </button>
       </div>
 
@@ -88,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
       <div className="p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <Icons.user className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm sm:text-base font-medium truncate" style={{ color: 'var(--text)' }}>
@@ -142,7 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
           onClick={handleSignOut}
           className="w-full flex items-center justify-center sm:justify-start space-x-3 px-4 py-4 sm:py-3 rounded-lg transition-colors bg-red-50 hover:bg-red-100 text-red-600 border border-red-200"
         >
-          <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
+          <Icons.logout className="w-5 h-5 sm:w-4 sm:h-4" />
           <span className="text-sm sm:text-base font-medium">Sign Out</span>
         </button>
       </div>

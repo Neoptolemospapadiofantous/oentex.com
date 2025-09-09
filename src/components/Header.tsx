@@ -1,7 +1,7 @@
 // src/components/Header.tsx
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Icon } from './icons'
 import { AuthButton } from './auth/AuthButton'
 import logo from '../assets/logo.png' // Adjust the file extension as needed (logo.svg, logo.jpg, etc.)
 
@@ -53,7 +53,7 @@ const Header: React.FC = () => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 rounded-lg text-textSecondary hover:text-text hover:bg-surface transition-colors"
           >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileMenuOpen ? <Icon name="close" size="lg" /> : <Icon name="menu" size="lg" />}
           </button>
         </div>
 

@@ -1,25 +1,25 @@
 import React from 'react'
-import { Shield, Lock, Eye, Server, CheckCircle } from 'lucide-react'
+import { ShieldCheckIcon, LockClosedIcon, EyeIcon, ServerIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 
 const Security = () => {
   const securityFeatures = [
     {
-      icon: Shield,
+      icon: ShieldCheckIcon,
       title: 'Multi-Layer Protection',
       description: 'Advanced encryption and security protocols'
     },
     {
-      icon: Lock,
+      icon: LockClosedIcon,
       title: 'Cold Storage',
       description: '95% of funds stored offline securely'
     },
     {
-      icon: Eye,
+      icon: EyeIcon,
       title: 'Real-time Monitoring',
       description: '24/7 threat detection and prevention'
     },
     {
-      icon: Server,
+      icon: ServerIcon,
       title: 'Distributed Infrastructure',
       description: 'Redundant systems across multiple regions'
     }

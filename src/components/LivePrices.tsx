@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { TrendingUp, TrendingDown, ArrowRight, Wifi, WifiOff, BarChart3, ExternalLink, Award, AlertTriangle } from 'lucide-react'
+import { ChartBarIcon, ArrowTrendingDownIcon, ArrowRightIcon, WifiIcon, WifiIcon as WifiOff, ChartBarIcon as BarChart3, ArrowTopRightOnSquareIcon, TrophyIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 interface CryptoPrice {
   symbol: string

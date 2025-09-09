@@ -1,6 +1,6 @@
 // src/components/deals/DealsList.tsx
 import React from 'react'
-import { Gift } from 'lucide-react'
+import { Icons } from '../icons'
 import { DealCard } from './DealCard'
 import { DealWithRating } from '../../types/deals'
 
@@ -22,7 +22,7 @@ export const DealsList: React.FC<DealsListProps> = React.memo(({
   if (deals.length === 0) {
     return (
       <div className="text-center py-12">
-        <Gift className="w-16 h-16 text-textSecondary mx-auto mb-4" />
+        <Icons.gift className="w-16 h-16 text-textSecondary mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-text mb-2">No deals found</h3>
         <p className="text-textSecondary">
           {searchTerm || selectedCategory !== 'all' 

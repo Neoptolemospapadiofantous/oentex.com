@@ -1,5 +1,5 @@
 import React from 'react'
-import { TrendingUp, Users, Shield } from 'lucide-react'
+import { Icons } from './icons'
 import { supabase } from '../lib/supabase'
 
 const Stats = () => {
@@ -83,19 +83,19 @@ const Stats = () => {
 
         const dynamicStats = [
           {
-            icon: TrendingUp,
+            icon: Icons.arrowTrendingUp,
             value: totalCompanies > 0 ? `${totalCompanies}` : '0',
             label: 'Products Reviewed',
             description: `Across ${new Set(companies.map(c => c.category)).size} categories`
           },
           {
-            icon: Users,
+            icon: Icons.users,
             value: totalReviews > 0 ? `${totalReviews.toLocaleString()}` : '0',
             label: 'Verified Reviews',
             description: avgRating > 0 ? `${avgRating.toFixed(1)}/5 average rating` : 'No ratings yet'
           },
           {
-            icon: Shield,
+            icon: Icons.shield,
             value: overallSatisfaction > 0 ? `${Math.round(overallSatisfaction)}%` : '0%',
             label: 'User Satisfaction',
             description: overallSatisfaction > 0 ? 'Users trust our recommendations' : 'Building trust with users'
@@ -138,7 +138,7 @@ const Stats = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-2xl mb-4">
-              <Shield className="w-8 h-8 text-red-600" />
+              <Icons.shield className="w-8 h-8 text-red-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load Statistics</h3>
             <p className="text-gray-600 mb-4">We're having trouble connecting to our database.</p>

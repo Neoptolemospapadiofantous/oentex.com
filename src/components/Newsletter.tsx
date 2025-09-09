@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { Mail, CheckCircle, Users, TrendingUp, Gift } from 'lucide-react'
+import { Icons } from './icons'
 import { supabase } from '../lib/supabase'
 import toast from 'react-hot-toast'
 
@@ -113,7 +113,7 @@ const Newsletter = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="bg-surface/50 backdrop-blur-lg rounded-3xl p-8 lg:p-12 border border-border">
           <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="w-8 h-8 text-white" />
+            <Icons.mail className="w-8 h-8 text-white" />
           </div>
           
           <h2 className="text-3xl lg:text-4xl font-bold text-text mb-4">
@@ -155,28 +155,28 @@ const Newsletter = () => {
           </form>
 
           <div className="flex items-center justify-center mt-6 text-sm text-textSecondary">
-            <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+            <Icons.success className="w-4 h-4 mr-2 text-green-600" />
             <span>No spam • Exclusive deals • Unsubscribe anytime</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
-                <Users className="w-5 h-5 text-primary mr-2" />
+                <Icons.users className="w-5 h-5 text-primary mr-2" />
                 <div className="text-2xl font-bold text-text">{stats.subscribers}</div>
               </div>
               <div className="text-textSecondary text-sm">Active Subscribers</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
-                <TrendingUp className="w-5 h-5 text-secondary mr-2" />
+                <Icons.arrowTrendingUp className="w-5 h-5 text-secondary mr-2" />
                 <div className="text-2xl font-bold text-text">{stats.deals}</div>
               </div>
               <div className="text-textSecondary text-sm">Market Updates</div>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center mb-2">
-                <Gift className="w-5 h-5 text-primary mr-2" />
+                <Icons.gift className="w-5 h-5 text-primary mr-2" />
                 <div className="text-2xl font-bold text-text">{stats.exclusive}</div>
               </div>
               <div className="text-textSecondary text-sm">Exclusive Deals</div>
@@ -187,28 +187,28 @@ const Newsletter = () => {
             <h3 className="text-lg font-semibold text-text mb-4">What You'll Receive:</h3>
             <div className="grid md:grid-cols-2 gap-4 text-left">
               <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-text">Weekly Market Insights</div>
                   <div className="text-sm text-textSecondary">Expert analysis and trading opportunities</div>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-text">Exclusive Bonus Alerts</div>
                   <div className="text-sm text-textSecondary">First access to new platform deals</div>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-text">Platform Reviews</div>
                   <div className="text-sm text-textSecondary">Detailed analysis of new trading platforms</div>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <div className="font-medium text-text">Educational Content</div>
                   <div className="text-sm text-textSecondary">Trading tips and strategy guides</div>
