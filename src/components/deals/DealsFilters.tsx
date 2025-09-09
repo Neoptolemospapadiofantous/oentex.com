@@ -1,6 +1,6 @@
 // src/components/deals/DealsFilters.tsx
 import React from 'react'
-import { Search, Filter } from 'lucide-react'
+import { Icons } from '../icons'
 
 interface DealsFiltersProps {
   searchTerm: string
@@ -42,7 +42,7 @@ export const DealsFilters: React.FC<DealsFiltersProps> = React.memo(({
     <div className="bg-surface border border-border rounded-xl p-6 mb-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+          <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
           <input
             type="text"
             placeholder="Search deals..."
@@ -53,7 +53,7 @@ export const DealsFilters: React.FC<DealsFiltersProps> = React.memo(({
         </div>
 
         <div className="relative">
-          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+          <Icons.filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
