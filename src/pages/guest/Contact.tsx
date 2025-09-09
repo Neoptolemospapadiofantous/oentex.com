@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Mail, MessageCircle, MapPin, Send, CheckCircle } from 'lucide-react'
+import { Icons } from '@components/icons'
 import { emailService } from '../../lib/email'
 import toast from 'react-hot-toast'
 import GuestLayout from '../../layouts/GuestLayout'
@@ -61,13 +61,13 @@ const Contact = () => {
 
   const contactInfo = [
     {
-      icon: Mail,
+      icon: Icons.mail,
       title: 'Email',
       content: 'support@oentex.com',
       link: 'mailto:support@oentex.com'
     },
     {
-      icon: MapPin,
+      icon: Icons.mapPin,
       title: 'Office',
       content: 'San Francisco, CA',
       link: '#'
@@ -80,10 +80,10 @@ const Contact = () => {
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-text mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Get in Touch
             </h1>
-            <p className="text-xl text-textSecondary max-w-3xl mx-auto">
+            <p className="text-xl text-foreground/70 max-w-3xl mx-auto">
               Have questions about our platform or need assistance? We're here to help you navigate your investment journey.
             </p>
           </div>
@@ -95,8 +95,8 @@ const Contact = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* Contact Information */}
               <div className="lg:col-span-1">
-                <h2 className="text-2xl font-bold text-text mb-6">Contact Information</h2>
-                <p className="text-textSecondary mb-8">
+                <h2 className="text-2xl font-bold text-foreground mb-6">Contact Information</h2>
+                <p className="text-foreground/70 mb-8">
                   Reach out to us through any of the following channels. We typically respond within 24 hours.
                 </p>
                 
@@ -111,8 +111,8 @@ const Contact = () => {
                         <item.icon className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-text mb-1">{item.title}</h3>
-                        <p className="text-textSecondary group-hover:text-primary transition-colors duration-300">
+                        <h3 className="font-semibold text-foreground mb-1">{item.title}</h3>
+                        <p className="text-foreground/70 group-hover:text-primary transition-colors duration-300">
                           {item.content}
                         </p>
                       </div>
@@ -121,8 +121,8 @@ const Contact = () => {
                 </div>
 
                 <div className="mt-12 p-6 bg-surface/50 rounded-2xl border border-border">
-                  <h3 className="font-semibold text-text mb-3">Response Times</h3>
-                  <div className="space-y-2 text-textSecondary text-sm">
+                  <h3 className="font-semibold text-foreground mb-3">Response Times</h3>
+                  <div className="space-y-2 text-foreground/70 text-sm">
                     <p>📧 Email: Within 24 hours</p>
                     <p>🕒 Business Hours: 9 AM - 6 PM PST</p>
                   </div>
@@ -131,10 +131,10 @@ const Contact = () => {
                 {/* Chatbot Promotion */}
                 <div className="mt-6 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl border border-primary/20">
                   <div className="flex items-center mb-3">
-                    <MessageCircle className="w-6 h-6 text-primary mr-2" />
-                    <h3 className="font-semibold text-text">Quick Help</h3>
+                    <Icons.chatBubble className="w-6 h-6 text-primary mr-2" />
+                    <h3 className="font-semibold text-foreground">Quick Help</h3>
                   </div>
-                  <p className="text-textSecondary text-sm mb-3">
+                  <p className="text-foreground/70 text-sm mb-3">
                     Need instant answers? Our AI chatbot is available 24/7 on the bottom-right corner of every page.
                   </p>
                   <button 
@@ -149,19 +149,19 @@ const Contact = () => {
               {/* Contact Form */}
               <div className="lg:col-span-2">
                 <div className="bg-surface/50 rounded-2xl p-8 border border-border">
-                  <h2 className="text-2xl font-bold text-text mb-6">Send us a Message</h2>
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Send us a Message</h2>
                   
                   {isSubmitted ? (
                     <div className="text-center py-12">
-                      <CheckCircle className="w-16 h-16 text-success mx-auto mb-4" />
-                      <h3 className="text-xl font-semibold text-text mb-2">Message Sent!</h3>
-                      <p className="text-textSecondary">We'll get back to you as soon as possible.</p>
+                      <Icons.success className="w-16 h-16 text-success mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold text-foreground mb-2">Message Sent!</h3>
+                      <p className="text-foreground/70">We'll get back to you as soon as possible.</p>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-text mb-2">
+                          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                             Your Name
                           </label>
                           <input
@@ -170,14 +170,14 @@ const Contact = () => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300"
                             placeholder="John Doe"
                             required
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-text mb-2">
+                          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                             Email Address
                           </label>
                           <input
@@ -186,7 +186,7 @@ const Contact = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300"
                             placeholder="john@example.com"
                             required
                           />
@@ -194,7 +194,7 @@ const Contact = () => {
                       </div>
                       
                       <div>
-                        <label htmlFor="subject" className="block text-sm font-medium text-text mb-2">
+                        <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">
                           Subject
                         </label>
                         <input
@@ -203,14 +203,14 @@ const Contact = () => {
                           name="subject"
                           value={formData.subject}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300"
+                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300"
                           placeholder="How can we help?"
                           required
                         />
                       </div>
                       
                       <div>
-                        <label htmlFor="message" className="block text-sm font-medium text-text mb-2">
+                        <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
                           Message
                         </label>
                         <textarea
@@ -219,7 +219,7 @@ const Contact = () => {
                           value={formData.message}
                           onChange={handleChange}
                           rows={6}
-                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-textSecondary focus:outline-none focus:border-primary transition-colors duration-300 resize-none"
+                          className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300 resize-none"
                           placeholder="Tell us more about your inquiry..."
                           required
                         />
@@ -235,7 +235,7 @@ const Contact = () => {
                         ) : (
                           <>
                             Send Message
-                            <Send className="w-5 h-5 ml-2" />
+                            <Icons.paperAirplane className="w-5 h-5 ml-2" />
                           </>
                         )}
                       </button>
