@@ -1,6 +1,6 @@
 // src/components/ui/ErrorBoundary.tsx
 import React, { Component, ReactNode } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 
 interface Props {
   children: ReactNode
@@ -31,13 +31,13 @@ export class ErrorBoundary extends Component<Props, State> {
       return this.props.fallback || (
         <div className="flex items-center justify-center p-4 bg-red-50 border border-red-200 rounded-lg">
           <div className="text-center">
-            <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+            <ExclamationTriangleIcon className="w-8 h-8 text-red-500 mx-auto mb-2" />
             <p className="text-red-700 mb-2">Something went wrong</p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="flex items-center space-x-1 text-red-600 hover:text-red-800 text-sm"
+              className="flex items-center justify-center space-x-1 text-red-600 hover:text-red-800 text-sm transition-colors"
             >
-              <RefreshCw className="w-4 h-4" />
+              <ArrowPathIcon className="w-4 h-4" />
               <span>Try again</span>
             </button>
           </div>

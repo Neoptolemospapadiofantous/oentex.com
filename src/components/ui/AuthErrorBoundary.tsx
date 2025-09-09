@@ -1,6 +1,6 @@
 // src/components/ui/AuthErrorBoundary.tsx (Enhanced with better error handling)
 import React, { useState, useCallback } from 'react'
-import { AlertCircle, RefreshCw, LogIn, Home, Shield, Wifi, WifiOff } from 'lucide-react'
+import { ExclamationTriangleIcon, ArrowPathIcon, ArrowRightOnRectangleIcon, HomeIcon, ShieldCheckIcon, WifiIcon, WifiIcon as WifiOff } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/authContext'
 import { AuthError } from '../../types/auth'
 import { AuthModal } from '../auth/AuthModals'
