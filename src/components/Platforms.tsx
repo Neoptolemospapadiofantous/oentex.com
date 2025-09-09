@@ -1,10 +1,10 @@
 import React from 'react'
-import { Smartphone, Monitor, Tablet, Download, Star, ArrowRight } from 'lucide-react'
+import { Icon } from './icons'
 
 const Platforms = () => {
   const platforms = [
     {
-      icon: Smartphone,
+      icon: 'mobile',
       name: 'Mobile App',
       description: 'Trade on the go with our award-winning mobile app',
       features: ['Real-time notifications', 'Biometric login', 'Offline mode'],
@@ -13,7 +13,7 @@ const Platforms = () => {
       image: 'https://images.pexels.com/photos/887751/pexels-photo-887751.jpeg?auto=compress&cs=tinysrgb&w=600'
     },
     {
-      icon: Monitor,
+      icon: 'desktop',
       name: 'Web Platform',
       description: 'Full-featured trading platform in your browser',
       features: ['Advanced charting', 'Multi-monitor support', 'Custom layouts'],
@@ -22,7 +22,7 @@ const Platforms = () => {
       image: 'https://images.pexels.com/photos/265087/pexels-photo-265087.jpeg?auto=compress&cs=tinysrgb&w=600'
     },
     {
-      icon: Tablet,
+      icon: 'tablet',
       name: 'Tablet App',
       description: 'Optimized experience for tablet trading',
       features: ['Split-screen trading', 'Gesture controls', 'Portfolio overview'],
@@ -64,17 +64,17 @@ const Platforms = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
                 <div className="absolute top-4 right-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
-                    <platform.icon className="w-6 h-6 text-white" />
+                    <Icon name={platform.icon} size="lg" className="text-white" />
                   </div>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-warning fill-current" />
+                      <Icon name="star" size="sm" color="warning" />
                       <span className="text-white font-medium">{platform.rating}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Download className="w-4 h-4 text-white" />
+                      <Icon name="download" size="sm" className="text-white" />
                       <span className="text-white font-medium">{platform.downloads}</span>
                     </div>
                   </div>
@@ -96,7 +96,7 @@ const Platforms = () => {
 
                 <button className="group w-full bg-gradient-to-r from-primary to-secondary px-6 py-3 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center">
                   Download Now
-                  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <Icon name="arrowRight" size="sm" className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
