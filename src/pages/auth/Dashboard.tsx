@@ -1,6 +1,6 @@
 // src/pages/auth/Dashboard.tsx - AUTHENTICATED VERSION
 import React from 'react';
-import { Star, Users, Award, TrendingUp, Settings, RefreshCw } from 'lucide-react';
+import { Icons } from '@components/icons';
 import { useAuth } from '../../lib/authContext';
 import { useDealsQuery } from '../../hooks/queries/useDealsQuery';
 
@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
               <p className="text-sm font-medium text-green-600 mt-1">Available to rate</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-600" />
+              <Icons.users className="w-6 h-6 text-blue-600" />
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ const Dashboard: React.FC = () => {
               <p className="text-sm font-medium text-green-600 mt-1">Overall quality</p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Star className="w-6 h-6 text-yellow-600" />
+              <Icons.star className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Icons.star className="w-4 h-4 text-yellow-400 fill-current" />
                       <span className="font-medium text-gray-900">{platform.rating}</span>
                     </div>
                   </div>
@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Star className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+              <Icons.star className="w-8 h-8 mx-auto mb-3 text-gray-400" />
               <p className="text-gray-600">No rated platforms yet</p>
             </div>
           )}
@@ -196,7 +196,7 @@ const Dashboard: React.FC = () => {
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       index % 3 === 0 ? 'bg-blue-100' : index % 3 === 1 ? 'bg-green-100' : 'bg-amber-100'
                     }`}>
-                      <Users className={`w-4 h-4 ${
+                      <Icons.users className={`w-4 h-4 ${
                         index % 3 === 0 ? 'text-blue-600' : index % 3 === 1 ? 'text-green-600' : 'text-amber-600'
                       }`} />
                     </div>
@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Users className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+              <Icons.users className="w-8 h-8 mx-auto mb-3 text-gray-400" />
               <p className="text-gray-600">No categories available</p>
             </div>
           )}
@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
             onClick={() => window.location.href = '/deals'} 
             className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 text-left transition-colors"
           >
-            <Users className="w-6 h-6 text-blue-600 mb-2" />
+            <Icons.users className="w-6 h-6 text-blue-600 mb-2" />
             <h3 className="font-medium text-gray-900">Browse Platforms</h3>
             <p className="text-sm text-gray-600">Discover and rate trading platforms</p>
           </button>
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
             onClick={() => window.location.href = '/my-deals'} 
             className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 text-left transition-colors"
           >
-            <Star className="w-6 h-6 text-green-600 mb-2" />
+            <Icons.star className="w-6 h-6 text-green-600 mb-2" />
             <h3 className="font-medium text-gray-900">My Ratings</h3>
             <p className="text-sm text-gray-600">View and manage your platform ratings</p>
           </button>

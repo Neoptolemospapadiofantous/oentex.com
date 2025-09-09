@@ -1,6 +1,6 @@
 // src/components/rating/RatingModal.tsx - MODERNIZED: Uses mutation hook
-import React, { useState, useEffect } from 'react'
-import { X, Star, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Icons } from '../icons'
 import { useAuth } from '../../lib/authContext'
 import { useSubmitRatingMutation } from '../../hooks/queries/useDealsQuery'
 import { RATING_CATEGORIES, RatingSubmissionData } from '../../lib/services/ratingService'
@@ -145,7 +145,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             className="p-1 hover:scale-110 transition-transform"
             disabled={submitRatingMutation.isPending}
           >
-            <Star
+            <Icons.star
               className={`w-6 h-6 transition-colors ${
                 star <= rating
                   ? 'fill-yellow-400 text-yellow-400'
@@ -181,7 +181,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             className="p-2 hover:bg-surface rounded-lg transition-colors"
             disabled={submitRatingMutation.isPending}
           >
-            <X className="w-5 h-5" />
+            <Icons.close className="w-5 h-5" />
           </button>
         </div>
 
@@ -267,7 +267,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
           >
             {submitRatingMutation.isPending ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Icons.refresh className="w-4 h-4 animate-spin" />
                 Submitting...
               </>
             ) : (

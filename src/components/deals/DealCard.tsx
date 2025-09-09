@@ -1,22 +1,6 @@
 // src/components/deals/DealCard.tsx - Complete implementation with Enhanced Terms Modal
 import React, { useState, useCallback } from 'react'
-import { 
-  ExternalLink, 
-  Star, 
-  Clock, 
-  Gift, 
-  MessageSquare, 
-  Users, 
-  TrendingUp, 
-  CheckCircle,
-  Sparkles,
-  Award,
-  BarChart3,
-  Shield,
-  Zap,
-  X,
-  FileText
-} from 'lucide-react'
+import { Icons } from '../icons'
 import { DealWithRating } from '../../types/deals'
 
 interface DealCardProps {
@@ -145,7 +129,7 @@ export const DealCard: React.FC<DealCardProps> = ({
           <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-4 h-4 text-white" />
+                <Icons.document className="w-4 h-4 text-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-gray-900 truncate">Terms & Conditions</h3>
@@ -156,7 +140,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               onClick={() => setShowTermsModal(false)}
               className="p-1 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0 ml-2"
             >
-              <X className="w-5 h-5 text-gray-500" />
+              <Icons.close className="w-5 h-5 text-gray-500" />
             </button>
           </div>
 
@@ -209,7 +193,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               </div>
             ) : (
               <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <Icons.document className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <h3 className="font-medium text-gray-900 mb-2">No Terms Available</h3>
                 <p className="text-sm text-gray-600">Please visit {deal.company_name}'s website for terms.</p>
               </div>
@@ -220,7 +204,7 @@ export const DealCard: React.FC<DealCardProps> = ({
           <div className="border-t border-gray-200 p-4 bg-gray-50">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <Gift className="w-4 h-4 text-primary" />
+                <Icons.gift className="w-4 h-4 text-primary" />
                 <span className="font-medium text-gray-900">{deal.value}</span>
               </div>
               <div className="text-gray-600">
@@ -245,7 +229,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                 }}
                 className="hidden sm:flex px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors items-center justify-center gap-2"
               >
-                <Gift className="w-4 h-4" />
+                <Icons.gift className="w-4 h-4" />
                 Claim Deal
               </button>
             </div>
@@ -289,24 +273,24 @@ export const DealCard: React.FC<DealCardProps> = ({
                     </div>
                   ) : (
                     <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center border-2 border-border group-hover:border-primary/50 transition-all duration-300 shadow-sm">
-                      <TrendingUp className="w-8 h-8 text-primary" />
+                      <Icons.arrowTrendingUp className="w-8 h-8 text-primary" />
                     </div>
                   )}
                   
                   {/* Status badges */}
                   {isHighlyRated && (
                     <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                      <Award className="w-4 h-4 text-yellow-800" />
+                      <Icons.trophy className="w-4 h-4 text-yellow-800" />
                     </div>
                   )}
                   {isNewCompany && (
                     <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                      <Sparkles className="w-4 h-4 text-green-800" />
+                      <Icons.sparkles className="w-4 h-4 text-green-800" />
                     </div>
                   )}
                   {trustLevel.level === 'trusted' && (
                     <div className="absolute -top-2 -right-2 w-7 h-7 bg-gradient-to-r from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
-                      <Shield className="w-4 h-4 text-purple-800" />
+                      <Icons.shield className="w-4 h-4 text-purple-800" />
                     </div>
                   )}
                 </div>
@@ -326,7 +310,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                           {formatRating(companyRating)}
                         </span>
                         <div className="flex items-center gap-1 text-primary">
-                          <Users className="w-3 h-3" />
+                          <Icons.users className="w-3 h-3" />
                           <span className="text-xs font-medium">
                             {totalRatings.toLocaleString()}
                           </span>
@@ -334,7 +318,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                       </div>
                     ) : (
                       <div className="flex items-center gap-1 text-textSecondary text-xs">
-                        <Star className="w-3 h-3" />
+                        <Icons.star className="w-3 h-3" />
                         <span>No ratings yet</span>
                       </div>
                     )}
@@ -377,7 +361,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                 className="w-full flex items-center justify-between hover:text-primary transition-colors"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <BarChart3 className="w-4 h-4 text-primary flex-shrink-0" />
+                  <Icons.chart className="w-4 h-4 text-primary flex-shrink-0" />
                   <span className="text-sm font-medium text-text">
                     Community Ratings
                   </span>
@@ -392,13 +376,13 @@ export const DealCard: React.FC<DealCardProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-primary">
-                        <Users className="w-3 h-3 flex-shrink-0" />
+                        <Icons.users className="w-3 h-3 flex-shrink-0" />
                         <span className="font-semibold text-xs">{totalRatings.toLocaleString()}</span>
                       </div>
                     </>
                   ) : (
                     <div className="flex items-center gap-1">
-                      <Zap className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <Icons.bolt className="w-4 h-4 text-green-500 flex-shrink-0" />
                       <span className="text-xs text-green-600 font-medium">Be first!</span>
                     </div>
                   )}
@@ -418,7 +402,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-textSecondary">Average Rating</span>
                         <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <Icons.star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                           <span className="font-medium text-text">
                             {formatRating(companyRating)} / 5.0
                           </span>
@@ -456,7 +440,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                 <div className="relative overflow-hidden bg-gradient-to-r from-secondary/20 to-primary/20 rounded-xl p-4 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-secondary to-primary rounded-full flex items-center justify-center">
-                      <Gift className="w-5 h-5 text-white" />
+                      <Icons.gift className="w-5 h-5 text-white" />
                     </div>
                     <div>
                       <div className="text-xs text-textSecondary font-medium">Bonus Offer</div>
@@ -464,7 +448,7 @@ export const DealCard: React.FC<DealCardProps> = ({
                         {deal.bonus_amount}
                       </div>
                     </div>
-                    <Sparkles className="w-5 h-5 text-primary/50 ml-auto" />
+                    <Icons.sparkles className="w-5 h-5 text-primary/50 ml-auto" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
                 </div>
@@ -502,7 +486,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               <div className="mb-4 p-3 bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <Icons.success className="w-4 h-4 text-primary" />
                     <span className="text-sm text-primary font-medium">
                       You rated this company
                     </span>
@@ -524,7 +508,7 @@ export const DealCard: React.FC<DealCardProps> = ({
           {/* Deal metadata - Always at bottom */}
           <div className="flex items-center gap-4 text-xs text-textSecondary mb-4 bg-background rounded-lg p-3">
             <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+              <Icons.time className="w-3 h-3" />
               <span>
                 {deal.end_date 
                   ? `Expires ${new Date(deal.end_date).toLocaleDateString('en-US', { 
@@ -538,7 +522,7 @@ export const DealCard: React.FC<DealCardProps> = ({
             </div>
             {deal.commission_rate && (
               <div className="flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
+                <Icons.arrowTrendingUp className="w-3 h-3" />
                 <span>{deal.commission_rate}% commission</span>
               </div>
             )}
@@ -588,7 +572,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               onClick={() => setShowTermsModal(true)}
               className="text-xs text-textSecondary hover:text-primary transition-colors underline hover:no-underline flex items-center gap-1 mx-auto px-4 py-2 rounded-lg hover:bg-background/50"
             >
-              <FileText className="w-3 h-3" />
+              <Icons.document className="w-3 h-3" />
               Terms & Conditions
             </button>
           </div>

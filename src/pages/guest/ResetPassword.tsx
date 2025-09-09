@@ -1,7 +1,7 @@
 // src/pages/ResetPassword.tsx - Handle password reset
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import toast from 'react-hot-toast'
 import { authService } from '../../lib/services/authService'
@@ -85,7 +85,7 @@ const ResetPassword = () => {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-textSecondary">Verifying reset link...</p>
+            <p className="text-foreground/70">Verifying reset link...</p>
           </div>
         </div>
       </GuestLayout>
@@ -99,23 +99,23 @@ const ResetPassword = () => {
           <div className="bg-surface rounded-2xl p-8 border border-border">
             <div className="text-center mb-8">
               <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-white" />
+                <Icons.lock className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-text mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
                 Set New Password
               </h1>
-              <p className="text-textSecondary">
+              <p className="text-foreground/70">
                 Enter your new password below
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   New Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+                  <Icons.lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/70 w-5 h-5" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
@@ -128,25 +128,25 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-textSecondary hover:text-text"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground/70 hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <Icons.eyeOff className="w-5 h-5" /> : <Icons.eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {errors.password && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                    <Icons.warning className="w-4 h-4 mr-1" />
                     {errors.password}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+                  <Icons.lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/70 w-5 h-5" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
@@ -159,14 +159,14 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-textSecondary hover:text-text"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground/70 hover:text-foreground"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showConfirmPassword ? <Icons.eyeOff className="w-5 h-5" /> : <Icons.eye className="w-5 h-5" />}
                   </button>
                 </div>
                 {errors.confirmPassword && (
                   <p className="text-red-500 text-sm mt-1 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
+                    <Icons.warning className="w-4 h-4 mr-1" />
                     {errors.confirmPassword}
                   </p>
                 )}
@@ -191,7 +191,7 @@ const ResetPassword = () => {
             <div className="mt-6 text-center">
               <button
                 onClick={() => navigate('/')}
-                className="text-textSecondary hover:text-primary transition-colors text-sm"
+                className="text-foreground/70 hover:text-primary transition-colors text-sm"
               >
                 Back to Home
               </button>

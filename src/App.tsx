@@ -1,6 +1,7 @@
-// src/App.tsx - Updated with HeroUI integration
-import { HeroUIProvider } from '@heroui/react'
-import React, { Suspense } from 'react'
+// src/App.tsx - Fixed HeroUI integration
+import * as React from "react";
+import { HeroUIProvider } from '@heroui/system'
+import { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -32,8 +33,7 @@ const Unsubscribe = React.lazy(() => import('./pages/guest/Unsubscribe'))
 const Dashboard = React.lazy(() => import('./pages/auth/Dashboard'))
 const AuthDeals = React.lazy(() => import('./pages/auth/Deals'))
 const MyDeals = React.lazy(() => import('./pages/auth/MyDeals'))
-const Profile = React.lazy(() => import('./pages/auth/Profile')) // ✅ FIXED: Complete import
-
+const Profile = React.lazy(() => import('./pages/auth/Profile'))
 
 const OAuthCallbackHandler: React.FC = () => {
   return (
@@ -49,10 +49,9 @@ const AuthenticatedApp: React.FC = () => {
     <AuthLayout>
       <Suspense fallback={<PageLoader message="Loading dashboard..." />}>
         <Routes>
-          
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/deals" element={<AuthDeals />} /> {/* ✅ FIXED: Correct path */}
+          <Route path="/dashboard/deals" element={<AuthDeals />} />
           <Route path="/my-deals" element={<MyDeals />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
@@ -105,8 +104,6 @@ const PublicApp: React.FC = () => {
           </Suspense>
         </ErrorBoundary>
       </main>
-      
-
     </div>
   )
 }
@@ -141,11 +138,20 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        {/* ✅ HeroUI Provider wraps the entire application */}
-        <HeroUIProvider>
+        {/* ✅ FIXED: HeroUIProvider from @heroui/system */}
+        <HeroUIProvider
+          navigate={(path) => {
+            // Simple navigation - you can improve this with proper router integration
+            window.location.href = path
+          }}
+          locale="en-US"
+          disableAnimation={false}
+          disableRipple={false}
+          validationBehavior="native"
+          reducedMotion="user"
+        >
           <AuthProvider>
             <Router>
               <Routes>

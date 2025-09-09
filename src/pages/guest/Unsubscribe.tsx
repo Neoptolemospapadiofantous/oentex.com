@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Mail, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react'
+import { Icons } from '@components/icons'
 import { supabase } from '../../lib/supabase'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -172,7 +172,7 @@ const Unsubscribe = () => {
         <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-textSecondary">Loading unsubscribe page...</p>
+            <p className="mt-4 text-foreground/70">Loading unsubscribe page...</p>
           </div>
         </div>
       </div>
@@ -184,19 +184,19 @@ const Unsubscribe = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
           <div className="text-center">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-text mb-4">Error</h1>
+            <Icons.warning className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground mb-4">Error</h1>
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
               <p className="text-red-700 font-medium">{error}</p>
             </div>
-            <p className="text-textSecondary mb-6">
+            <p className="text-foreground/70 mb-6">
               Please contact our support team if you continue to experience issues.
             </p>
             <Link 
               to="/" 
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <Icons.arrowLeft className="w-4 h-4" />
               Return to Oentex
             </Link>
           </div>
@@ -210,25 +210,25 @@ const Unsubscribe = () => {
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
           <div className="text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-text mb-4">Successfully Unsubscribed</h1>
+            <Icons.success className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground mb-4">Successfully Unsubscribed</h1>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
               <p className="text-green-700 font-medium">
                 You have been removed from our newsletter list
               </p>
             </div>
-            <p className="text-textSecondary mb-4">
+            <p className="text-foreground/70 mb-4">
               We're sorry to see you go! If you change your mind, you can always 
               resubscribe on our website.
             </p>
-            <p className="text-sm text-textSecondary mb-6">
+            <p className="text-sm text-foreground/70 mb-6">
               <strong>Email:</strong> {subscriber?.email}
             </p>
             <Link 
               to="/" 
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <Icons.arrowLeft className="w-4 h-4" />
               Return to Oentex
             </Link>
           </div>
@@ -241,20 +241,20 @@ const Unsubscribe = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
       <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
         <div className="text-center mb-6">
-          <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text mb-2">Unsubscribe from Newsletter</h1>
-          <p className="text-textSecondary">We're sorry to see you go!</p>
+          <Icons.mail className="w-16 h-16 text-primary mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Unsubscribe from Newsletter</h1>
+          <p className="text-foreground/70">We're sorry to see you go!</p>
         </div>
 
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <p className="text-sm text-textSecondary">
+          <p className="text-sm text-foreground/70">
             <strong>Email:</strong> {subscriber?.email}
           </p>
         </div>
 
         <form onSubmit={handleUnsubscribe} className="space-y-6">
           <div>
-            <label htmlFor="reason" className="block text-sm font-medium text-text mb-2">
+            <label htmlFor="reason" className="block text-sm font-medium text-foreground mb-2">
               Why are you unsubscribing? (Optional)
             </label>
             <select
@@ -294,7 +294,7 @@ const Unsubscribe = () => {
             to="/" 
             className="text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <Icons.arrowLeft className="w-4 h-4" />
             Return to Oentex
           </Link>
         </div>

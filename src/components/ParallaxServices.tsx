@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import { useParallax } from '../hooks/useParallax'
-import { AlertCircle } from 'lucide-react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 interface Service {
   icon: React.ComponentType<any>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { Icons } from '@components/icons'
 import GuestLayout from '../../layouts/GuestLayout'
 
 const FAQ = () => {
@@ -77,7 +77,7 @@ const FAQ = () => {
                 Frequently Asked Questions
               </span>
             </h1>
-            <p className="text-xl text-textSecondary">
+            <p className="text-xl text-foreground/70">
               Find answers to common questions about Oentex, our affiliate partnerships, platform reviews, and how to get the best deals.
             </p>
           </div>
@@ -90,12 +90,12 @@ const FAQ = () => {
                   className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-surface/70 transition-all duration-300"
                   onClick={() => toggleFAQ(index)}
                 >
-                  <h3 className="text-lg font-semibold text-text pr-4">{faq.question}</h3>
+                  <h3 className="text-lg font-semibold text-foreground pr-4">{faq.question}</h3>
                   <div className="flex-shrink-0">
                     {openIndex === index ? (
-                      <ChevronUp className="w-5 h-5 text-primary" />
+                      <Icons.chevronUp className="w-5 h-5 text-primary" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-textSecondary" />
+                      <Icons.chevronDown className="w-5 h-5 text-foreground/70" />
                     )}
                   </div>
                 </button>
@@ -104,7 +104,7 @@ const FAQ = () => {
                   openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                 }`}>
                   <div className="px-6 pb-6">
-                    <p className="text-textSecondary leading-relaxed">{faq.answer}</p>
+                    <p className="text-foreground/70 leading-relaxed">{faq.answer}</p>
                   </div>
                 </div>
               </div>
@@ -113,19 +113,19 @@ const FAQ = () => {
 
           {/* Important Disclosure */}
           <div className="mt-12 p-6 bg-gradient-to-r from-warning/10 to-accent/10 rounded-2xl border border-warning/30">
-            <h2 className="text-lg font-semibold text-text mb-3">Important Disclosure</h2>
-            <p className="text-textSecondary text-sm leading-relaxed mb-3">
+            <h2 className="text-lg font-semibold text-foreground mb-3">Important Disclosure</h2>
+            <p className="text-foreground/70 text-sm leading-relaxed mb-3">
               <strong>Oentex operates as an affiliate marketing platform.</strong> We earn commissions from our partner platforms when you sign up through our referral links. This allows us to offer our platform for free and provide you with exclusive bonuses. We maintain editorial independence and only partner with platforms we believe provide genuine value to our users.
             </p>
-            <p className="text-textSecondary text-xs">
+            <p className="text-foreground/70 text-xs">
               All cryptocurrency and trading activities involve significant risk. Past performance does not guarantee future results. Please read all terms and conditions and risk disclosures before using any financial services.
             </p>
           </div>
 
           {/* Contact CTA */}
           <div className="mt-16 text-center p-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl border border-primary/20">
-            <h2 className="text-2xl font-bold text-text mb-4">Still have questions?</h2>
-            <p className="text-textSecondary mb-6">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Still have questions?</h2>
+            <p className="text-foreground/70 mb-6">
               Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
             </p>
             <button 

@@ -1,6 +1,6 @@
 // src/pages/auth/Profile.tsx - AUTHENTICATED VERSION
 import React, { useState } from 'react'
-import { User, Mail, Shield, Key, Save, Edit3, Eye, EyeOff } from 'lucide-react'
+import { UserIcon, EnvelopeIcon, ShieldCheckIcon, KeyIcon, CheckIcon, PencilIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/authContext'
 import toast from 'react-hot-toast'
 

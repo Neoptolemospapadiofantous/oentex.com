@@ -1,6 +1,6 @@
 // src/pages/auth/MyDeals.tsx - AUTHENTICATED VERSION WITH EDIT
 import React, { useState, useMemo } from 'react'
-import { Star, RefreshCw, Calendar, TrendingUp } from 'lucide-react'
+import { StarIcon, ArrowPathIcon, CalendarIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/authContext'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'

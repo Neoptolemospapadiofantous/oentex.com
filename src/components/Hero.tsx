@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Shield, Zap, ArrowRight, Star } from 'lucide-react'
+import { Icon } from './icons'
 
 const Hero = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -15,9 +15,9 @@ const Hero = () => {
   }, [])
 
   const features = [
-    { icon: Shield, text: 'Regulated Partners' },
-    { icon: TrendingUp, text: 'Market Analysis' },
-    { icon: Zap, text: 'Exclusive Bonuses' }
+    { icon: 'shield' as const, text: 'Regulated Partners' },
+    { icon: 'chart' as const, text: 'Market Analysis' },
+    { icon: 'bolt' as const, text: 'Exclusive Bonuses' }
   ]
 
   const cryptoSymbols = [
@@ -179,7 +179,7 @@ const Hero = () => {
         <div className="animate-slide-up pt-2 sm:pt-4 lg:pt-6 pb-4 sm:pb-6">
           {/* Badge */}
           <div className="inline-flex items-center px-3 py-2 sm:px-4 bg-surface border border-border rounded-full text-xs sm:text-sm text-textSecondary mb-6 sm:mb-8 animate-glow backdrop-blur-sm shadow-sm">
-            <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-warning" />
+            <Icon name="star" size="sm" color="warning" className="mr-2" />
             <span className="hidden sm:inline">Trusted by investors worldwide</span>
             <span className="sm:hidden">Trusted globally</span>
           </div>
@@ -205,7 +205,7 @@ const Hero = () => {
               className="group w-full sm:w-auto bg-gradient-to-r from-primary to-primaryHover px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold text-base sm:text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
             >
               Explore Deals
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+              <Icon name="arrowRight" size="md" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
             <Link
               to="/about"
@@ -220,7 +220,7 @@ const Hero = () => {
             {features.map((feature, index) => (
               <div key={index} className="flex items-center text-textSecondary hover:text-primary transition-colors duration-300">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center mr-2 sm:mr-3 border border-primary/20">
-                  <feature.icon className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                  <Icon name={feature.icon} size="sm" color="primary" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium">{feature.text}</span>
               </div>
