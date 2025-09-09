@@ -1,16 +1,6 @@
 // src/components/dashboard/DashboardLayout.tsx (MOBILE OPTIMIZED)
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Home, 
-  Star, 
-  Menu, 
-  LogOut, 
-  User,
-  Search,
-  Chrome,
-  X
-} from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 import toast from 'react-hot-toast';
 import ToastContainer from '@components/ui/ToastContainer';
