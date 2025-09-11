@@ -1,235 +1,302 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Icon } from './icons'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Icons } from "./icons";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const navigate = useNavigate();
+
+  // Gentle parallax with rAF (no janky state spam)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const frame = useRef<number | null>(null);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduceMotion(mq.matches);
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
+      lastPos.current = { x: e.clientX, y: e.clientY };
+      if (!frame.current) {
+        frame.current = requestAnimationFrame(() => {
+          setMousePosition(lastPos.current);
+          frame.current = null;
+        });
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      if (frame.current) cancelAnimationFrame(frame.current);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
+  const handleGetStarted = () => navigate("/deals");
+  const handleLearnMore = () => navigate("/about");
 
   const features = [
-    { icon: 'shield' as const, text: 'Regulated Partners' },
-    { icon: 'chart' as const, text: 'Market Analysis' },
-    { icon: 'bolt' as const, text: 'Exclusive Bonuses' }
-  ]
+    { icon: Icons.shield, text: "Regulated Partners" },
+    { icon: Icons.chart, text: "Market Analysis" },
+    { icon: Icons.bolt, text: "Exclusive Bonuses" },
+  ];
 
   const cryptoSymbols = [
-    { symbol: 'BTC', color: 'from-orange-400/20 to-orange-600/20', border: 'border-orange-400/30', text: 'text-orange-500' },
-    { symbol: 'ETH', color: 'from-blue-400/20 to-blue-600/20', border: 'border-blue-400/30', text: 'text-blue-500' },
-    { symbol: 'STOCKS', color: 'from-green-400/20 to-green-600/20', border: 'border-green-400/30', text: 'text-green-500' },
-    { symbol: 'BONDS', color: 'from-purple-400/20 to-purple-600/20', border: 'border-purple-400/30', text: 'text-purple-500' },
-    { symbol: 'FOREX', color: 'from-cyan-400/20 to-cyan-600/20', border: 'border-cyan-400/30', text: 'text-cyan-500' },
-    { symbol: 'BANK', color: 'from-indigo-400/20 to-indigo-600/20', border: 'border-indigo-400/30', text: 'text-indigo-500' },
-    { symbol: 'GOLD', color: 'from-yellow-400/20 to-yellow-600/20', border: 'border-yellow-400/30', text: 'text-yellow-600' },
-    { symbol: 'USD', color: 'from-gray-400/20 to-gray-600/20', border: 'border-gray-400/30', text: 'text-gray-500' }
-  ]
+    { symbol: "BTC", color: "from-orange-400/20 to-orange-600/20", border: "border-orange-400/30", text: "text-orange-500" },
+    { symbol: "ETH", color: "from-blue-400/20 to-blue-600/20", border: "border-blue-400/30", text: "text-blue-500" },
+    { symbol: "STOCKS", color: "from-green-400/20 to-green-600/20", border: "border-green-400/30", text: "text-green-500" },
+    { symbol: "BONDS", color: "from-purple-400/20 to-purple-600/20", border: "border-purple-400/30", text: "text-purple-500" },
+    { symbol: "FOREX", color: "from-cyan-400/20 to-cyan-600/20", border: "border-cyan-400/30", text: "text-cyan-500" },
+    { symbol: "BANK", color: "from-indigo-400/20 to-indigo-600/20", border: "border-indigo-400/30", text: "text-indigo-500" },
+    { symbol: "GOLD", color: "from-yellow-400/20 to-yellow-600/20", border: "border-yellow-400/30", text: "text-yellow-600" },
+    { symbol: "USD", color: "from-gray-400/20 to-gray-600/20", border: "border-gray-400/30", text: "text-gray-500" },
+  ];
 
-  // Reduced bubble positions for mobile - fewer elements, better positioning
   const bubblePositions = [
-    { left: '5%', top: '15%', size: 'w-10 h-10 sm:w-14 sm:h-14', delay: '0s', duration: '4s' },
-    { right: '5%', top: '12%', size: 'w-10 h-10 sm:w-14 sm:h-14', delay: '0.5s', duration: '5s' },
-    { left: '3%', top: '40%', size: 'w-12 h-12 sm:w-16 sm:h-16', delay: '1s', duration: '6s' },
-    { right: '3%', top: '45%', size: 'w-10 h-10 sm:w-14 sm:h-14', delay: '1.5s', duration: '4.5s' },
-    { left: '8%', bottom: '20%', size: 'w-12 h-12 sm:w-16 sm:h-16', delay: '2s', duration: '5.5s' },
-    { right: '8%', bottom: '25%', size: 'w-10 h-10 sm:w-14 sm:h-14', delay: '2.5s', duration: '4s' },
-    { left: '12%', top: '30%', size: 'w-8 h-8 sm:w-12 sm:h-12', delay: '3s', duration: '6s' },
-    { right: '12%', bottom: '40%', size: 'w-10 h-10 sm:w-14 sm:h-14', delay: '3.5s', duration: '5s' }
-  ]
+    { left: "5%", top: "14%", size: "w-10 h-10 sm:w-14 sm:h-14", delay: "0s", duration: "4.8s" },
+    { right: "6%", top: "12%", size: "w-10 h-10 sm:w-14 sm:h-14", delay: "0.4s", duration: "5.2s" },
+    { left: "3%", top: "42%", size: "w-12 h-12 sm:w-16 sm:h-16", delay: "0.8s", duration: "6s" },
+    { right: "4%", top: "46%", size: "w-10 h-10 sm:w-14 sm:h-14", delay: "1.2s", duration: "5s" },
+    { left: "8%", bottom: "22%", size: "w-12 h-12 sm:w-16 sm:h-16", delay: "1.6s", duration: "5.6s" },
+    { right: "9%", bottom: "26%", size: "w-10 h-10 sm:w-14 sm:h-14", delay: "2s", duration: "4.6s" },
+    { left: "12%", top: "30%", size: "w-8 h-8 sm:w-12 sm:h-12", delay: "2.4s", duration: "6.2s" },
+    { right: "12%", bottom: "38%", size: "w-10 h-10 sm:w-14 sm:h-14", delay: "2.8s", duration: "5.4s" },
+  ];
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 12 }).map(() => ({
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 10}s`,
+        duration: `${8 + Math.random() * 4}s`,
+      })),
+    []
+  );
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 sm:pt-16 lg:pt-20 pb-8 sm:pb-12 lg:pb-16 bg-gradient-to-br from-primaryMuted via-background to-secondaryMuted">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e40af' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }} />
-      </div>
+    <section
+      aria-labelledby="hero-title"
+      className="page-hero relative min-h-screen flex-center section-transition component-fade-in"
+    >
 
-      {/* Animated Crypto Elements - Mobile Optimized */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating Crypto Coins - Reduced for mobile */}
-        {cryptoSymbols.slice(0, 8).map((crypto, index) => {
-          const position = bubblePositions[index]
-          if (!position) return null
-          
-          return (
-            <div
-              key={crypto.symbol + index}
-              className="absolute animate-float hidden sm:block"
-              style={{
-                left: position.left,
-                right: position.right,
-                top: position.top,
-                bottom: position.bottom,
-                animationDelay: position.delay,
-                animationDuration: position.duration
-              }}
-            >
-              <div className={`${position.size} bg-gradient-to-r ${crypto.color} rounded-full border ${crypto.border} flex items-center justify-center backdrop-blur-sm animate-glow shadow-lg hover:scale-110 transition-transform duration-300`}>
-                <span className={`${crypto.text} font-bold text-xs`}>{crypto.symbol}</span>
+      {/* Enhanced interactive parallax elements aligned with content (desktop only) */}
+      <div className="absolute inset-0 hidden md:block pointer-events-none" aria-hidden="true">
+        {/* Content-aligned container for Hero effects */}
+        <div className="relative w-full h-full max-w-7xl mx-auto container-px-sm sm:container-px-md lg:container-px-lg">
+          {/* Enhanced purple cloud effects */}
+          <div
+            className={`absolute w-80 h-80 sm:w-[28rem] sm:h-[28rem] rounded-full blur-3xl bg-gradient-to-br from-primary/15 via-secondary/12 to-accent/10 ${
+              reduceMotion ? "" : "animate-float-enhanced"
+            }`}
+            style={{
+              left: `${-40 + mousePosition.x * 0.008}px`,
+              top: `${-8 + mousePosition.y * 0.008}%`,
+            }}
+          />
+          <div
+            className={`absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full blur-3xl bg-gradient-to-tl from-accent/12 via-primary/10 to-secondary/8 ${
+              reduceMotion ? "" : "animate-float-enhanced"
+            }`}
+            style={{
+              right: `${-32 + mousePosition.x * 0.006}px`,
+              bottom: `${-8 + mousePosition.y * 0.006}%`,
+              animationDelay: "2s",
+            }}
+          />
+          <div
+            className={`absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full blur-3xl bg-gradient-to-r from-secondary/10 via-accent/8 to-primary/6 ${
+              reduceMotion ? "" : "animate-float"
+            }`}
+            style={{
+              left: `${45 + mousePosition.x * 0.004}%`,
+              top: `${25 + mousePosition.y * 0.004}%`,
+              animationDelay: "4s",
+            }}
+          />
+          {/* Additional subtle cloud layer */}
+          <div
+            className={`absolute w-56 h-56 sm:w-72 sm:h-72 rounded-full blur-2xl bg-gradient-to-br from-primary/8 to-accent/6 ${
+              reduceMotion ? "" : "animate-float-light"
+            }`}
+            style={{
+              left: `${60 + mousePosition.x * 0.003}%`,
+              top: `${60 + mousePosition.y * 0.003}%`,
+              animationDelay: "1.5s",
+            }}
+          />
+        </div>
+          {cryptoSymbols.map((c, i) => {
+            const p = bubblePositions[i];
+            if (!p) return null;
+            return (
+              <div
+                key={c.symbol}
+                className={`${reduceMotion ? "" : "animate-float-enhanced"} absolute group cursor-pointer`}
+                style={{
+                  left: p.left,
+                  right: p.right,
+                  top: p.top,
+                  bottom: p.bottom,
+                  animationDelay: p.delay,
+                  animationDuration: p.duration,
+                }}
+              >
+                {/* Enhanced bubble with multiple layers */}
+                <div className="relative">
+                  {/* Outer glow ring */}
+                  <div 
+                    className={`absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 ${c.color.replace('from-', 'from-').replace('to-', 'to-').replace('/20', '/40').replace('/30', '/60')} blur-sm scale-150`}
+                  />
+                  
+                  {/* Main bubble */}
+                  <div
+                    className={`${p.size} bg-gradient-to-br ${c.color} rounded-full border-2 ${c.border} flex items-center justify-center backdrop-blur-sm shadow-lg transition-all duration-500 hover:scale-125 hover:shadow-2xl hover:shadow-primary/30 group-hover:rotate-12 group-hover:brightness-110 relative overflow-hidden`}
+                  >
+                    {/* Inner shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 via-transparent to-transparent rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    
+                    {/* Animated border */}
+                    <div className="absolute inset-0 rounded-full border-2 border-transparent bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-spin" style={{ animationDuration: '3s' }} />
+                    
+                    <span className={`${c.text} font-bold text-[10px] sm:text-xs select-none transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-sm relative z-10`}>{c.symbol}</span>
+                  </div>
+                  
+                  {/* Floating particles around bubble */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className={`absolute w-1 h-1 ${c.text.replace('text-', 'bg-')} rounded-full opacity-0 group-hover:opacity-60 transition-all duration-1000 animate-float-light`} 
+                         style={{ 
+                           left: '20%', 
+                           top: '10%', 
+                           animationDelay: '0.2s',
+                           animationDuration: '2s'
+                         }} />
+                    <div className={`absolute w-0.5 h-0.5 ${c.text.replace('text-', 'bg-')} rounded-full opacity-0 group-hover:opacity-40 transition-all duration-1200 animate-float-light`} 
+                         style={{ 
+                           right: '15%', 
+                           bottom: '20%', 
+                           animationDelay: '0.8s',
+                           animationDuration: '2.5s'
+                         }} />
+                  </div>
+                </div>
               </div>
-            </div>
-          )
-        })}
+            );
+          })}
 
-        {/* Enhanced Floating Particles - Reduced on mobile */}
-        <div className="absolute inset-0">
-          {Array.from({ length: 10 }).map((_, i) => (
+          {particles.map((pt, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float hidden sm:block"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${8 + Math.random() * 4}s`
-              }}
-            />
+              className={`absolute w-1 h-1 bg-primary/40 rounded-full ${reduceMotion ? "" : "animate-float-light"} transition-all duration-300 hover:scale-200 hover:bg-primary/80 hover:shadow-lg hover:shadow-primary/50 cursor-pointer group`}
+              style={{ left: pt.left, top: pt.top, animationDelay: pt.delay, animationDuration: pt.duration }}
+            >
+              {/* Particle glow effect */}
+              <div className="absolute inset-0 rounded-full bg-primary/20 scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100" />
+            </div>
           ))}
-        </div>
 
-        {/* Network Connection Lines - Hidden on mobile */}
-        <div className="absolute inset-0 hidden sm:block">
-          <svg className="w-full h-full opacity-20">
+          {/* Subtle connection lines that flow from hero to features */}
+          <svg className="absolute inset-0 w-full h-full opacity-15 animate-pulse-glow" role="presentation">
             <defs>
-              <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="rgb(59, 130, 246)" stopOpacity="0.5" />
-                <stop offset="100%" stopColor="rgb(16, 185, 129)" stopOpacity="0.1" />
+              <linearGradient id="heroConnectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(var(--heroui-primary))" stopOpacity="0.4" />
+                <stop offset="50%" stopColor="hsl(var(--heroui-secondary))" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="hsl(var(--heroui-primary))" stopOpacity="0.4" />
               </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge> 
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
             </defs>
-            <line x1="10%" y1="20%" x2="90%" y2="30%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" />
-            <line x1="15%" y1="70%" x2="85%" y2="60%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '2s' }} />
-            <line x1="20%" y1="40%" x2="80%" y2="80%" stroke="url(#connectionGradient)" strokeWidth="1" className="animate-pulse-slow" style={{ animationDelay: '4s' }} />
+            {/* Very subtle connection lines that flow from hero to features */}
+            <line x1="5%" y1="88%" x2="95%" y2="98%" stroke="url(#heroConnectionGradient)" strokeWidth="1" opacity="0.5" filter="url(#glow)" />
+            <line x1="10%" y1="85%" x2="90%" y2="95%" stroke="url(#heroConnectionGradient)" strokeWidth="0.8" opacity="0.4" />
+            <line x1="15%" y1="82%" x2="85%" y2="92%" stroke="url(#heroConnectionGradient)" strokeWidth="0.6" opacity="0.3" />
+            {/* Very subtle diagonal connection lines */}
+            <line x1="20%" y1="80%" x2="80%" y2="90%" stroke="url(#heroConnectionGradient)" strokeWidth="0.8" opacity="0.4" />
+            <line x1="25%" y1="78%" x2="75%" y2="88%" stroke="url(#heroConnectionGradient)" strokeWidth="0.6" opacity="0.3" />
+            {/* Very subtle vertical flow lines */}
+            <line x1="50%" y1="75%" x2="50%" y2="100%" stroke="url(#heroConnectionGradient)" strokeWidth="0.6" opacity="0.2" />
+            <line x1="30%" y1="80%" x2="30%" y2="100%" stroke="url(#heroConnectionGradient)" strokeWidth="0.4" opacity="0.15" />
+            <line x1="70%" y1="80%" x2="70%" y2="100%" stroke="url(#heroConnectionGradient)" strokeWidth="0.4" opacity="0.15" />
           </svg>
         </div>
 
-        {/* Gradient Orbs - Positioned in corners */}
-        <div 
-          className="absolute w-60 h-60 sm:w-80 sm:h-80 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-full blur-3xl animate-float"
-          style={{
-            left: `${-100 + mousePosition.x * 0.01}px`,
-            top: `${-100 + mousePosition.y * 0.01}px`,
-          }}
-        />
-        <div 
-          className="absolute w-40 h-40 sm:w-60 sm:h-60 bg-gradient-to-r from-accent/5 to-primary/5 rounded-full blur-3xl animate-float"
-          style={{
-            right: `${-100 + mousePosition.x * 0.008}px`,
-            bottom: `${-100 + mousePosition.y * 0.008}px`,
-            animationDelay: '2s'
-          }}
-        />
-        
-        {/* Floating Geometric Shapes - Hidden on mobile */}
-        <div className="hidden sm:block">
-          <div className="absolute top-28 left-24 w-2 h-2 bg-primary/30 rounded-full animate-bounce-subtle" />
-          <div className="absolute top-52 right-32 w-3 h-3 bg-secondary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-52 left-36 w-1.5 h-1.5 bg-accent/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '3s' }} />
-          <div className="absolute bottom-36 right-24 w-2.5 h-2.5 bg-primary/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-36 left-1/4 w-2 h-2 bg-green-400/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '4s' }} />
-          <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-purple-400/30 rounded-full animate-bounce-subtle" style={{ animationDelay: '5s' }} />
-        </div>
+      {/* Content */}
+      <div className="container-page relative z-10">
+        <div className="content-full">
+          <div className="flex-col-center text-center">
 
-        {/* Enhanced Animated Lines - Hidden on mobile */}
-        <div className="hidden sm:block">
-          <div className="absolute top-1/4 left-20 w-28 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-pulse-slow" />
-          <div className="absolute bottom-1/3 right-20 w-24 h-px bg-gradient-to-r from-transparent via-secondary/40 to-transparent animate-pulse-slow" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-16 w-20 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent animate-pulse-slow" style={{ animationDelay: '2s' }} />
-        </div>
-        
-        {/* Enhanced Trading Chart Lines - Hidden on mobile */}
-        <div className="hidden lg:block">
-          <div className="absolute top-1/3 right-24">
-            <svg width="90" height="55" className="animate-pulse-slow">
-              <polyline
-                fill="none"
-                stroke="rgba(59, 130, 246, 0.3)"
-                strokeWidth="2"
-                points="0,45 18,28 36,38 54,18 72,23 90,8"
-              />
-              <circle cx="18" cy="28" r="2" fill="rgba(59, 130, 246, 0.4)" className="animate-ping" style={{ animationDelay: '1s' }} />
-              <circle cx="54" cy="18" r="2" fill="rgba(59, 130, 246, 0.4)" className="animate-ping" style={{ animationDelay: '3s' }} />
-            </svg>
-          </div>
-          
-          <div className="absolute bottom-1/4 left-24">
-            <svg width="80" height="50" className="animate-pulse-slow" style={{ animationDelay: '2s' }}>
-              <polyline
-                fill="none"
-                stroke="rgba(16, 185, 129, 0.3)"
-                strokeWidth="2"
-                points="0,40 16,23 32,33 48,15 64,20 80,6"
-              />
-              <circle cx="32" cy="33" r="2" fill="rgba(16, 185, 129, 0.4)" className="animate-ping" style={{ animationDelay: '2s' }} />
-              <circle cx="64" cy="20" r="2" fill="rgba(16, 185, 129, 0.4)" className="animate-ping" style={{ animationDelay: '4s' }} />
-            </svg>
-          </div>
-        </div>
-      </div>
+              {/* Headline with enhanced animations */}
+              <h1 id="hero-title" className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold mb-4 sm:mb-6 leading-tight tracking-tight">
+                <span className="block text-text animate-fade-in-up" style={{ animationDelay: "0.2s" }}>Your Gateway to</span>
+                <span className="block gradient-text animate-gradient-shift animate-fade-in-up" style={{ animationDelay: "0.4s" }}>Financial Freedom</span>
+              </h1>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Main Content */}
-        <div className="animate-slide-up pt-2 sm:pt-4 lg:pt-6 pb-4 sm:pb-6">
-          {/* Badge */}
-          <div className="inline-flex items-center px-3 py-2 sm:px-4 bg-surface border border-border rounded-full text-xs sm:text-sm text-textSecondary mb-6 sm:mb-8 animate-glow backdrop-blur-sm shadow-sm">
-            <Icon name="star" size="sm" color="warning" className="mr-2" />
-            <span className="hidden sm:inline">Trusted by investors worldwide</span>
-            <span className="sm:hidden">Trusted globally</span>
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="block animate-slide-up text-text">Your Gateway to</span>
-            <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-gradient-x" style={{ animationDelay: '0.2s' }}>
-              Financial Freedom
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-textSecondary max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed animate-fade-in px-2" style={{ animationDelay: '0.4s' }}>
-            Discover exclusive bonuses and deals from top crypto exchanges, stock brokers, banks, and investment platforms. 
-            Compare offers and maximize your financial potential.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16 animate-slide-up px-4" style={{ animationDelay: '0.6s' }}>
-            <Link
-              to="/deals"
-              className="group w-full sm:w-auto bg-gradient-to-r from-primary to-primaryHover px-6 sm:px-8 py-3 sm:py-4 rounded-full text-white font-semibold text-base sm:text-lg hover:shadow-2xl hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-            >
-              Explore Deals
-              <Icon name="arrowRight" size="md" className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-            </Link>
-            <Link
-              to="/about"
-              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-border rounded-full text-text font-semibold text-base sm:text-lg hover:bg-surface hover:border-primary transition-all duration-300 transform hover:scale-105"
-            >
-              Learn More
-            </Link>
-          </div>
-
-          {/* Features */}
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-6 lg:gap-8 animate-fade-in px-4" style={{ animationDelay: '0.8s' }}>
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center text-textSecondary hover:text-primary transition-colors duration-300">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg flex items-center justify-center mr-2 sm:mr-3 border border-primary/20">
-                  <Icon name={feature.icon} size="sm" color="primary" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium">{feature.text}</span>
+              {/* Subtitle with animation */}
+              <div className="content-wide">
+                <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-textSecondary max-w-3xl mx-auto mb-8 sm:mb-12 leading-relaxed container-px-xs animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
+                  Discover exclusive bonuses and deals from top crypto exchanges, stock brokers, banks, and investment platforms.
+                  Compare offers and maximize your financial potential.
+                </p>
               </div>
-            ))}
+
+              {/* CTAs with enhanced animations */}
+              <div className="flex-col-center gap-4 sm:gap-6 mb-10 sm:mb-14 container-px-md animate-fade-in-up" style={{ animationDelay: "0.8s" }}>
+                <div className="flex-col-center sm:flex-row gap-3 sm:gap-4">
+                  <button
+                    type="button"
+                    onClick={handleGetStarted}
+                    aria-label="Explore investment deals"
+                    className="btn-primary w-full sm:w-auto container-px-lg container-py-md text-base sm:text-lg group relative overflow-hidden transform hover:scale-105 transition-all duration-300"
+                  >
+                    <span className="absolute inset-0 translate-x-[-100%] bg-gradient-to-r from-white/0 via-white/20 to-white/0 group-hover:translate-x-[100%] transition-transform duration-700" />
+                    <span className="relative z-10 inline-flex items-center gap-2">
+                      <span>Explore Deals</span>
+                      <Icons.arrowRight className="w-4 h-4 sm:w-5 sm:h-5 translate-y-[0.5px] group-hover:translate-x-1 transition-transform duration-300" aria-hidden />
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleLearnMore}
+                    className="btn-secondary w-full sm:w-auto container-px-lg container-py-md text-base sm:text-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    Learn More
+                  </button>
+                </div>
+              </div>
+
+              {/* Enhanced feature icons with staggered animations */}
+              <ul className="mx-auto max-w-2xl grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 container-px-md animate-fade-in-up" style={{ animationDelay: "1s" }}>
+                {features.map((f, i) => (
+                  <li
+                    key={i}
+                    className="flex items-center justify-center gap-3 sm:gap-4 text-textSecondary hover:text-primary transition-all duration-300 group animate-fade-in-up"
+                    style={{ animationDelay: `${1.2 + i * 0.1}s` }}
+                  >
+                    {/* Enhanced icon tile with hover effects */}
+                    <span className="inline-flex items-center justify-center shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-primary/15 bg-gradient-to-r from-primary/10 to-secondary/10 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
+                      <f.icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-primary group-hover:rotate-12 transition-transform duration-300" aria-hidden />
+                    </span>
+                    <span className="text-sm sm:text-base font-medium leading-none group-hover:scale-105 transition-transform duration-300">{f.text}</span>
+                  </li>
+                ))}
+              </ul>
+              {/* ===================================== */}
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-  )
-}
 
-export default Hero
+     </section>
+  );
+};
+
+export default Hero;
