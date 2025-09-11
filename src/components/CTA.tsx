@@ -1,6 +1,5 @@
-// src/components/CTA.tsx - Updated with Heroicons
+// src/components/CTA.tsx - Refactored with Page Structure
 import React from 'react'
-// Using regular HTML elements with Tailwind classes instead of HeroUI components
 import { Icons } from './icons'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -57,103 +56,127 @@ const CTA = () => {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-warning/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-background/50 backdrop-blur-lg shadow-2xl rounded-2xl">
-          <div className="p-8 lg:p-12">
-            <div className="text-center">
-              {/* Header Chip */}
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-                <Icons.gift className="w-4 h-4" />
-                {isLoading ? (
-                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                ) : (
-                  'Exclusive Binance Deal'
-                )}
-              </div>
-              
-              {/* Main Heading */}
-              <h2 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
-                Save on Trading Fees
-                <br />
-                <span className="text-gradient">
-                  20% Discount
-                </span>
-              </h2>
-              
-              {/* Description */}
-              <div className="text-xl text-foreground/70 mb-8 max-w-3xl mx-auto">
-                {isLoading ? (
-                  <div className="space-y-2">
-                    <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
-                    <div className="h-6 w-3/4 mx-auto bg-gray-200 rounded animate-pulse" />
-                  </div>
-                ) : (
-                  <p>
-                    Join {binanceDeal.reviews.toLocaleString()} traders who rated Binance {binanceDeal.rating}/5 stars. Get exclusive 20% off trading fees for new users.
-                  </p>
-                )}
-              </div>
-
-              {/* Binance Deal Card */}
-              <div className="mb-8 max-w-2xl mx-auto hover:shadow-lg transition-shadow bg-white rounded-xl border border-gray-200">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium capitalize">
-                        {binanceDeal.deal_type}
-                      </span>
-                      <div className="flex items-center">
-                        <Icons.star className="w-4 h-4 text-warning fill-current" />
-                        <span className="text-sm text-foreground/70 ml-1">
-                          {binanceDeal.rating} ({binanceDeal.reviews.toLocaleString()} reviews)
-                        </span>
+    <section className="page-section relative overflow-hidden section-py-2xl section-transition component-fade-in">
+      
+      <div className="container-page relative z-10">
+        {/* Main CTA Container */}
+        <div className="content-full">
+          <div className="glass rounded-3xl shadow-2xl overflow-hidden transform transition-all duration-700 hover:scale-[1.02] hover:shadow-3xl border-border animate-scale-in">
+            
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-50"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-secondary/10 to-transparent rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10 p-8 lg:p-12">
+              <div className="flex-col-center text-center">
+                
+                {/* Header Badge */}
+                <div className="inline-flex items-center gap-3 bg-primary/10 border border-primary/20 text-primary container-px-lg container-py-sm rounded-full text-sm font-semibold mb-8 glass transform transition-all duration-500 hover:scale-105 hover:bg-primary/15 hover:border-primary/30 animate-fade-in-up">
+                  <Icons.gift className="w-5 h-5 animate-bounce" style={{ animationDuration: '2s' }} />
+                  {isLoading ? (
+                    <div className="h-5 w-32 bg-primary/20 rounded animate-pulse" />
+                  ) : (
+                    'Exclusive Binance Deal'
+                  )}
+                </div>
+                
+                {/* Main Heading */}
+                <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-text mb-8 leading-tight">
+                  <span className="block transform transition-all duration-700 hover:scale-105">
+                    Save on Trading Fees
+                  </span>
+                  <br />
+                  <span className="gradient-text animate-gradient-x transform transition-all duration-700 hover:scale-110 inline-block">
+                    20% Discount
+                  </span>
+                </h2>
+                
+                {/* Description */}
+                <div className="content-wide">
+                  <div className="text-xl text-textSecondary mb-12 leading-relaxed">
+                    {isLoading ? (
+                      <div className="space-y-3">
+                        <div className="h-6 w-full bg-default-200 rounded animate-pulse" />
+                        <div className="h-6 w-3/4 mx-auto bg-default-200 rounded animate-pulse" />
                       </div>
-                    </div>
-                    <div className="text-2xl font-bold text-secondary">
-                      {binanceDeal.value}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-foreground mb-2">
-                    {binanceDeal.title}
-                  </h3>
-                  
-                  <p className="text-foreground/70 mb-4">
-                    {binanceDeal.description}
-                  </p>
-                  
-                  <div className="text-center">
-                    <span className="text-sm text-foreground/70">
-                      Trusted by {binanceDeal.reviews.toLocaleString()}+ users worldwide
-                    </span>
+                    ) : (
+                      <p>
+                        Join {binanceDeal.reviews.toLocaleString()} traders who rated Binance {binanceDeal.rating}/5 stars. Get exclusive 20% off trading fees for new users.
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Main Action Button */}
-              <div className="mb-8">
-                <button 
-                  onClick={handleMainAction}
-                  className="px-12 py-6 text-xl font-bold bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center gap-3 mx-auto"
-                >
-                  <Icons.externalLink className="w-6 h-6" />
-                  Get Binance Deal Now
-                  <Icons.arrowRight className="w-6 h-6" />
-                </button>
-              </div>
+                {/* Deal Card */}
+                <div className="mb-12 content-wide">
+                  <div className="card-feature hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:scale-[1.02] transform group relative overflow-hidden">
+                    
+                    <div className="flex-between mb-6 gap-4 flex-col sm:flex-row">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="bg-primary/10 border border-primary/20 text-primary container-px-md container-py-sm rounded-full text-sm font-semibold capitalize">
+                          {binanceDeal.deal_type}
+                        </span>
+                        <div className="flex-center gap-2">
+                          <Icons.star className="w-5 h-5 text-warning fill-current" />
+                          <span className="text-sm text-textSecondary font-medium">
+                            {binanceDeal.rating} ({binanceDeal.reviews.toLocaleString()} reviews)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-3xl font-bold gradient-text">
+                        {binanceDeal.value}
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold text-text mb-4">
+                      {binanceDeal.title}
+                    </h3>
+                    
+                    <p className="text-textSecondary mb-6 leading-relaxed">
+                      {binanceDeal.description}
+                    </p>
+                    
+                    <div className="flex-center gap-2 text-sm text-textSecondary">
+                      <Icons.users className="w-4 h-4" />
+                      <span>Trusted by {binanceDeal.reviews.toLocaleString()}+ users worldwide</span>
+                    </div>
+                    
+                    {/* Animated Background Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  </div>
+                </div>
 
-              {/* Footer */}
-              <div className="text-center space-y-2">
-                <p className="text-sm text-foreground/70">
-                  * 20% fee discount valid for 30 days. New verified users only.
-                </p>
-                <button
-                  onClick={() => navigate('/deals')}
-                  className="text-primary hover:text-primary/80 underline text-sm font-medium transition-colors"
-                >
-                  Browse all deals instead
-                </button>
+                {/* Main Action Button */}
+                <div className="my-2xl">
+                  <button 
+                    onClick={handleMainAction}
+                    className="btn-primary text-xl container-px-2xl container-py-lg group relative overflow-hidden transform hover:scale-110 hover:rotate-1"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                    <div className="flex-center gap-4 relative z-10">
+                      <Icons.externalLink className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
+                      <span>Get Binance Deal Now</span>
+                      <Icons.arrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                    </div>
+                    
+                    {/* Pulsing Ring Effect */}
+                    <div className="absolute inset-0 border-2 border-white/30 rounded-2xl opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 animate-pulse-glow"></div>
+                  </button>
+                </div>
+
+                {/* Footer */}
+                <div className="flex-col-center space-y-4 mt-xl">
+                  <p className="text-sm text-textSecondary glass border border-border rounded-full container-px-lg container-py-sm">
+                    * 20% fee discount valid for 30 days. New verified users only.
+                  </p>
+                  <button
+                    onClick={() => navigate('/deals')}
+                    className="text-primary hover:text-primary/80 underline text-sm font-medium transition-colors hover:bg-primary/5 container-px-md container-py-sm rounded-lg"
+                  >
+                    Browse all deals instead
+                  </button>
+                </div>
               </div>
             </div>
           </div>
