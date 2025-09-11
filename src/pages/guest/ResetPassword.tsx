@@ -94,14 +94,14 @@ const ResetPassword = () => {
 
   return (
     <GuestLayout>
-      <div className="min-h-screen flex items-center justify-center py-16">
-        <div className="max-w-md w-full mx-4">
-          <div className="bg-surface rounded-2xl p-8 border border-border">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center py-20">
+        <div className="max-w-md w-full container-p-md">
+          <div className="bg-content1 rounded-2xl container-p-2xl border border-border">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6">
                 <Icons.lock className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-3">
                 Set New Password
               </h1>
               <p className="text-foreground/70">
@@ -109,9 +109,9 @@ const ResetPassword = () => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label className="block text-sm font-medium text-foreground mb-3">
                   New Password
                 </label>
                 <div className="relative">
@@ -120,7 +120,7 @@ const ResetPassword = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full pl-10 pr-12 py-3 bg-background border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                    className={`w-full pl-10 pr-12 container-py-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
                       errors.password ? 'border-red-500' : 'border-border'
                     }`}
                     placeholder="Enter your new password"
@@ -142,7 +142,7 @@ const ResetPassword = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
+                <label className="block text-sm font-medium text-foreground mb-3">
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -151,7 +151,7 @@ const ResetPassword = () => {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`w-full pl-10 pr-12 py-3 bg-background border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
+                    className={`w-full pl-10 pr-12 container-py-sm bg-background border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all ${
                       errors.confirmPassword ? 'border-red-500' : 'border-border'
                     }`}
                     placeholder="Confirm your new password"
@@ -175,7 +175,7 @@ const ResetPassword = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 rounded-lg font-medium hover:from-primary/90 hover:to-secondary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-primary to-secondary text-white container-py-sm rounded-lg font-medium hover:from-primary/90 hover:to-secondary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -188,7 +188,7 @@ const ResetPassword = () => {
               </button>
             </form>
 
-            <div className="mt-6 text-center">
+            <div className="mt-8 text-center">
               <button
                 onClick={() => navigate('/')}
                 className="text-foreground/70 hover:text-primary transition-colors text-sm"

@@ -14,7 +14,7 @@ import {
   useCategoriesQuery, 
   useCategoryStatsQuery, 
   useCategoryInfoQuery 
-} from '../../hooks/queries/useCategoriesQuery'
+} from '../../hooks/queries/useDealsQuery'
 
 interface Filters {
   searchTerm: string
@@ -408,10 +408,12 @@ const Deals = () => {
             <Icons.users className="w-6 h-6 text-blue-600" />
             <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
-            Every company is verified, regulated, and trusted by our trading community.
-          </p>
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-gray-600 max-w-3xl mx-auto mb-6 text-lg leading-relaxed">
+              {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
+              Every company is verified, regulated, and trusted by our trading community.
+            </p>
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
             {categories
               .filter(cat => cat.value !== 'all')

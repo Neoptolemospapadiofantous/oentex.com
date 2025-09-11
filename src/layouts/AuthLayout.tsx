@@ -223,7 +223,23 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
+    <div className="h-screen flex overflow-hidden bg-gradient-to-br from-primary/5 via-background to-secondary/5 relative layout-transition">
+      {/* Unified background elements for auth pages */}
+      <div
+        className="absolute inset-0 opacity-25 pointer-events-none"
+        aria-hidden="true"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%231e40af' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}
+      />
+      
+      {/* Floating gradient orbs for auth pages */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div className="absolute w-60 h-60 sm:w-80 sm:h-80 rounded-full blur-3xl bg-gradient-to-r from-primary/10 to-secondary/10 animate-float" />
+        <div className="absolute w-40 h-40 sm:w-60 sm:h-60 rounded-full blur-3xl bg-gradient-to-r from-accent/10 to-primary/10 animate-float" style={{ animationDelay: "1.8s" }} />
+        <div className="absolute w-32 h-32 sm:w-48 sm:h-48 rounded-full blur-3xl bg-gradient-to-r from-secondary/10 to-accent/10 animate-float" style={{ animationDelay: "3.2s" }} />
+      </div>
+
       <ToastContainer position="top-right" topAnchorSelector="#auth-topbar" topMargin={8} />
       <Sidebar 
         isMobileOpen={isMobileMenuOpen}
@@ -231,7 +247,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       />
       
       {/* Main Content - Mobile Optimized */}
-      <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden relative z-10">
         {/* Top Bar - Mobile Optimized */}
         <header id="auth-topbar" className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">

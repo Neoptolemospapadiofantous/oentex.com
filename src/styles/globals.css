@@ -1,16 +1,671 @@
-/* src/styles/globals.css - CORRECTED PATHS */
+/* src/styles/globals.css - Enhanced with Page Structure */
 @import "tailwindcss";
 
-/* ✅ FIXED: Correct relative path from globals.css to hero.ts */
+/* ✅ HeroUI Theme Integration */
 @plugin './theme/hero.ts';
-
-/* ✅ SIMPLIFIED: Let Tailwind auto-detect HeroUI sources */
 @source '../../node_modules/@heroui';
-
-/* Dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
-/* Base styles */
+/* ===========================
+   🎨 THEME PADDING UTILITIES
+   ========================== */
+
+/* Padding tokens from theme */
+:root {
+  /* Base padding scale */
+  --heroui-padding-xs: 0.25rem;    /* 4px */
+  --heroui-padding-sm: 0.5rem;     /* 8px */
+  --heroui-padding-md: 1rem;       /* 16px */
+  --heroui-padding-lg: 1.5rem;     /* 24px */
+  --heroui-padding-xl: 2rem;       /* 32px */
+  --heroui-padding-2xl: 2.5rem;    /* 40px */
+  --heroui-padding-3xl: 3rem;      /* 48px */
+  --heroui-padding-4xl: 4rem;      /* 64px */
+  --heroui-padding-5xl: 5rem;      /* 80px */
+  --heroui-padding-6xl: 6rem;      /* 96px */
+  
+  /* Section padding scale */
+  --heroui-section-padding-xs: 1rem;       /* 16px */
+  --heroui-section-padding-sm: 1.5rem;     /* 24px */
+  --heroui-section-padding-md: 2rem;       /* 32px */
+  --heroui-section-padding-lg: 2.5rem;     /* 40px */
+  --heroui-section-padding-xl: 3rem;       /* 48px */
+  --heroui-section-padding-2xl: 4rem;      /* 64px */
+  --heroui-section-padding-3xl: 5rem;      /* 80px */
+  --heroui-section-padding-4xl: 6rem;      /* 96px */
+  
+  /* Container padding scale */
+  --heroui-container-padding-xs: 0.5rem;   /* 8px */
+  --heroui-container-padding-sm: 1rem;     /* 16px */
+  --heroui-container-padding-md: 1.5rem;   /* 24px */
+  --heroui-container-padding-lg: 2rem;     /* 32px */
+  --heroui-container-padding-xl: 2.5rem;   /* 40px */
+  --heroui-container-padding-2xl: 3rem;    /* 48px */
+}
+
+/* ===========================
+   🏗️ PAGE STRUCTURE SYSTEM
+   ========================== */
+
+/* Base container system - matches your current usage */
+.container-page {
+  width: 100%;
+  max-width: 1280px; /* 7xl equivalent */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-page {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-page {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Section spacing system - Improved consistency */
+.section {
+  padding-top: 4rem; /* py-16 */
+  padding-bottom: 4rem;
+}
+
+.section-sm {
+  padding-top: 2.5rem; /* py-10 */
+  padding-bottom: 2.5rem;
+}
+
+.section-lg {
+  padding-top: 5rem; /* py-20 */
+  padding-bottom: 5rem;
+}
+
+.section-xl {
+  padding-top: 6rem; /* py-24 */
+  padding-bottom: 6rem;
+}
+
+/* Page section spacing - More consistent */
+.page-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background-color: transparent;
+  position: relative;
+}
+
+
+.page-section-alt {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background-color: hsl(var(--heroui-content1));
+}
+
+.page-hero {
+  padding-top: 0;
+  padding-bottom: 0;
+  background: transparent;
+}
+
+/* Content width variants */
+.content-narrow {
+  max-width: 48rem; /* max-w-3xl */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-wide {
+  max-width: 64rem; /* max-w-5xl */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.content-full {
+  max-width: 80rem; /* max-w-7xl */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===========================
+   🎨 PADDING UTILITY CLASSES
+   ========================== */
+
+/* Base padding utilities using theme tokens */
+.p-xs { padding: var(--heroui-padding-xs); }
+.p-sm { padding: var(--heroui-padding-sm); }
+.p-md { padding: var(--heroui-padding-md); }
+.p-lg { padding: var(--heroui-padding-lg); }
+.p-xl { padding: var(--heroui-padding-xl); }
+.p-2xl { padding: var(--heroui-padding-2xl); }
+.p-3xl { padding: var(--heroui-padding-3xl); }
+.p-4xl { padding: var(--heroui-padding-4xl); }
+.p-5xl { padding: var(--heroui-padding-5xl); }
+.p-6xl { padding: var(--heroui-padding-6xl); }
+
+/* Horizontal padding utilities */
+.px-xs { padding-left: var(--heroui-padding-xs); padding-right: var(--heroui-padding-xs); }
+.px-sm { padding-left: var(--heroui-padding-sm); padding-right: var(--heroui-padding-sm); }
+.px-md { padding-left: var(--heroui-padding-md); padding-right: var(--heroui-padding-md); }
+.px-lg { padding-left: var(--heroui-padding-lg); padding-right: var(--heroui-padding-lg); }
+.px-xl { padding-left: var(--heroui-padding-xl); padding-right: var(--heroui-padding-xl); }
+.px-2xl { padding-left: var(--heroui-padding-2xl); padding-right: var(--heroui-padding-2xl); }
+.px-3xl { padding-left: var(--heroui-padding-3xl); padding-right: var(--heroui-padding-3xl); }
+.px-4xl { padding-left: var(--heroui-padding-4xl); padding-right: var(--heroui-padding-4xl); }
+.px-5xl { padding-left: var(--heroui-padding-5xl); padding-right: var(--heroui-padding-5xl); }
+.px-6xl { padding-left: var(--heroui-padding-6xl); padding-right: var(--heroui-padding-6xl); }
+
+/* Vertical padding utilities */
+.py-xs { padding-top: var(--heroui-padding-xs); padding-bottom: var(--heroui-padding-xs); }
+.py-sm { padding-top: var(--heroui-padding-sm); padding-bottom: var(--heroui-padding-sm); }
+.py-md { padding-top: var(--heroui-padding-md); padding-bottom: var(--heroui-padding-md); }
+.py-lg { padding-top: var(--heroui-padding-lg); padding-bottom: var(--heroui-padding-lg); }
+.py-xl { padding-top: var(--heroui-padding-xl); padding-bottom: var(--heroui-padding-xl); }
+.py-2xl { padding-top: var(--heroui-padding-2xl); padding-bottom: var(--heroui-padding-2xl); }
+.py-3xl { padding-top: var(--heroui-padding-3xl); padding-bottom: var(--heroui-padding-3xl); }
+.py-4xl { padding-top: var(--heroui-padding-4xl); padding-bottom: var(--heroui-padding-4xl); }
+.py-5xl { padding-top: var(--heroui-padding-5xl); padding-bottom: var(--heroui-padding-5xl); }
+.py-6xl { padding-top: var(--heroui-padding-6xl); padding-bottom: var(--heroui-padding-6xl); }
+
+/* Section padding utilities */
+.section-p-xs { padding: var(--heroui-section-padding-xs); }
+.section-p-sm { padding: var(--heroui-section-padding-sm); }
+.section-p-md { padding: var(--heroui-section-padding-md); }
+.section-p-lg { padding: var(--heroui-section-padding-lg); }
+.section-p-xl { padding: var(--heroui-section-padding-xl); }
+.section-p-2xl { padding: var(--heroui-section-padding-2xl); }
+.section-p-3xl { padding: var(--heroui-section-padding-3xl); }
+.section-p-4xl { padding: var(--heroui-section-padding-4xl); }
+
+.section-px-xs { padding-left: var(--heroui-section-padding-xs); padding-right: var(--heroui-section-padding-xs); }
+.section-px-sm { padding-left: var(--heroui-section-padding-sm); padding-right: var(--heroui-section-padding-sm); }
+.section-px-md { padding-left: var(--heroui-section-padding-md); padding-right: var(--heroui-section-padding-md); }
+.section-px-lg { padding-left: var(--heroui-section-padding-lg); padding-right: var(--heroui-section-padding-lg); }
+.section-px-xl { padding-left: var(--heroui-section-padding-xl); padding-right: var(--heroui-section-padding-xl); }
+.section-px-2xl { padding-left: var(--heroui-section-padding-2xl); padding-right: var(--heroui-section-padding-2xl); }
+.section-px-3xl { padding-left: var(--heroui-section-padding-3xl); padding-right: var(--heroui-section-padding-3xl); }
+.section-px-4xl { padding-left: var(--heroui-section-padding-4xl); padding-right: var(--heroui-section-padding-4xl); }
+
+.section-py-xs { padding-top: var(--heroui-section-padding-xs); padding-bottom: var(--heroui-section-padding-xs); }
+.section-py-sm { padding-top: var(--heroui-section-padding-sm); padding-bottom: var(--heroui-section-padding-sm); }
+.section-py-md { padding-top: var(--heroui-section-padding-md); padding-bottom: var(--heroui-section-padding-md); }
+.section-py-lg { padding-top: var(--heroui-section-padding-lg); padding-bottom: var(--heroui-section-padding-lg); }
+.section-py-xl { padding-top: var(--heroui-section-padding-xl); padding-bottom: var(--heroui-section-padding-xl); }
+.section-py-2xl { padding-top: var(--heroui-section-padding-2xl); padding-bottom: var(--heroui-section-padding-2xl); }
+.section-py-3xl { padding-top: var(--heroui-section-padding-3xl); padding-bottom: var(--heroui-section-padding-3xl); }
+.section-py-4xl { padding-top: var(--heroui-section-padding-4xl); padding-bottom: var(--heroui-section-padding-4xl); }
+
+/* Container padding utilities */
+.container-p-xs { padding: var(--heroui-container-padding-xs); }
+.container-p-sm { padding: var(--heroui-container-padding-sm); }
+.container-p-md { padding: var(--heroui-container-padding-md); }
+.container-p-lg { padding: var(--heroui-container-padding-lg); }
+.container-p-xl { padding: var(--heroui-container-padding-xl); }
+.container-p-2xl { padding: var(--heroui-container-padding-2xl); }
+
+.container-px-xs { padding-left: var(--heroui-container-padding-xs); padding-right: var(--heroui-container-padding-xs); }
+.container-px-sm { padding-left: var(--heroui-container-padding-sm); padding-right: var(--heroui-container-padding-sm); }
+.container-px-md { padding-left: var(--heroui-container-padding-md); padding-right: var(--heroui-container-padding-md); }
+.container-px-lg { padding-left: var(--heroui-container-padding-lg); padding-right: var(--heroui-container-padding-lg); }
+.container-px-xl { padding-left: var(--heroui-container-padding-xl); padding-right: var(--heroui-container-padding-xl); }
+.container-px-2xl { padding-left: var(--heroui-container-padding-2xl); padding-right: var(--heroui-container-padding-2xl); }
+
+.container-py-xs { padding-top: var(--heroui-container-padding-xs); padding-bottom: var(--heroui-container-padding-xs); }
+.container-py-sm { padding-top: var(--heroui-container-padding-sm); padding-bottom: var(--heroui-container-padding-sm); }
+.container-py-md { padding-top: var(--heroui-container-padding-md); padding-bottom: var(--heroui-container-padding-md); }
+.container-py-lg { padding-top: var(--heroui-container-padding-lg); padding-bottom: var(--heroui-container-padding-lg); }
+.container-py-xl { padding-top: var(--heroui-container-padding-xl); padding-bottom: var(--heroui-container-padding-xl); }
+.container-py-2xl { padding-top: var(--heroui-container-padding-2xl); padding-bottom: var(--heroui-container-padding-2xl); }
+
+/* ===========================
+   🎨 ADDITIONAL SPACING UTILITIES
+   ========================== */
+
+/* Gap utilities using theme padding */
+.gap-xs { gap: var(--heroui-padding-xs); }
+.gap-sm { gap: var(--heroui-padding-sm); }
+.gap-md { gap: var(--heroui-padding-md); }
+.gap-lg { gap: var(--heroui-padding-lg); }
+.gap-xl { gap: var(--heroui-padding-xl); }
+.gap-2xl { gap: var(--heroui-padding-2xl); }
+.gap-3xl { gap: var(--heroui-padding-3xl); }
+.gap-4xl { gap: var(--heroui-padding-4xl); }
+
+/* Margin utilities using theme padding */
+.m-xs { margin: var(--heroui-padding-xs); }
+.m-sm { margin: var(--heroui-padding-sm); }
+.m-md { margin: var(--heroui-padding-md); }
+.m-lg { margin: var(--heroui-padding-lg); }
+.m-xl { margin: var(--heroui-padding-xl); }
+.m-2xl { margin: var(--heroui-padding-2xl); }
+.m-3xl { margin: var(--heroui-padding-3xl); }
+.m-4xl { margin: var(--heroui-padding-4xl); }
+
+.mx-xs { margin-left: var(--heroui-padding-xs); margin-right: var(--heroui-padding-xs); }
+.mx-sm { margin-left: var(--heroui-padding-sm); margin-right: var(--heroui-padding-sm); }
+.mx-md { margin-left: var(--heroui-padding-md); margin-right: var(--heroui-padding-md); }
+.mx-lg { margin-left: var(--heroui-padding-lg); margin-right: var(--heroui-padding-lg); }
+.mx-xl { margin-left: var(--heroui-padding-xl); margin-right: var(--heroui-padding-xl); }
+.mx-2xl { margin-left: var(--heroui-padding-2xl); margin-right: var(--heroui-padding-2xl); }
+.mx-3xl { margin-left: var(--heroui-padding-3xl); margin-right: var(--heroui-padding-3xl); }
+.mx-4xl { margin-left: var(--heroui-padding-4xl); margin-right: var(--heroui-padding-4xl); }
+
+.my-xs { margin-top: var(--heroui-padding-xs); margin-bottom: var(--heroui-padding-xs); }
+.my-sm { margin-top: var(--heroui-padding-sm); margin-bottom: var(--heroui-padding-sm); }
+.my-md { margin-top: var(--heroui-padding-md); margin-bottom: var(--heroui-padding-md); }
+.my-lg { margin-top: var(--heroui-padding-lg); margin-bottom: var(--heroui-padding-lg); }
+.my-xl { margin-top: var(--heroui-padding-xl); margin-bottom: var(--heroui-padding-xl); }
+.my-2xl { margin-top: var(--heroui-padding-2xl); margin-bottom: var(--heroui-padding-2xl); }
+.my-3xl { margin-top: var(--heroui-padding-3xl); margin-bottom: var(--heroui-padding-3xl); }
+.my-4xl { margin-top: var(--heroui-padding-4xl); margin-bottom: var(--heroui-padding-4xl); }
+
+/* ===========================
+   🎯 LAYOUT COMPONENTS
+   ========================== */
+
+/* 12-Column Grid System for Footer and other components */
+.grid-footer {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--heroui-padding-2xl);
+}
+
+.grid-footer-brand {
+  grid-column: span 12;
+}
+
+.grid-footer-nav {
+  grid-column: span 12;
+}
+
+@media (min-width: 768px) {
+  .grid-footer-brand {
+    grid-column: span 6;
+  }
+  
+  .grid-footer-nav {
+    grid-column: span 6;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-footer-brand {
+    grid-column: span 5;
+  }
+  
+  .grid-footer-nav {
+    grid-column: span 2;
+  }
+  
+  .grid-footer-nav:last-child {
+    grid-column: span 3;
+  }
+}
+
+/* Removed duplicate page layouts - now defined above */
+
+/* Card grids - optimized for your Features component */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--heroui-padding-xl);
+}
+
+@media (min-width: 768px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--heroui-padding-3xl);
+  }
+}
+
+/* Enhanced responsive grid for deals/features */
+.grid-deals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+  gap: var(--heroui-padding-lg);
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .grid-deals {
+    grid-template-columns: repeat(auto-fit, minmax(380px, 420px));
+    gap: var(--heroui-padding-xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-deals {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 450px));
+    gap: var(--heroui-padding-xl);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-deals {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 450px));
+    gap: var(--heroui-padding-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+/* Stats grid - improved spacing */
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--heroui-padding-xl);
+  justify-items: center;
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  place-items: center;
+}
+
+@media (min-width: 640px) {
+  .grid-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+    justify-content: center;
+  }
+}
+
+/* 4-column stats grid for Features component */
+.grid-stats-4 {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: var(--heroui-padding-xl);
+  justify-items: center;
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  place-items: center;
+}
+
+@media (min-width: 640px) {
+  .grid-stats-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-stats-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-stats-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--heroui-padding-2xl);
+    justify-content: center;
+  }
+}
+
+/* ===========================
+   📱 FLEXBOX UTILITIES
+   ========================== */
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===========================
+   🎨 COMPONENT PATTERNS
+   ========================== */
+
+/* Card styles for your trading components - Improved spacing */
+.card-feature {
+  background: hsl(var(--heroui-content1) / 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: var(--heroui-padding-xl);
+  border: 1px solid hsl(var(--heroui-divider));
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.card-feature:hover {
+  border-color: hsl(var(--heroui-primary) / 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px hsl(var(--heroui-primary) / 0.15);
+}
+
+.card-deal {
+  background: hsl(var(--heroui-content1) / 0.6);
+  backdrop-filter: blur(16px);
+  border-radius: 1.5rem;
+  padding: var(--heroui-padding-2xl);
+  border: 1px solid hsl(var(--heroui-divider) / 0.5);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-deal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, hsl(var(--heroui-primary)), hsl(var(--heroui-secondary)));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-deal:hover {
+  border-color: hsl(var(--heroui-primary) / 0.6);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px hsl(var(--heroui-primary) / 0.15);
+  background: hsl(var(--heroui-content1) / 0.8);
+}
+
+.card-deal:hover::before {
+  opacity: 1;
+}
+
+/* Button patterns */
+.btn-primary {
+  background: linear-gradient(135deg, hsl(var(--heroui-primary)), hsl(var(--heroui-secondary)));
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 8px 25px hsl(var(--heroui-primary) / 0.25);
+  transform: translateY(-2px);
+}
+
+/* Gradient text - matches your current usage */
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--heroui-primary)), hsl(var(--heroui-secondary)));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass effect - matches your backdrop-blur usage */
+.glass {
+  background: hsl(var(--heroui-background) / 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--heroui-divider));
+}
+
+/* ===========================
+   📏 SPACING UTILITIES
+   ========================== */
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.space-y-6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-y-8 > * + * {
+  margin-top: 2rem;
+}
+
+.space-x-3 > * + * {
+  margin-left: 0.75rem;
+}
+
+.space-x-4 > * + * {
+  margin-left: 1rem;
+}
+
+/* ===========================
+   🎭 ENHANCED ANIMATIONS
+   ========================== */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--heroui-primary) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--heroui-primary) / 0.6);
+  }
+}
+
+/* Animation classes */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ===========================
+   🏗️ BASE STYLES
+   ========================== */
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -27,6 +682,18 @@ body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: hsl(var(--heroui-background));
+  color: hsl(var(--heroui-foreground));
+}
+
+/* Apply dark theme by default */
+html {
+  color-scheme: dark;
+}
+
+html.dark,
+html:not(.light) {
+  color-scheme: dark;
 }
 
 /* Custom scrollbar using HeroUI CSS variables */
@@ -92,13 +759,204 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  
+  .animate-float,
+  .animate-gradient-x,
+  .animate-fade-in-up,
+  .animate-slide-in-left,
+  .animate-scale-in,
+  .animate-pulse-glow {
+    animation: none !important;
+  }
 }
 
 /* Ensure proper theming */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 .dark {
   color-scheme: dark;
+}
+
+/* === Centered Section Helper === */
+.page-section-center {
+  min-height: 70vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+
+/* Removed duplicate grid-stats - now defined above */
+
+
+/* === Hover Shine Effect === */
+.shine { position: relative; overflow: hidden; }
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: -200% -50% auto auto;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.18) 50%, transparent 100%);
+  transform: translateX(-120%) rotate(12deg);
+  transition: transform .6s ease;
+}
+.shine:hover::after { transform: translateX(180%) rotate(12deg); }
+
+
+/* === Gradient Divider === */
+.divider-gradient {
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0) 0%,
+    hsl(var(--heroui-divider)) 20%,
+    hsl(var(--heroui-primary)) 50%,
+    hsl(var(--heroui-divider)) 80%,
+    rgba(0,0,0,0) 100%);
+  height: 1px;
+  width: 100%;
+}
+
+
+/* === Animation Aliases (robust) === */
+@keyframes gradientX {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradientX { animation: gradientX 3s ease-in-out infinite; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(50px);} to { opacity: 1; transform: translateY(0);} }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(30px);} to { opacity: 1; transform: translateX(0);} }
+@keyframes slideInBottom { from { opacity: 0; transform: translateY(30px);} to { opacity: 1; transform: translateY(0);} }
+@keyframes scaleIn { from { opacity: 0; transform: scale(.9);} to { opacity: 1; transform: scale(1);} }
+
+.animate-fade-in { animation: fadeIn 0.6s ease-out; }
+.animate-slide-up { animation: slideUp 0.8s ease-out; }
+.animate-slide-in-right { animation: slideInRight 0.6s ease-out; }
+.animate-slide-in-bottom { animation: slideInBottom 0.6s ease-out; }
+.animate-scale-in { animation: scaleIn 0.6s ease-out; }
+
+/* Background transitions */
+.bg-transition {
+  transition: background-color 0.6s ease, background-image 0.6s ease;
+}
+
+/* Smooth background changes between pages */
+.layout-transition {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Component accent transitions - smoother blending */
+.accent-transition {
+  transition: background-color 0.8s ease, opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Smooth component transitions */
+.component-transition {
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Gradual fade between sections */
+.section-blend {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(var(--heroui-primary-rgb), 0.02) 20%,
+    rgba(var(--heroui-secondary-rgb), 0.02) 50%,
+    rgba(var(--heroui-accent-rgb), 0.02) 80%,
+    transparent 100%
+  );
+}
+
+/* Smooth section transitions */
+.section-transition {
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+
+/* Component fade-in effect */
+.component-fade-in {
+  animation: componentFadeIn 1.2s ease-out;
+}
+
+@keyframes componentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced floating animations */
+@keyframes floatEnhanced {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-15px) rotate(0.5deg);
+  }
+}
+
+@keyframes floatLight {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced animation classes */
+.animate-float-enhanced {
+  animation: floatEnhanced 6s ease-in-out infinite;
+}
+
+.animate-float-light {
+  animation: floatLight 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Gradient text animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
 }

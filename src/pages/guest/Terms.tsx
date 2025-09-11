@@ -282,7 +282,7 @@ const Terms = () => {
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-7xl mx-auto container-p-2xl text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Terms of Service
             </h1>
@@ -295,12 +295,12 @@ const Terms = () => {
 
         {/* Content */}
         <section className="py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="space-y-8">
+          <div className="max-w-4xl mx-auto container-p-2xl">
+            <div className="space-y-12">
               {sections.map((section, index) => (
-                <div key={section.id} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
-                  <div className="p-8">
-                    <div className="flex items-center space-x-4 mb-6">
+                <div key={section.id} className="bg-content1 rounded-2xl border border-border overflow-hidden">
+                  <div className="container-p-2xl">
+                    <div className="flex items-center space-x-6 mb-8">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
                         {section.icon}
                       </div>
@@ -317,11 +317,11 @@ const Terms = () => {
             </div>
 
             {/* Footer Notice */}
-            <div className="mt-16 p-6 bg-warning/10 border border-warning/30 rounded-2xl">
-              <div className="flex items-start space-x-3">
-                <Icons.warning className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
+            <div className="mt-20 container-p-lg bg-warning/10 border border-warning/30 rounded-2xl">
+              <div className="flex items-start space-x-4">
+                <Icons.warning className="w-6 h-6 text-warning flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Important Legal Notice</h3>
+                  <h3 className="font-semibold text-foreground mb-3">Important Legal Notice</h3>
                   <p className="text-foreground/70 text-sm leading-relaxed">
                     These Terms of Service constitute a legally binding agreement between you and RateWise LLC. 
                     By using our service, you acknowledge that you have read, understood, and agree to be bound by these terms. 

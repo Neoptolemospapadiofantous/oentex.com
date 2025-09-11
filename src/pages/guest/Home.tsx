@@ -10,10 +10,18 @@ const Home = () => {
     <GuestLayout>
       <div className="min-h-screen">
         <Hero />
-        <Features />
-        <Stats />
-        <Newsletter />
-        <CTA />
+        <div className="section-py-xl">
+          <Features />
+        </div>
+        <div className="section-py-xl">
+          <Stats />
+        </div>
+        <div className="section-py-xl">
+          <Newsletter />
+        </div>
+        <div className="section-py-xl">
+          <CTA />
+        </div>
       </div>
     </GuestLayout>
   )
