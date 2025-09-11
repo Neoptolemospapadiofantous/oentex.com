@@ -75,7 +75,7 @@ export const DealCard: React.FC<DealCardProps> = ({
         {[1, 2, 3, 4, 5].map((starNumber) => {
           if (rating >= starNumber) {
             return (
-              <Star
+              <Icons.star
                 key={starNumber}
                 className={`${size} fill-yellow-400 text-yellow-400`}
               />
@@ -84,18 +84,18 @@ export const DealCard: React.FC<DealCardProps> = ({
             const fillPercentage = (rating - (starNumber - 1)) * 100
             return (
               <div key={starNumber} className="relative">
-                <Star className={`${size} text-gray-300`} />
+                <Icons.star className={`${size} text-gray-300`} />
                 <div 
                   className="absolute inset-0 overflow-hidden"
                   style={{ width: `${fillPercentage}%` }}
                 >
-                  <Star className={`${size} text-yellow-400 fill-yellow-400`} />
+                  <Icons.star className={`${size} text-yellow-400 fill-yellow-400`} />
                 </div>
               </div>
             )
           } else {
             return (
-              <Star
+              <Icons.star
                 key={starNumber}
                 className={`${size} text-gray-300`}
               />
@@ -111,7 +111,7 @@ export const DealCard: React.FC<DealCardProps> = ({
     if (!showTermsModal) return null
 
     // Helper function to format terms array into readable content
-    const formatTermsContent = (terms) => {
+    const formatTermsContent = (terms: any) => {
       if (!terms) return []
       
       // Handle both array and string formats
@@ -122,41 +122,76 @@ export const DealCard: React.FC<DealCardProps> = ({
     const formattedTerms = formatTermsContent(deal.terms)
 
     return (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 container-p-lg animate-in fade-in duration-300">
+        <div className="bg-content1 rounded-3xl w-full max-w-4xl max-h-[95vh] overflow-hidden shadow-2xl border border-border/50 animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 mx-auto">
           
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icons.document className="w-4 h-4 text-white" />
+          <div className="relative bg-gradient-to-r from-primary/5 via-secondary/3 to-primary/5 container-p-2xl container-pb-lg border-b border-border/30 overflow-hidden">
+            {/* Animated background pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/3 via-transparent to-secondary/3 animate-pulse"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-secondary/10 to-transparent rounded-full blur-xl"></div>
+            
+            <div className="relative flex items-center justify-center mt-lg">
+              <div className="flex items-center gap-lg flex-1 min-w-0 justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group/icon">
+                  <Icons.document className="w-6 h-6 text-white group-hover/icon:scale-110 transition-transform duration-300" />
+                </div>
+                <div className="min-w-0 flex-1 text-center">
+                  <h3 className="text-2xl font-bold text-foreground bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text mb-sm">
+                    Terms & Conditions
+                  </h3>
+                  <p className="text-base text-foreground/60 font-medium">{deal.company_name}</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 truncate">Terms & Conditions</h3>
-                <p className="text-sm text-gray-600 truncate">{deal.company_name}</p>
-              </div>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="absolute top-4 right-4 container-p-md hover:bg-content2 rounded-xl transition-all duration-200 flex-shrink-0 group hover:scale-105 active:scale-95"
+              >
+                <Icons.close className="w-6 h-6 text-foreground/60 group-hover:text-foreground transition-colors group-hover:rotate-90 duration-300" />
+              </button>
             </div>
-            <button
-              onClick={() => setShowTermsModal(false)}
-              className="p-1 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0 ml-2"
-            >
-              <Icons.close className="w-5 h-5 text-gray-500" />
-            </button>
+            
+            {/* Offer Summary in Header */}
+            <div className="mt-xl container-p-lg bg-content2/50 rounded-2xl border border-border/30 backdrop-blur-sm hover:bg-content2/70 transition-all duration-300 group/summary">
+              <div className="flex items-center justify-center text-center">
+                <div className="flex flex-col items-center gap-md">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center group-hover/summary:scale-110 transition-transform duration-300">
+                    <Icons.gift className="w-5 h-5 text-primary group-hover/summary:animate-bounce" />
+                  </div>
+                  <div>
+                    <span className="text-lg font-semibold text-foreground group-hover/summary:text-primary transition-colors duration-300">{deal.value}</span>
+                    <p className="text-sm text-foreground/60 font-medium">Exclusive Offer</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-medium text-foreground group-hover/summary:text-primary transition-colors duration-300">
+                      {deal.end_date ? new Date(deal.end_date).toLocaleDateString() : 'No expiry'}
+                    </div>
+                    <p className="text-sm text-foreground/60 font-medium">Expires</p>
+                  </div>
+                </div>
+              </div>
+              {/* Subtle shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover/summary:translate-x-[100%] transition-transform duration-1000 rounded-2xl"></div>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto max-h-[60vh] p-4">
+          <div className="overflow-y-auto max-h-[50vh] container-p-lg scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50">
             {formattedTerms.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-lg animate-in slide-in-from-top-2 duration-700">
                 {formattedTerms.map((line, index) => {
                   const trimmedLine = line.trim()
                   
                   // Check if it's a main header
                   if (trimmedLine.includes('Terms and Conditions')) {
                     return (
-                      <div key={index} className="text-center mb-6">
-                        <h2 className="text-lg font-bold text-gray-900">{trimmedLine}</h2>
-                        <div className="w-16 h-0.5 bg-primary mx-auto mt-2"></div>
+                      <div key={index} className="text-center container-py-lg animate-in fade-in slide-in-from-top-4 duration-500" style={{ animationDelay: `${index * 100}ms` }}>
+                        <h2 className="text-2xl font-bold text-foreground mb-sm bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                          {trimmedLine}
+                        </h2>
+                        <div className="w-20 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full animate-pulse"></div>
+                        <div className="w-16 h-0.5 bg-gradient-to-r from-secondary/50 to-primary/50 mx-auto rounded-full mt-1"></div>
                       </div>
                     )
                   }
@@ -164,19 +199,22 @@ export const DealCard: React.FC<DealCardProps> = ({
                   // Check if it's a section header (numbered)
                   if (trimmedLine.match(/^\d+\.\s+[A-Z\s&]+$/)) {
                     return (
-                      <h3 key={index} className="text-base font-semibold text-gray-800 mt-6 mb-2 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                        {trimmedLine}
-                      </h3>
+                      <div key={index} className="mt-2xl mb-md animate-in fade-in slide-in-from-left-4 duration-500 hover:bg-content2/30 rounded-xl container-p-sm transition-all duration-300 group/section" style={{ animationDelay: `${index * 150}ms` }}>
+                        <h3 className="text-lg font-semibold text-foreground flex items-center gap-sm group-hover/section:text-primary transition-colors duration-300">
+                          <div className="w-2 h-2 bg-gradient-to-r from-primary to-secondary rounded-full flex-shrink-0 group-hover/section:scale-125 transition-transform duration-300"></div>
+                          {trimmedLine}
+                        </h3>
+                        <div className="w-full h-px bg-gradient-to-r from-border/50 to-transparent mt-sm group-hover/section:from-primary/30 group-hover/section:to-primary/10 transition-all duration-300"></div>
+                      </div>
                     )
                   }
                   
                   // Check if it's a bullet point
                   if (trimmedLine.startsWith('•') || trimmedLine.startsWith('   •')) {
                     return (
-                      <div key={index} className="flex items-start gap-2 ml-4">
-                        <div className="w-1 h-1 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-gray-700 leading-relaxed">
+                      <div key={index} className="flex items-start gap-sm ml-md animate-in fade-in slide-in-from-left-2 duration-400 hover:bg-content2/20 rounded-lg container-p-sm transition-all duration-300 group/bullet" style={{ animationDelay: `${index * 100}ms` }}>
+                        <div className="w-1.5 h-1.5 bg-gradient-to-r from-primary to-secondary rounded-full mt-sm flex-shrink-0 group-hover/bullet:scale-125 group-hover/bullet:animate-pulse transition-all duration-300"></div>
+                        <p className="text-foreground/80 leading-relaxed text-sm group-hover/bullet:text-foreground transition-colors duration-300">
                           {trimmedLine.replace(/^\s*•\s*/, '')}
                         </p>
                       </div>
@@ -185,52 +223,51 @@ export const DealCard: React.FC<DealCardProps> = ({
                   
                   // Regular content
                   return (
-                    <p key={index} className="text-sm text-gray-700 leading-relaxed">
+                    <p key={index} className="text-foreground/80 leading-relaxed text-sm animate-in fade-in slide-in-from-bottom-2 duration-400 hover:bg-content2/10 rounded-lg container-p-sm transition-all duration-300 group/paragraph" style={{ animationDelay: `${index * 80}ms` }}>
                       {trimmedLine}
                     </p>
                   )
                 })}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Icons.document className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <h3 className="font-medium text-gray-900 mb-2">No Terms Available</h3>
-                <p className="text-sm text-gray-600">Please visit {deal.company_name}'s website for terms.</p>
+              <div className="text-center container-py-3xl animate-in fade-in zoom-in-95 duration-600">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-md animate-pulse hover:scale-110 transition-transform duration-300 group/empty">
+                  <Icons.document className="w-8 h-8 text-primary/60 group-hover/empty:text-primary group-hover/empty:animate-bounce" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-sm bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                  No Terms Available
+                </h3>
+                <p className="text-foreground/60 text-sm font-medium">Please visit {deal.company_name}'s website for complete terms and conditions.</p>
+                <div className="mt-md w-24 h-1 bg-gradient-to-r from-primary/30 to-secondary/30 mx-auto rounded-full animate-pulse"></div>
               </div>
             )}
           </div>
 
-          {/* Offer Summary */}
-          <div className="border-t border-gray-200 p-4 bg-gray-50">
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Icons.gift className="w-4 h-4 text-primary" />
-                <span className="font-medium text-gray-900">{deal.value}</span>
-              </div>
-              <div className="text-gray-600">
-                Expires: {deal.end_date ? new Date(deal.end_date).toLocaleDateString() : 'No expiry'}
-              </div>
-            </div>
-          </div>
 
-          {/* Footer - Mobile shows only Close button */}
-          <div className="border-t border-gray-200 p-4 bg-white">
-            <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          {/* Footer */}
+          <div className="border-t border-border/30 container-p-lg bg-content2/30 backdrop-blur-sm relative overflow-hidden">
+            {/* Animated background pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/2 via-transparent to-secondary/2 animate-pulse"></div>
+            <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-lg"></div>
+            <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-secondary/5 to-transparent rounded-full blur-md"></div>
+            
+            <div className="relative flex flex-col sm:flex-row gap-sm sm:justify-end">
               <button
                 onClick={() => setShowTermsModal(false)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="container-px-lg container-py-sm text-foreground/70 border border-border rounded-xl hover:bg-content2 hover:text-foreground hover:scale-105 active:scale-95 transition-all duration-200 font-medium hover:shadow-md group/close"
               >
-                Close
+                <span className="group-hover/close:animate-pulse">Close</span>
               </button>
               <button
                 onClick={() => {
                   setShowTermsModal(false)
                   handleTrackClick()
                 }}
-                className="hidden sm:flex px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors items-center justify-center gap-2"
+                className="container-px-lg container-py-sm bg-gradient-to-r from-primary to-secondary text-white rounded-xl hover:shadow-lg hover:shadow-primary/25 hover:scale-105 active:scale-95 transition-all duration-200 font-medium flex items-center justify-center gap-sm group/claim relative overflow-hidden"
               >
-                <Icons.gift className="w-4 h-4" />
-                Claim Deal
+                <Icons.gift className="w-4 h-4 group-hover/claim:scale-110 group-hover/claim:rotate-12 transition-all duration-300" />
+                <span className="group-hover/claim:animate-pulse">Claim Deal</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover/claim:translate-x-[100%] transition-transform duration-700"></div>
               </button>
             </div>
           </div>
@@ -247,8 +284,8 @@ export const DealCard: React.FC<DealCardProps> = ({
         {/* Content area that will grow to fill available space */}
         <div className="flex-1 flex flex-col">
           {/* Header with company info and badges */}
-          <div className="p-6 pb-4">
-            <div className="flex items-start justify-between mb-4 gap-3">
+          <div className="p-lg pb-md">
+            <div className="flex items-start justify-between my-md gap-sm">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 {/* Company Logo */}
                 <div className="relative flex-shrink-0">
@@ -297,7 +334,7 @@ export const DealCard: React.FC<DealCardProps> = ({
 
                 {/* Company info */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-text group-hover:text-primary transition-colors truncate">
+                  <h3 className="font-medium text-sm text-text group-hover:text-primary transition-colors truncate">
                     {deal.company_name}
                   </h3>
                   
@@ -334,7 +371,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               {/* Category and status badges */}
               <div className="flex flex-col gap-2 items-end flex-shrink-0">
                 <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full whitespace-nowrap">
-                  {formatCategory(deal.category)}
+                  {formatCategory(deal.category || '')}
                 </span>
                 {isEndingSoon && (
                   <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
@@ -355,7 +392,7 @@ export const DealCard: React.FC<DealCardProps> = ({
             </div>
 
             {/* Community Trust Section */}
-            <div className="mb-4 p-3 bg-background rounded-xl border border-border">
+            <div className="my-md p-sm bg-background rounded-xl border border-border">
               <button
                 onClick={() => setShowRatingDetails(!showRatingDetails)}
                 className="w-full flex items-center justify-between hover:text-primary transition-colors"
@@ -390,9 +427,9 @@ export const DealCard: React.FC<DealCardProps> = ({
               </button>
 
               {showRatingDetails && (
-                <div className="mt-3 pt-3 border-t border-border">
+                <div className="mt-sm pt-sm border-t border-border">
                   {totalRatings > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-sm">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-textSecondary">Community Trust</span>
                         <span className={`font-medium ${trustLevel.color}`}>
@@ -430,25 +467,25 @@ export const DealCard: React.FC<DealCardProps> = ({
             </div>
 
             {/* Deal title and bonus */}
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-text mb-3 line-clamp-2 leading-snug break-words">
+            <div className="my-md">
+              <h2 className="text-base font-semibold text-text my-sm line-clamp-2 leading-snug break-words">
                 {deal.title}
               </h2>
               
               {/* Bonus amount highlight */}
               {deal.bonus_amount && (
-                <div className="relative overflow-hidden bg-gradient-to-r from-secondary/20 to-primary/20 rounded-xl p-4 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-secondary to-primary rounded-full flex items-center justify-center">
-                      <Icons.gift className="w-5 h-5 text-white" />
+                <div className="relative overflow-hidden bg-gradient-to-r from-secondary/20 to-primary/20 rounded-lg p-md my-sm h-16 flex items-center">
+                  <div className="flex items-center gap-sm w-full">
+                    <div className="w-8 h-8 bg-gradient-to-r from-secondary to-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icons.gift className="w-4 h-4 text-white" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <div className="text-xs text-textSecondary font-medium">Bonus Offer</div>
-                      <div className="text-primary font-bold text-lg">
+                      <div className="text-primary font-semibold text-sm truncate">
                         {deal.bonus_amount}
                       </div>
                     </div>
-                    <Icons.sparkles className="w-5 h-5 text-primary/50 ml-auto" />
+                    <Icons.sparkles className="w-4 h-4 text-primary/50 flex-shrink-0" />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 translate-x-full group-hover:translate-x-0 transition-transform duration-700" />
                 </div>
@@ -456,24 +493,24 @@ export const DealCard: React.FC<DealCardProps> = ({
             </div>
 
             {/* Deal description */}
-            <p className="text-textSecondary mb-4 line-clamp-3 text-sm leading-relaxed">
+            <p className="text-textSecondary my-md line-clamp-3 text-sm leading-relaxed">
               {deal.description}
             </p>
 
             {/* Features */}
             {deal.features && deal.features.length > 0 && (
-              <div className="mb-4">
-                <div className="flex flex-wrap gap-2">
+              <div className="my-md">
+                <div className="flex flex-wrap gap-sm">
                   {deal.features.slice(0, 3).map((feature, index) => (
                     <span 
                       key={index}
-                      className="text-xs bg-background border border-border text-textSecondary px-3 py-1 rounded-full hover:border-primary/30 transition-colors"
+                      className="text-xs bg-background border border-border text-textSecondary container-px-sm container-py-xs rounded-full hover:border-primary/30 transition-colors"
                     >
                       {feature}
                     </span>
                   ))}
                   {deal.features.length > 3 && (
-                    <span className="text-xs text-primary font-medium px-3 py-1 bg-primary/10 rounded-full">
+                    <span className="text-xs text-primary font-medium container-px-sm container-py-xs bg-primary/10 rounded-full">
                       +{deal.features.length - 3} more
                     </span>
                   )}
@@ -483,15 +520,15 @@ export const DealCard: React.FC<DealCardProps> = ({
 
             {/* User rating status */}
             {hasUserRated && (
-              <div className="mb-4 p-3 bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 rounded-lg">
+              <div className="my-md p-sm bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-sm">
                     <Icons.success className="w-4 h-4 text-primary" />
                     <span className="text-sm text-primary font-medium">
                       You rated this company
                     </span>
                   </div>
-                  <div className="text-xs text-primary bg-white px-2 py-1 rounded-full">
+                  <div className="text-xs text-primary bg-white container-px-xs container-py-xs rounded-full">
                     {userRatingType === 'overall' ? 'Quick' : 'Detailed'} rating
                   </div>
                 </div>
@@ -504,9 +541,9 @@ export const DealCard: React.FC<DealCardProps> = ({
         </div>
 
         {/* Action Buttons - Always at bottom */}
-        <div className="p-6 pt-0 mt-auto">
+        <div className="p-lg pt-0 mt-auto">
           {/* Deal metadata - Always at bottom */}
-          <div className="flex items-center gap-4 text-xs text-textSecondary mb-4 bg-background rounded-lg p-3">
+          <div className="flex items-center gap-md text-xs text-textSecondary my-md bg-background rounded-lg p-sm">
             <div className="flex items-center gap-1">
               <Icons.time className="w-3 h-3" />
               <span>
@@ -528,17 +565,17 @@ export const DealCard: React.FC<DealCardProps> = ({
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-sm">
             <button
               onClick={handleTrackClick}
               onMouseEnter={() => setIsClaimHovered(true)}
               onMouseLeave={() => setIsClaimHovered(false)}
-              className="flex-1 relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 group/button"
+              className="flex-1 relative overflow-hidden bg-gradient-to-r from-primary to-secondary text-white font-medium text-sm container-py-sm container-px-md rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-105 group/button"
             >
-              <div className="flex items-center justify-center gap-2 relative z-10">
-                <Gift className={`w-5 h-5 transition-transform duration-300 ${isClaimHovered ? 'scale-110 rotate-12' : ''}`} />
+              <div className="flex items-center justify-center gap-xs relative z-10">
+                <Icons.gift className={`w-4 h-4 transition-transform duration-300 ${isClaimHovered ? 'scale-110 rotate-12' : ''}`} />
                 <span>Claim Deal</span>
-                <ExternalLink className={`w-4 h-4 transition-transform duration-300 ${isClaimHovered ? 'scale-110 translate-x-1' : ''}`} />
+                <Icons.externalLink className={`w-3 h-3 transition-transform duration-300 ${isClaimHovered ? 'scale-110 translate-x-1' : ''}`} />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover/button:translate-x-[100%] transition-transform duration-700" />
             </button>
@@ -547,11 +584,11 @@ export const DealCard: React.FC<DealCardProps> = ({
               onClick={handleRateClick}
               onMouseEnter={() => setIsRateHovered(true)}
               onMouseLeave={() => setIsRateHovered(false)}
-              className="bg-surface hover:bg-background border border-border hover:border-primary/50 text-text font-medium py-4 px-6 rounded-xl transition-all duration-300 hover:shadow-md group/rate relative"
+              className="bg-surface hover:bg-background border border-border hover:border-primary/50 text-text font-medium text-sm container-py-sm container-px-md rounded-lg transition-all duration-300 hover:shadow-md group/rate relative"
               title={hasUserRated ? "Update your rating" : "Rate this company"}
             >
-              <div className="flex items-center gap-2">
-                <MessageSquare className={`w-5 h-5 transition-transform duration-300 ${isRateHovered ? 'scale-110' : ''}`} />
+              <div className="flex items-center gap-xs">
+                <Icons.chat className={`w-4 h-4 transition-transform duration-300 ${isRateHovered ? 'scale-110' : ''}`} />
                 <span className="hidden sm:inline">
                   {hasUserRated ? 'Update' : 'Rate'}
                 </span>
@@ -559,7 +596,7 @@ export const DealCard: React.FC<DealCardProps> = ({
               
               {/* Show count of existing ratings on hover */}
               {isRateHovered && totalRatings > 0 && (
-                <div className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-1 rounded-full font-medium">
+                <div className="absolute -top-1 -right-1 bg-primary text-white text-xs px-2 py-1 rounded-full font-medium shadow-lg z-10 min-w-6 text-center">
                   {totalRatings}
                 </div>
               )}
@@ -567,10 +604,10 @@ export const DealCard: React.FC<DealCardProps> = ({
           </div>
 
           {/* Terms & Conditions Link */}
-          <div className="mt-4 text-center">
+          <div className="mt-md flex justify-center">
             <button
               onClick={() => setShowTermsModal(true)}
-              className="text-xs text-textSecondary hover:text-primary transition-colors underline hover:no-underline flex items-center gap-1 mx-auto px-4 py-2 rounded-lg hover:bg-background/50"
+              className="text-xs text-textSecondary hover:text-primary transition-colors underline hover:no-underline flex items-center gap-xs container-px-md container-py-sm rounded-lg hover:bg-background/50"
             >
               <Icons.document className="w-3 h-3" />
               Terms & Conditions
@@ -579,21 +616,21 @@ export const DealCard: React.FC<DealCardProps> = ({
 
           {/* Rating encouragement */}
           {isNewCompany ? (
-            <div className="mt-2 text-center">
+            <div className="mt-sm text-center">
               <p className="text-xs text-textSecondary">
                 Be the first to rate <span className="font-medium text-primary">{deal.company_name}</span> 
                 {' '}and help other traders!
               </p>
             </div>
           ) : hasLimitedRatings ? (
-            <div className="mt-2 text-center">
+            <div className="mt-sm text-center">
               <p className="text-xs text-textSecondary">
                 Help build trust - <span className="font-medium text-primary">{deal.company_name}</span> 
                 {' '}needs more community reviews
               </p>
             </div>
           ) : (
-            <div className="mt-2 text-center">
+            <div className="mt-sm text-center">
               <p className="text-xs text-textSecondary">
                 Trusted by <span className="font-medium text-primary">{totalRatings.toLocaleString()} traders</span> 
                 in our community
