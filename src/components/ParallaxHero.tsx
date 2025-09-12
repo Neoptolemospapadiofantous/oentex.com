@@ -68,7 +68,7 @@ const ParallaxHero: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="relative h-screen bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 overflow-hidden"
+      className="relative h-[80vh] bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20 overflow-hidden"
     >
       {/* Background Layer - Slowest */}
       <div 
@@ -76,9 +76,9 @@ const ParallaxHero: React.FC = () => {
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 20% 20%, rgba(30, 64, 175, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(5, 150, 105, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(220, 38, 38, 0.1) 0%, transparent 50%)
+            radial-gradient(circle at 20% 20%, rgba(var(--heroui-primary), 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(var(--heroui-secondary), 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(var(--heroui-accent), 0.1) 0%, transparent 50%)
           `
         }}
       />
@@ -89,8 +89,8 @@ const ParallaxHero: React.FC = () => {
           className="w-full h-full opacity-20"
           style={{
             backgroundImage: `
-              linear-gradient(45deg, rgba(30, 64, 175, 0.1) 1px, transparent 1px),
-              linear-gradient(-45deg, rgba(5, 150, 105, 0.1) 1px, transparent 1px)
+              linear-gradient(45deg, rgba(var(--heroui-primary), 0.1) 1px, transparent 1px),
+              linear-gradient(-45deg, rgba(var(--heroui-secondary), 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '60px 60px'
           }}
@@ -125,13 +125,13 @@ const ParallaxHero: React.FC = () => {
             }`}
             style={{ transitionDelay: '0.2s' }}
           >
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <span className="gradient-text">
               About Oentex
             </span>
           </h1>
           
           <p 
-            className={`text-xl lg:text-2xl text-textSecondary mb-8 leading-relaxed transition-all duration-1000 ${
+            className={`text-xl lg:text-2xl text-textSecondary my-xl leading-relaxed transition-all duration-1000 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
             style={{ transitionDelay: '0.4s' }}
@@ -141,7 +141,7 @@ const ParallaxHero: React.FC = () => {
           </p>
 
           <div 
-            className={`bg-gradient-to-r from-warning/10 to-accent/10 border border-warning/30 rounded-2xl p-4 mb-8 transition-all duration-1000 ${
+            className={`bg-gradient-to-r from-warning/10 to-accent/10 border border-warning/30 rounded-2xl p-md my-xl transition-all duration-1000 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
             style={{ transitionDelay: '0.6s' }}
@@ -163,8 +163,8 @@ const ParallaxHero: React.FC = () => {
 
       {/* Scroll Indicator */}
       {!prefersReducedMotion && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-          <div className="text-textSecondary text-sm mb-2">Scroll to explore</div>
+        <div className="absolute bottom-xl left-1/2 transform -translate-x-1/2">
+          <div className="text-textSecondary text-sm my-sm">Scroll to explore</div>
         </div>
       )}
     </div>

@@ -214,7 +214,7 @@ const Privacy = () => {
             
             <div className="bg-surface/30 rounded-lg p-4 border border-border">
               <h4 className="font-semibold text-foreground mb-2 flex items-center">
-                <Eye className="w-4 h-4 mr-2" />
+                <Icons.eye className="w-4 h-4 mr-2" />
                 Analytics Cookies
               </h4>
               <p className="text-foreground/70 text-sm">
@@ -300,7 +300,7 @@ const Privacy = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-3">
               <div className="flex items-start space-x-3">
-                <Eye className="w-5 h-5 text-primary mt-0.5" />
+                <Icons.eye className="w-5 h-5 text-primary mt-0.5" />
                 <div>
                   <h4 className="font-semibold text-foreground">Access</h4>
                   <p className="text-foreground/70 text-sm">Request a copy of the personal information we hold about you</p>
@@ -459,7 +459,7 @@ const Privacy = () => {
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-7xl mx-auto px-6 text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Privacy Policy
             </h1>
@@ -472,12 +472,12 @@ const Privacy = () => {
 
         {/* Content */}
         <section className="py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="space-y-8">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="space-y-12">
               {sections.map((section, index) => (
-                <div key={section.id} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
+                <div key={section.id} className="bg-content1 rounded-2xl border border-divider overflow-hidden shadow-lg">
                   <div className="p-8">
-                    <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-6 mb-8">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
                         {section.icon}
                       </div>
@@ -494,12 +494,12 @@ const Privacy = () => {
             </div>
 
             {/* Footer Notice */}
-            <div className="mt-16 p-6 bg-secondary/10 border border-secondary/20 rounded-2xl">
-              <div className="flex items-start space-x-3">
-                <Icons.shield className="w-6 h-6 text-secondary flex-shrink-0 mt-0.5" />
+            <div className="mt-20 bg-secondary/10 border border-secondary/20 rounded-2xl p-8">
+              <div className="flex items-start space-x-4">
+                <Icons.shield className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Your Privacy is Our Priority</h3>
-                  <p className="text-foreground/70 text-sm leading-relaxed">
+                  <h3 className="font-semibold text-foreground mb-3 text-lg">Your Privacy is Our Priority</h3>
+                  <p className="text-foreground/70 text-base leading-relaxed">
                     We are committed to protecting your privacy and being transparent about our data practices. 
                     If you have any questions or concerns about how we handle your information, please don't hesitate 
                     to contact our privacy team. We're here to help and ensure your data is protected.

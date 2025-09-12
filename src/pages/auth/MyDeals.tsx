@@ -1,6 +1,6 @@
 // src/pages/auth/MyDeals.tsx - AUTHENTICATED VERSION WITH EDIT
 import React, { useState, useMemo } from 'react'
-import { StarIcon, ArrowPathIcon, CalendarIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
@@ -158,16 +158,16 @@ const MyDeals: React.FC = () => {
 
   if (ratingsLoading || companiesLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-lg">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
-          <p className="mt-2 text-gray-600">Loading your platform ratings...</p>
+          <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
+          <p className="mt-2 text-foreground-600">Loading your platform ratings...</p>
         </div>
 
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-gray-600">Loading your ratings...</p>
+            <Icons.refresh className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-foreground-600">Loading your ratings...</p>
           </div>
         </div>
       </div>
@@ -176,17 +176,17 @@ const MyDeals: React.FC = () => {
 
   if (ratingsError || companiesError) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-lg">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
-          <p className="mt-2 text-gray-600">Error loading your ratings</p>
+          <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
+          <p className="mt-2 text-foreground-600">Error loading your ratings</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-          <p className="text-red-600 mb-4">Failed to load your ratings</p>
+        <div className="bg-content1 rounded-xl border border-divider container-p-lg text-center">
+          <p className="text-danger mb-4">Failed to load your ratings</p>
           <button
             onClick={handleRetry}
-            className="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
+            className="container-px-md container-py-sm rounded-lg text-white bg-primary hover:bg-primary-600"
           >
             Try Again
           </button>
@@ -201,68 +201,68 @@ const MyDeals: React.FC = () => {
     : '0.0'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-lg">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">My Ratings</h1>
-        <p className="mt-2 text-gray-600">Manage and review your platform ratings</p>
+        <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
+        <p className="mt-2 text-foreground-600">Manage and review your platform ratings</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Total Ratings</p>
-              <p className="text-2xl font-bold text-gray-900">{totalRatings}</p>
-              <p className="text-sm font-medium text-blue-600 mt-1">Platforms rated</p>
+              <p className="text-sm font-medium text-foreground-600 mb-1">Total Ratings</p>
+              <p className="text-2xl font-bold text-foreground">{totalRatings}</p>
+              <p className="text-sm font-medium text-primary mt-1">Platforms rated</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Star className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <Icons.star className="w-6 h-6 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Average Rating</p>
-              <p className="text-2xl font-bold text-gray-900">{averageRating}</p>
-              <p className="text-sm font-medium text-green-600 mt-1">Your average</p>
+              <p className="text-sm font-medium text-foreground-600 mb-1">Average Rating</p>
+              <p className="text-2xl font-bold text-foreground">{averageRating}</p>
+              <p className="text-sm font-medium text-success mt-1">Your average</p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <Icons.arrowTrendingUp className="w-6 h-6 text-success" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">Last Updated</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-foreground-600 mb-1">Last Updated</p>
+              <p className="text-2xl font-bold text-foreground">
                 {totalRatings > 0
                   ? new Date(Math.max(...ratingsArray.map((r: any) => new Date(r.updated_at).getTime()))).toLocaleDateString()
                   : 'Never'
                 }
               </p>
-              <p className="text-sm font-medium text-amber-600 mt-1">Most recent</p>
+              <p className="text-sm font-medium text-warning mt-1">Most recent</p>
             </div>
-            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-amber-600" />
+            <div className="w-12 h-12 flex items-center justify-center">
+              <Icons.calendar className="w-6 h-6 text-warning" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and Sort */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-content1 rounded-xl border border-divider container-p-lg">
+        <div className="flex flex-col sm:flex-row gap-sm">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Rating</label>
+            <label className="block text-sm font-medium text-foreground-700 mb-2">Filter by Rating</label>
             <select
               value={filterRating}
               onChange={(e) => setFilterRating(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full container-px-sm container-py-xs border border-divider rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="all">All Ratings</option>
               <option value={5}>5 Stars</option>
@@ -274,11 +274,11 @@ const MyDeals: React.FC = () => {
           </div>
 
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+            <label className="block text-sm font-medium text-foreground-700 mb-2">Sort By</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full container-px-sm container-py-xs border border-divider rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -291,29 +291,29 @@ const MyDeals: React.FC = () => {
 
       {/* Ratings List */}
       {filteredAndSortedRatings.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-sm">
           {filteredAndSortedRatings.map((rating: any) => (
-            <div key={rating.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+            <div key={rating.id} className="bg-content1 rounded-xl border border-divider container-p-lg hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900">{rating.company_name}</h3>
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-sm mb-3">
+                    <h3 className="text-lg font-semibold text-foreground">{rating.company_name}</h3>
+                    <div className="flex items-center gap-xs">
                       {[...Array(5)].map((_, i) => {
                         const filled = Math.round(rating.rating || 0)
                         return (
-                          <Star key={i} className={`w-4 h-4 ${i < filled ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+                          <Icons.star key={i} className={`w-4 h-4 ${i < filled ? 'text-warning fill-current' : 'text-foreground-300'}`} />
                         )
                       })}
-                      <span className="ml-2 text-sm font-medium text-gray-600">
+                      <span className="ml-2 text-sm font-medium text-foreground-600">
                         {(rating.rating || 0).toFixed(1)}/5
                       </span>
                     </div>
                   </div>
 
-                  {rating.review && <p className="text-gray-600 mb-3">{rating.review}</p>}
+                  {rating.review && <p className="text-foreground-600 mb-3">{rating.review}</p>}
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-md text-sm text-foreground-500">
                     <span>Rated on {new Date(rating.created_at).toLocaleDateString()}</span>
                     {rating.updated_at !== rating.created_at && (
                       <span>Updated on {new Date(rating.updated_at).toLocaleDateString()}</span>
@@ -323,7 +323,7 @@ const MyDeals: React.FC = () => {
                   <div className="mt-4">
                     <button
                       onClick={() => openEditModal(rating)}
-                      className="px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
+                      className="container-px-md container-py-sm rounded-lg text-white bg-primary hover:bg-primary-600"
                     >
                       Edit rating
                     </button>
@@ -334,19 +334,19 @@ const MyDeals: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Star className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="bg-content1 rounded-xl border border-divider container-p-lg text-center">
+          <Icons.star className="w-16 h-16 mx-auto mb-4 text-foreground-400" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             {filterRating !== 'all' ? `No ${filterRating}-star ratings found` : 'No ratings yet'}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-foreground-600 mb-6">
             {filterRating !== 'all'
               ? 'Try adjusting your filter criteria or rate some platforms first.'
               : 'Start rating platforms to see them appear here.'}
           </p>
           <button
             onClick={() => window.location.href = '/deals'}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
           >
             Browse Platforms
           </button>

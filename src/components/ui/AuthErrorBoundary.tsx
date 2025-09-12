@@ -1,6 +1,6 @@
 // src/components/ui/AuthErrorBoundary.tsx (Enhanced with better error handling)
 import React, { useState, useCallback } from 'react'
-import { ExclamationTriangleIcon, ArrowPathIcon, ArrowRightOnRectangleIcon, HomeIcon, ShieldCheckIcon, WifiIcon, WifiIcon as WifiOff } from '@heroicons/react/24/outline'
+import { Icons } from '../icons'
 import { useAuth } from '../../lib/authContext'
 import { AuthError } from '../../types/auth'
 import { AuthModal } from '../auth/AuthModals'
@@ -21,7 +21,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
   const { retryAuth, clearError, user } = useAuth()
   const navigate = useNavigate()
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password'>('login')
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
   const [isRetrying, setIsRetrying] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const MAX_RETRIES = 3
@@ -33,7 +33,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
         return {
           title: 'Session Expired',
           message: 'Your session has expired. Please sign in again to continue.',
-          icon: <Shield className="w-12 h-12 text-amber-600" />,
+          icon: <Icons.shield className="w-12 h-12 text-amber-600" />,
           showAuthButton: true,
           showRetryButton: false,
           bgColor: 'bg-amber-50',
@@ -44,7 +44,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
         return {
           title: 'Authentication Failed',
           message: 'Invalid credentials provided. Please check your email and password.',
-          icon: <AlertCircle className="w-12 h-12 text-red-600" />,
+          icon: <Icons.warning className="w-12 h-12 text-red-600" />,
           showAuthButton: true,
           showRetryButton: false,
           bgColor: 'bg-red-50',
@@ -55,29 +55,18 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
         return {
           title: 'Connection Error',
           message: 'Unable to connect to the server. Please check your internet connection.',
-          icon: <WifiOff className="w-12 h-12 text-orange-600" />,
+          icon: <Icons.wifi className="w-12 h-12 text-orange-600" />,
           showAuthButton: false,
           showRetryButton: true,
           bgColor: 'bg-orange-50',
           borderColor: 'border-orange-200',
           textColor: 'text-orange-800'
         }
-      case 'TOKEN_EXPIRED':
-        return {
-          title: 'Access Token Expired',
-          message: 'Your access token has expired. Attempting to refresh...',
-          icon: <RefreshCw className="w-12 h-12 text-blue-600" />,
-          showAuthButton: true,
-          showRetryButton: true,
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
-          textColor: 'text-blue-800'
-        }
       default:
         return {
           title: 'Authentication Error',
           message: error.message || 'An unexpected error occurred. Please try again.',
-          icon: <AlertCircle className="w-12 h-12 text-red-600" />,
+          icon: <Icons.warning className="w-12 h-12 text-red-600" />,
           showAuthButton: true,
           showRetryButton: true,
           bgColor: 'bg-red-50',
@@ -181,7 +170,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
                     : 'bg-primary text-white hover:bg-primary/90'
                 }`}
               >
-                <RefreshCw className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
+                <Icons.refresh className={`w-4 h-4 ${isRetrying ? 'animate-spin' : ''}`} />
                 {isRetrying ? 'Retrying...' : `Retry${retryCount > 0 ? ` (${retryCount}/${MAX_RETRIES})` : ''}`}
               </button>
             )}
@@ -192,7 +181,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
                 onClick={handleSignIn}
                 className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
               >
-                <LogIn className="w-4 h-4" />
+                <Icons.login className="w-4 h-4" />
                 Sign In
               </button>
             )}
@@ -203,7 +192,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
                 onClick={handleGoHome}
                 className="flex items-center justify-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
               >
-                <Home className="w-4 h-4" />
+                <Icons.home className="w-4 h-4" />
                 Go Home
               </button>
             )}
@@ -213,7 +202,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
               onClick={handleRefreshPage}
               className="flex items-center justify-center gap-2 bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors"
             >
-              <RefreshCw className="w-4 h-4" />
+              <Icons.refresh className="w-4 h-4" />
               Refresh Page
             </button>
           </div>

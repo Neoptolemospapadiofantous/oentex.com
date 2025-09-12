@@ -1,6 +1,6 @@
 // src/App.tsx - Fixed HeroUI integration
 import * as React from "react";
-import { HeroUIProvider } from '@heroui/system'
+import { HeroUIProvider } from '@heroui/react'  // ✅ v2.8+ stable
 import { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -25,6 +25,8 @@ const FAQ = React.lazy(() => import('./pages/guest/FAQ'))
 const Contact = React.lazy(() => import('./pages/guest/Contact'))
 const Terms = React.lazy(() => import('./pages/guest/Terms'))
 const Privacy = React.lazy(() => import('./pages/guest/Privacy'))
+const Login = React.lazy(() => import('./pages/guest/Login'))
+const Register = React.lazy(() => import('./pages/guest/Register'))
 const AuthCallback = React.lazy(() => import('./pages/guest/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/guest/ResetPassword'))
 const Unsubscribe = React.lazy(() => import('./pages/guest/Unsubscribe'))
@@ -82,6 +84,8 @@ const PublicApp: React.FC = () => {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/unsubscribe" element={<Unsubscribe/>} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
                 <Route path="/auth/reset-password" element={<ResetPassword />} />
                 

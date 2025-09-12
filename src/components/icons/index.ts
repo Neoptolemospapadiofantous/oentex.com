@@ -1,5 +1,4 @@
 // src/components/icons/index.ts - Centralized Icon System for HeroUI
-import React from 'react'
 import {
     // Navigation & UI
     Bars3Icon,
@@ -246,6 +245,8 @@ import {
     stop: StopIcon,
     forward: ForwardIcon,
     backward: BackwardIcon,
+    cookie: CircleStackIcon,
+    userCheck: UserIcon,
     
   } as const
   

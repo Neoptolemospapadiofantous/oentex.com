@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import GuestLayout from '../../layouts/GuestLayout'
@@ -68,72 +68,90 @@ const FAQ = () => {
 
   return (
     <GuestLayout>
-      <div className="min-h-screen pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Frequently Asked Questions
-              </span>
-            </h1>
-            <p className="text-xl text-foreground/70">
-              Find answers to common questions about Oentex, our affiliate partnerships, platform reviews, and how to get the best deals.
-            </p>
+      <div className="min-h-screen pb-12 text-center">
+        {/* Hero Section */}
+        <section className="section-py-3xl relative">
+          {/* Component-specific accent */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/4 to-primary/8 accent-transition" />
+          <div className="container-page relative z-10 flex flex-col items-center justify-center">
+            <div className="text-center max-w-4xl mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold text-foreground my-lg text-center">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Frequently Asked Questions
+                </span>
+              </h1>
+              <p className="text-xl text-foreground/70 max-w-3xl mx-auto text-center">
+                Find answers to common questions about Oentex, our affiliate partnerships, platform reviews, and how to get the best deals.
+              </p>
+            </div>
           </div>
+        </section>
 
+        <div className="container-page section-py-2xl text-center">
           {/* FAQ List */}
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div key={index} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
-                <button
-                  className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-surface/70 transition-all duration-300"
-                  onClick={() => toggleFAQ(index)}
-                >
-                  <h3 className="text-lg font-semibold text-foreground pr-4">{faq.question}</h3>
-                  <div className="flex-shrink-0">
-                    {openIndex === index ? (
-                      <Icons.chevronUp className="w-5 h-5 text-primary" />
-                    ) : (
-                      <Icons.chevronDown className="w-5 h-5 text-foreground/70" />
-                    )}
-                  </div>
-                </button>
-                
-                <div className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}>
-                  <div className="px-6 pb-6">
-                    <p className="text-foreground/70 leading-relaxed">{faq.answer}</p>
+          <div>
+            <div className="space-y-6 p-4">
+              {faqs.map((faq, index) => (
+                <div key={index} className="bg-content1 rounded-2xl border border-border overflow-hidden text-center p-2">
+                  <button
+                    className="w-full container-px-xl container-py-lg hover:bg-content2 transition-all duration-300 text-center relative"
+                    onClick={() => toggleFAQ(index)}
+                  >
+                    <h3 className="text-lg font-semibold text-foreground px-4">{faq.question}</h3>
+                    <div className="absolute right-6 top-1/2 transform -translate-y-1/2">
+                      {openIndex === index ? (
+                        <Icons.chevronUp className="w-5 h-5 text-primary" />
+                      ) : (
+                        <Icons.chevronDown className="w-5 h-5 text-foreground/70" />
+                      )}
+                    </div>
+                  </button>
+                  
+                  <div className={`overflow-hidden transition-all duration-300 ${
+                    openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}>
+                    <div className="container-px-xl container-pb-xl p-4">
+                      <p className="text-foreground/70 leading-relaxed text-center">{faq.answer}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Important Disclosure */}
-          <div className="mt-12 p-6 bg-gradient-to-r from-warning/10 to-accent/10 rounded-2xl border border-warning/30">
-            <h2 className="text-lg font-semibold text-foreground mb-3">Important Disclosure</h2>
-            <p className="text-foreground/70 text-sm leading-relaxed mb-3">
-              <strong>Oentex operates as an affiliate marketing platform.</strong> We earn commissions from our partner platforms when you sign up through our referral links. This allows us to offer our platform for free and provide you with exclusive bonuses. We maintain editorial independence and only partner with platforms we believe provide genuine value to our users.
-            </p>
-            <p className="text-foreground/70 text-xs">
-              All cryptocurrency and trading activities involve significant risk. Past performance does not guarantee future results. Please read all terms and conditions and risk disclosures before using any financial services.
-            </p>
+          <div className="flex justify-center my-2xl p-6">
+            <div className="bg-gradient-to-r from-warning/10 to-accent/10 rounded-2xl border border-warning/30 p-xl max-w-4xl">
+              <div className="flex flex-col items-center p-4">
+                <div className="flex justify-center mb-md">
+                  <Icons.warning className="w-6 h-6 text-warning" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground my-sm">Important Disclosure</h3>
+                <p className="text-foreground/70 leading-relaxed my-sm text-center p-2">
+                  <strong>Oentex operates as an affiliate marketing platform.</strong> We earn commissions from our partner platforms when you sign up through our referral links. This allows us to offer our platform for free and provide you with exclusive bonuses. We maintain editorial independence and only partner with platforms we believe provide genuine value to our users.
+                </p>
+                <p className="text-foreground/70 text-sm text-center p-2">
+                  All cryptocurrency and trading activities involve significant risk. Past performance does not guarantee future results. Please read all terms and conditions and risk disclosures before using any financial services.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Contact CTA */}
-          <div className="mt-16 text-center p-8 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl border border-primary/20">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Still have questions?</h2>
-            <p className="text-foreground/70 mb-6">
-              Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
-            </p>
-            <button 
-              onClick={handleContactSupport}
-              className="bg-gradient-to-r from-primary to-secondary px-8 py-3 rounded-full text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105"
-            >
-              Contact Support
-            </button>
+          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-3xl p-xl lg:p-3xl border border-primary/20 m-6">
+            <div className="flex flex-col items-center p-6">
+              <h2 className="text-3xl font-bold text-foreground my-md">Still have questions?</h2>
+              <p className="text-foreground/70 my-xl max-w-2xl text-center p-4">
+                Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
+              </p>
+              <button 
+                onClick={handleContactSupport}
+                className="bg-gradient-to-r from-primary to-secondary container-px-xl container-py-sm rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+              >
+                Contact Support
+                <Icons.externalLink className="w-4 h-4 ml-sm" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

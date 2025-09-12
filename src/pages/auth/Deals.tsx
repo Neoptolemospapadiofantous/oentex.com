@@ -14,7 +14,7 @@ import {
   useCategoriesQuery, 
   useCategoryStatsQuery, 
   useCategoryInfoQuery 
-} from '../../hooks/queries/useCategoriesQuery'
+} from '../../hooks/queries/useDealsQuery'
 
 interface Filters {
   searchTerm: string
@@ -26,7 +26,7 @@ const Deals = () => {
   const { user, isFullyReady } = useAuth()
   
   // ✅ AUTHENTICATED: Always use dashboard layout (no top padding needed)
-  const containerClasses = "min-h-screen bg-gray-50"
+  const containerClasses = "min-h-screen bg-background"
 
   // ✅ DYNAMIC: All data from React Query
   const dealsQuery = useDealsQuery()
@@ -65,11 +65,11 @@ const Deals = () => {
 
   // ✅ COMPUTED: Deals with user ratings
   const dealsWithUserRatings = useMemo(() => {
-    const userRatings = userRatingsQuery.data || new Map()
+    const userRatings = userRatingsQuery.data || {}
     
     return deals.map(deal => ({
       ...deal,
-      userRating: deal.company?.id ? userRatings.get(deal.company.id) : undefined
+      userRating: deal.company?.id ? userRatings[deal.company.id] : undefined
     }))
   }, [deals, userRatingsQuery.data])
 
@@ -160,22 +160,22 @@ const Deals = () => {
   if (categoriesQuery.error) {
     return (
       <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.database className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Categories Not Available</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.database className="w-12 h-12 text-danger mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">Categories Not Available</h2>
+              <p className="text-foreground-600 mb-6">
                 Categories table not found. Please run the SQL script to create the categories table.
               </p>
-              <div className="space-y-2 text-sm text-gray-500 mb-6">
+              <div className="space-y-sm text-sm text-foreground-500 mb-6">
                 <p>• Run the categories SQL in your Supabase SQL editor</p>
                 <p>• Ensure the categories table has data</p>
                 <p>• Check RLS policies allow public read access</p>
               </div>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-danger text-white container-px-lg container-py-sm rounded-lg hover:bg-danger-600 transition-colors"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Retry Connection
@@ -193,16 +193,16 @@ const Deals = () => {
   if (isLoading) {
     return (
       <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto section-px-lg section-py-xl">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Trading Deals & Bonuses</h1>
-            <p className="text-xl text-gray-600">Loading exclusive offers with real-time ratings...</p>
+            <h1 className="text-4xl font-bold text-foreground mb-4">Trading Deals & Bonuses</h1>
+            <p className="text-xl text-foreground-600">Loading exclusive offers with real-time ratings...</p>
           </div>
           
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.refresh className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-              <p className="text-gray-600">Loading deals, categories, and community ratings...</p>
+              <Icons.refresh className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+              <p className="text-foreground-600">Loading deals, categories, and community ratings...</p>
             </div>
           </div>
         </div>
@@ -214,17 +214,17 @@ const Deals = () => {
   if (dealsQuery.error) {
     return (
       <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.warning className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Deals</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.warning className="w-12 h-12 text-danger mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">Unable to Load Deals</h2>
+              <p className="text-foreground-600 mb-6">
                 {dealsQuery.error instanceof Error ? dealsQuery.error.message : 'Failed to load deals'}
               </p>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Try Again
@@ -240,17 +240,17 @@ const Deals = () => {
   if (!categories.length) {
     return (
       <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No Categories Found</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.database className="w-12 h-12 text-foreground-400 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">No Categories Found</h2>
+              <p className="text-foreground-600 mb-6">
                 The categories table exists but contains no data. Please add categories to the database.
               </p>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Reload Categories
@@ -265,39 +265,39 @@ const Deals = () => {
   // ✅ MAIN CONTENT
   return (
     <div className={containerClasses}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto section-px-lg section-py-xl">
         
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Trading Deals & Exclusive Bonuses
           </h1>
-          <p className="text-xl text-gray-600 mb-2">
+          <p className="text-xl text-foreground-600 mb-2">
             Curated offers from top platforms across {categories.length - 1} categories
           </p>
-          <p className="text-gray-600">
+          <p className="text-foreground-600">
             {companies.length} vetted platforms • Real community ratings • Updated daily
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-xl border border-gray-200 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="bg-content1 container-p-lg rounded-xl border border-divider mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-sm mb-4">
             <div className="relative">
-              <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search deals, companies..."
                 value={filters.searchTerm}
                 onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+                className="w-full pl-10 pr-4 py-3 bg-content2 border border-divider rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground"
               />
             </div>
 
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+              className="w-full px-4 py-3 bg-content2 border border-divider rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground"
             >
               {categories.map((category) => (
                 <option key={category.value} value={category.value}>
@@ -309,7 +309,7 @@ const Deals = () => {
             <select
               value={filters.sortBy}
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
+              className="w-full px-4 py-3 bg-content2 border border-divider rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground"
             >
               <option value="rating">Highest Rated</option>
               <option value="newest">Newest First</option>
@@ -319,7 +319,7 @@ const Deals = () => {
           </div>
 
           {/* Category Quick Filters */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-sm">
             {categories.map((category) => {
               const Icon = category.icon
               const count = categoryStats.get(category.value) || 0
@@ -329,17 +329,17 @@ const Deals = () => {
                 <button
                   key={category.value}
                   onClick={() => handleFilterChange('category', category.value)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-sm container-px-sm container-py-xs rounded-lg text-sm font-medium transition-colors ${
                     isActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200'
+                      ? 'bg-primary text-white' 
+                      : 'bg-content2 text-foreground-600 hover:bg-content3 hover:text-foreground border border-divider'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   {category.label}
                   {category.value !== 'all' && (
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      isActive ? 'bg-white/20' : 'bg-gray-200'
+                    <span className={`text-xs container-px-xs container-py-xs rounded ${
+                      isActive ? 'bg-white/20' : 'bg-content3'
                     }`}>
                       {count}
                     </span>
@@ -352,21 +352,21 @@ const Deals = () => {
 
         {/* Category Description */}
         {selectedCategoryInfo && (
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-8 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl container-p-lg mb-8 border border-primary-200">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               {selectedCategoryInfo.title}
             </h3>
-            <p className="text-gray-600 mb-3">
+            <p className="text-foreground-600 mb-3">
               {selectedCategoryInfo.description}
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-sm">
               {selectedCategoryInfo.companies.slice(0, 8).map((company: string) => (
-                <span key={company} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">
+                <span key={company} className="bg-primary-100 text-primary-700 container-px-sm container-py-xs rounded text-sm">
                   {company}
                 </span>
               ))}
               {selectedCategoryInfo.companies.length > 8 && (
-                <span className="text-gray-600 text-sm">
+                <span className="text-foreground-600 text-sm">
                   +{selectedCategoryInfo.companies.length - 8} more
                 </span>
               )}
@@ -377,11 +377,11 @@ const Deals = () => {
         {/* No Results */}
         {filteredDeals.length === 0 && deals.length > 0 && (
           <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-medium text-foreground mb-2">No deals found</h3>
+            <p className="text-foreground-600 mb-6">Try adjusting your search or filter criteria</p>
             <button
               onClick={() => setFilters({ searchTerm: '', category: 'all', sortBy: 'rating' })}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
             >
               Clear Filters
             </button>
@@ -390,7 +390,7 @@ const Deals = () => {
 
         {/* Deal Cards */}
         {filteredDeals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg mb-12">
             {filteredDeals.map((deal) => (
               <DealCard
                 key={deal.id}
@@ -403,16 +403,18 @@ const Deals = () => {
         )}
 
         {/* Footer */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 sm:p-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Icons.users className="w-6 h-6 text-blue-600" />
-            <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
+        <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl container-p-lg text-center">
+          <div className="flex items-center justify-center gap-sm mb-4">
+            <Icons.users className="w-6 h-6 text-primary" />
+            <h3 className="text-xl font-semibold text-foreground">Curated Trading Platforms</h3>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
-            {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
-            Every company is verified, regulated, and trusted by our trading community.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-foreground-600 max-w-3xl mx-auto mb-6 text-lg leading-relaxed">
+              {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
+              Every company is verified, regulated, and trusted by our trading community.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-md text-sm text-foreground-600">
             {categories
               .filter(cat => cat.value !== 'all')
               .filter(cat => (categoryStats.get(cat.value) || 0) > 0)
@@ -420,20 +422,20 @@ const Deals = () => {
               .map((category) => {
                 const count = categoryStats.get(category.value) || 0
                 return (
-                  <span key={category.value} className="flex items-center gap-1">
-                    <span className="text-green-500">✓</span>
+                  <span key={category.value} className="flex items-center gap-xs">
+                    <span className="text-success">✓</span>
                     <span>{count} {category.label}</span>
                   </span>
                 )
               })}
             {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length === 0 ? (
-              <span className="flex items-center gap-1">
-                <span className="text-green-500">✓</span>
+              <span className="flex items-center gap-xs">
+                <span className="text-success">✓</span>
                 <span>Verified Companies</span>
               </span>
             ) : null}
-            <span className="flex items-center gap-1">
-              <span className="text-green-500">✓</span>
+            <span className="flex items-center gap-xs">
+              <span className="text-success">✓</span>
               <span>Real Reviews</span>
             </span>
           </div>
@@ -442,16 +444,16 @@ const Deals = () => {
         {/* Empty Deals State */}
         {deals.length === 0 && !dealsQuery.isLoading && (
           <div className="text-center py-12">
-            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deals Available</h3>
-            <p className="text-gray-600 mb-6">
+            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-foreground-400" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No Deals Available</h3>
+            <p className="text-foreground-600 mb-6">
               No trading deals found. Please check back later or contact support.
             </p>
             <button
               onClick={handleRetry}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
             >
-              <RefreshCw className="w-4 h-4 mr-2 inline" />
+              <Icons.refresh className="w-4 h-4 mr-2 inline" />
               Reload Deals
             </button>
           </div>

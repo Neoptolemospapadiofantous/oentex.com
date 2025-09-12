@@ -1,6 +1,14 @@
-// src/components/auth/AuthModals.tsx - REPLACE THIS FILE SIXTH (OPTIONAL - Better UX)
+// src/components/auth/AuthModals.tsx - Updated with HeroUI theme integration
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { createPortal } from 'react-dom'
+import { 
+  Modal, 
+  ModalContent, 
+  ModalHeader, 
+  ModalBody, 
+  ModalFooter,
+  Button,
+  Spinner
+} from '@heroui/react'
 import { Icons } from '../icons'
 import { useAuth } from '../../lib/authContext'
 
@@ -159,12 +167,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [state.isLoading, clearError, updateState, signInWithGoogle, signInWithMicrosoft, onClose])
 
-  // ✅ OPTIMIZED: Backdrop click handler
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !state.isLoading) {
-      onClose()
-    }
-  }, [onClose, state.isLoading])
 
   // ✅ ACCESSIBILITY: Microsoft icon component
   const MicrosoftIcon = () => (
@@ -176,191 +178,171 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     </svg>
   )
 
-  // ✅ OPTIMIZED: Provider button component
+  // ✅ OPTIMIZED: Provider button component using HeroUI
   const ProviderButton: React.FC<{
     provider: 'google' | 'microsoft'
     icon: React.ReactNode
     label: string
-    className: string
-  }> = ({ provider, icon, label, className }) => {
+    variant: 'bordered' | 'solid'
+    color: 'default' | 'primary'
+  }> = ({ provider, icon, label, variant, color }) => {
     const isProviderLoading = state.loadingProvider === provider
     const isDisabled = state.isLoading
     
     return (
-      <button
-        onClick={() => handleOAuthSignIn(provider)}
-        disabled={isDisabled}
-        aria-label={`${label} - ${mode === 'login' ? 'Sign in' : 'Create account'}`}
-        className={`
-          relative w-full py-4 px-6 rounded-xl font-medium transition-all duration-300 
-          flex items-center justify-center gap-3 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-          ${className}
-          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg transform hover:-translate-y-0.5'}
-        `}
+      <Button
+        onPress={() => handleOAuthSignIn(provider)}
+        isDisabled={isDisabled}
+        variant={variant}
+        color={color}
+        size="lg"
+        className="w-full font-medium"
+        startContent={isProviderLoading ? <Spinner size="sm" /> : icon}
+        isLoading={isProviderLoading}
       >
-        {isProviderLoading && (
-          <div className="absolute inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
-            <Icons.refresh className="w-5 h-5 animate-spin" />
-          </div>
-        )}
-        
-        <div className="flex items-center gap-3">
-          {icon}
-          <span className="text-lg">
-            {isProviderLoading ? 'Connecting...' : label}
-          </span>
-        </div>
-      </button>
+        {isProviderLoading ? 'Connecting...' : label}
+      </Button>
     )
   }
 
-  if (!isOpen) return null
-
-  const modalContent = (
-    <div 
-      className="fixed inset-0 z-[999999] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+  return (
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      size="md"
+      isDismissable={!state.isLoading}
+      hideCloseButton={state.isLoading}
+      classNames={{
+        base: "bg-background text-foreground shadow-2xl border border-divider",
+        header: "border-b border-divider px-8 py-8 bg-gradient-to-r from-background to-default-50",
+        body: "px-8 py-12 bg-background",
+        footer: "border-t border-divider px-8 py-8 bg-gradient-to-r from-default-50 to-background"
+      }}
     >
-      {/* Backdrop */}
-      <div
-        onClick={handleBackdropClick}
-        className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-sm"
-        aria-hidden="true"
-      />
-      
-      {/* Modal */}
-      <div
-        ref={modalRef}
-        className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-md max-h-[90vh] overflow-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <div className="text-center flex-1">
-            <h2 id="modal-title" className="text-2xl font-bold text-gray-900 mb-1">
-              {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
-            </h2>
-            <p className="text-sm text-gray-600">
-              {mode === 'login' 
-                ? 'Sign in to access your trading dashboard' 
-                : 'Start discovering the best trading platforms'
-              }
-            </p>
-          </div>
-          <button
-            ref={focusTrapRef}
-            onClick={onClose}
-            disabled={state.isLoading}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Close authentication modal"
-          >
-            <Icons.close className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
-          {state.success ? (
-            /* ✅ IMPROVED: Success State */
-            <div className="text-center py-8" role="alert" aria-live="polite">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Icons.success className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Success!
-              </h3>
-              <p className="text-gray-600">
-                Redirecting you to your dashboard...
+      <ModalContent>
+        {() => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h2 className="text-2xl font-bold text-foreground">
+                {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
+              </h2>
+              <p className="text-sm text-foreground-500">
+                {mode === 'login' 
+                  ? 'Sign in to access your trading dashboard' 
+                  : 'Start discovering the best trading platforms'
+                }
               </p>
-              <div className="mt-4">
-                <div className="w-32 h-1 bg-gray-200 rounded-full mx-auto overflow-hidden">
-                  <div className="w-full h-full bg-green-600 animate-pulse" />
+            </ModalHeader>
+
+            <ModalBody>
+              {state.success ? (
+                /* ✅ IMPROVED: Success State */
+                <div className="text-center py-16 px-8 bg-gradient-to-br from-success-50 to-success-100 rounded-2xl border border-success-200" role="alert" aria-live="polite">
+                  <div className="w-24 h-24 bg-success-200 rounded-full flex items-center justify-center mx-auto mb-10 shadow-lg">
+                    <Icons.success className="w-12 h-12 text-success" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-foreground mb-6">
+                    Success!
+                  </h3>
+                  <p className="text-foreground-600 text-xl mb-8">
+                    Redirecting you to your dashboard...
+                  </p>
+                  <div className="mt-10">
+                    <div className="w-48 h-2 bg-success-200 rounded-full mx-auto overflow-hidden shadow-inner">
+                      <div className="w-full h-full bg-success animate-pulse rounded-full" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* ✅ ACCESSIBILITY: Error Alert */}
-              {state.error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert" aria-live="assertive">
-                  <div className="flex items-center gap-3">
-                    <Icons.warning className="w-5 h-5 text-red-500 flex-shrink-0" />
-                    <p className="text-red-700 text-sm">{state.error}</p>
+              ) : (
+                <div className="space-y-10 py-4">
+                  {/* ✅ ACCESSIBILITY: Error Alert */}
+                  {state.error && (
+                    <div className="bg-gradient-to-r from-danger-50 to-danger-100 border-2 border-danger-200 rounded-2xl p-8 shadow-lg" role="alert" aria-live="assertive">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-danger-200 rounded-full flex items-center justify-center">
+                          <Icons.warning className="w-6 h-6 text-danger flex-shrink-0" />
+                        </div>
+                        <p className="text-danger text-base font-medium">{state.error}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ✅ OPTIMIZED: OAuth Buttons */}
+                  <div className="space-y-8 py-4">
+                    <ProviderButton
+                      provider="google"
+                      icon={<Icons.globe className="w-6 h-6" />}
+                      label="Continue with Google"
+                      variant="bordered"
+                      color="default"
+                    />
+
+                    <ProviderButton
+                      provider="microsoft"
+                      icon={<MicrosoftIcon />}
+                      label="Continue with Microsoft"
+                      variant="solid"
+                      color="primary"
+                    />
                   </div>
                 </div>
               )}
+            </ModalBody>
 
-              {/* ✅ OPTIMIZED: OAuth Buttons */}
-              <div className="space-y-3">
-                <ProviderButton
-                  provider="google"
-                  icon={<Icons.globe className="w-6 h-6" />}
-                  label="Continue with Google"
-                  className="bg-white border-2 border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50"
-                />
-
-                <ProviderButton
-                  provider="microsoft"
-                  icon={<MicrosoftIcon />}
-                  label="Continue with Microsoft"
-                  className="bg-blue-600 text-white hover:bg-blue-700"
-                />
-              </div>
-
-              {/* Footer */}
-              <div className="pt-6 space-y-4">
+            {!state.success && (
+              <ModalFooter className="flex flex-col gap-10 py-4">
                 {/* ✅ ACCESSIBILITY: Mode Switch */}
-                <div className="text-center text-sm text-gray-600 border-t border-gray-100 pt-4">
+                <div className="text-center text-base text-foreground-500 border-t-2 border-divider pt-10 w-full bg-gradient-to-r from-default-50 to-transparent rounded-t-2xl -mx-8 px-8">
                   {mode === 'login' ? (
                     <>
                       New to trading affiliate deals?{' '}
-                      <button
-                        onClick={() => onModeChange('register')}
-                        disabled={state.isLoading}
-                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
+                      <Button
+                        variant="light"
+                        color="primary"
+                        size="sm"
+                        onPress={() => onModeChange('register')}
+                        isDisabled={state.isLoading}
+                        className="text-primary font-medium p-0 h-auto min-w-0"
                       >
                         Create account
-                      </button>
+                      </Button>
                     </>
                   ) : (
                     <>
                       Already have an account?{' '}
-                      <button
-                        onClick={() => onModeChange('login')}
-                        disabled={state.isLoading}
-                        className="text-blue-600 font-medium hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:underline"
+                      <Button
+                        variant="light"
+                        color="primary"
+                        size="sm"
+                        onPress={() => onModeChange('login')}
+                        isDisabled={state.isLoading}
+                        className="text-primary font-medium p-0 h-auto min-w-0"
                       >
                         Sign in
-                      </button>
+                      </Button>
                     </>
                   )}
                 </div>
 
                 {/* Security Notice */}
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-2">
-                    🔒 Secure OAuth authentication • No passwords needed
-                  </p>
-                  <p className="text-xs text-gray-400">
+                <div className="text-center w-full space-y-4 bg-gradient-to-r from-default-100 to-default-50 rounded-2xl p-6 border border-default-200">
+              
+                  <p className="text-sm text-foreground-400">
                     By continuing, you agree to our{' '}
-                    <a href="/terms" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
+                    <a href="/terms" className="underline hover:text-foreground-600 focus:outline-none focus:text-foreground-600 font-medium">
                       Terms
                     </a>
                     {' '}and{' '}
-                    <a href="/privacy" className="underline hover:text-gray-600 focus:outline-none focus:text-gray-600">
+                    <a href="/privacy" className="underline hover:text-foreground-600 focus:outline-none focus:text-foreground-600 font-medium">
                       Privacy Policy
                     </a>
                   </p>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+              </ModalFooter>
+            )}
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   )
-
-  return createPortal(modalContent, document.body)
 }

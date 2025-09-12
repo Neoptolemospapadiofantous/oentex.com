@@ -1,3 +1,4 @@
+// src/components/Features.tsx - Refactored with Page Structure
 import { useState, useMemo } from 'react'
 import { Icons } from './icons'
 import { useFeaturedDealsQuery } from '../hooks/queries/useFeaturedDealsQuery'
@@ -18,7 +19,7 @@ const DEAL_TYPE_STYLES = {
   free_trial: 'from-purple-400/20 to-purple-600/20 border-purple-400/30 text-purple-600',
   cashback: 'from-amber-400/20 to-amber-600/20 border-amber-400/30 text-amber-600',
   promotion: 'from-pink-400/20 to-pink-600/20 border-pink-400/30 text-pink-600'
-}
+} as const
 
 const Features = () => {
   const featuredDealsQuery = useFeaturedDealsQuery(6)
@@ -43,23 +44,14 @@ const Features = () => {
     const data = featuredDealsQuery.data
     if (!data) return { companies: 0, deals: 0, categories: 0, totalReviews: 0, avgRating: 0 }
 
-    // Get ALL companies and deals from the full dataset
     const allCompanies = data.companies || []
     const allDeals = data.deals || []
     
-    // Filter active companies (status = 'active')
     const activeCompanies = allCompanies.filter(company => company.status === 'active')
-    
-    // Filter active deals (is_active = true)  
     const activeDeals = allDeals.filter(deal => deal.is_active === true)
-    
-    // Get total categories from categoriesQuery (all available categories)
     const totalCategories = categoriesQuery.data ? categoriesQuery.data.length : 0
-    
-    // Calculate total reviews from trading_companies.total_reviews field
     const totalReviews = activeCompanies.reduce((sum, company) => sum + (company.total_reviews || 0), 0)
     
-    // Calculate average rating from companies that have ratings > 0
     const companiesWithRatings = activeCompanies.filter(company => 
       company.overall_rating > 0 && company.total_reviews > 0
     )
@@ -68,11 +60,11 @@ const Features = () => {
       : 0
 
     return {
-      companies: activeCompanies.length, // Dynamic: actual count of active companies
-      deals: activeDeals.length, // Dynamic: actual count of active deals
-      categories: totalCategories, // Dynamic: from categories table
-      totalReviews, // Dynamic: sum of all company reviews
-      avgRating: Math.round(avgRating * 10) / 10 // Dynamic: calculated average
+      companies: activeCompanies.length,
+      deals: activeDeals.length,
+      categories: totalCategories,
+      totalReviews,
+      avgRating: Math.round(avgRating * 10) / 10
     }
   }, [featuredDealsQuery.data, categoriesQuery.data])
 
@@ -118,16 +110,14 @@ const Features = () => {
   // Error states
   if (categoriesQuery.error) {
     return (
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <Icons.database className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-text mb-2">Categories Not Available</h2>
-              <p className="text-textSecondary mb-6">
-                Unable to load trading categories. Please try again later.
-              </p>
-            </div>
+      <section className="page-section">
+        <div className="container-page">
+          <div className="flex-col-center min-h-96">
+            <Icons.database className="w-12 h-12 text-red-600 mb-4" />
+            <h2 className="text-xl font-semibold text-text mb-2">Categories Not Available</h2>
+            <p className="text-textSecondary">
+              Unable to load trading categories. Please try again later.
+            </p>
           </div>
         </div>
       </section>
@@ -136,19 +126,17 @@ const Features = () => {
 
   if (featuredDealsQuery.error) {
     return (
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <Icons.warning className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-text mb-2">Unable to Load Featured Deals</h2>
-              <p className="text-textSecondary mb-6">
-                {featuredDealsQuery.error instanceof Error 
-                  ? featuredDealsQuery.error.message 
-                  : 'Failed to load featured deals'
-                }
-              </p>
-            </div>
+      <section className="page-section">
+        <div className="container-page">
+          <div className="flex-col-center min-h-96">
+            <Icons.warning className="w-12 h-12 text-red-600 mb-4" />
+            <h2 className="text-xl font-semibold text-text mb-2">Unable to Load Featured Deals</h2>
+            <p className="text-textSecondary mb-6">
+              {featuredDealsQuery.error instanceof Error 
+                ? featuredDealsQuery.error.message 
+                : 'Failed to load featured deals'
+              }
+            </p>
           </div>
         </div>
       </section>
@@ -160,23 +148,20 @@ const Features = () => {
 
   if (isLoading) {
     return (
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="page-section">
+        <div className="container-page">
+          {/* Header */}
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-text mb-6">
-              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Loading Featured
-              </span>
+              <span className="gradient-text">Loading Featured</span>
               <br />
               Trading Deals
             </h2>
           </div>
           
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <Icons.refresh className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-textSecondary">Loading exclusive deals and top platforms...</p>
-            </div>
+          <div className="flex-col-center min-h-96">
+            <Icons.refresh className="w-8 h-8 animate-spin text-primary mb-4" />
+            <p className="text-textSecondary">Loading exclusive deals and top platforms...</p>
           </div>
         </div>
       </section>
@@ -184,109 +169,155 @@ const Features = () => {
   }
 
   return (
-    <section id="features" className="py-20 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="page-section relative section-transition component-fade-in">
+      
+      {/* Subtle connection effect from Hero section */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <svg className="absolute inset-0 w-full h-full opacity-10" role="presentation">
+          <defs>
+            <linearGradient id="featuresConnectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(var(--heroui-primary))" stopOpacity="0.3" />
+              <stop offset="50%" stopColor="hsl(var(--heroui-secondary))" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="hsl(var(--heroui-primary))" stopOpacity="0.3" />
+            </linearGradient>
+            <filter id="featuresGlow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Very subtle receiving connection lines from Hero */}
+          <line x1="5%" y1="0%" x2="95%" y2="8%" stroke="url(#featuresConnectionGradient)" strokeWidth="1" opacity="0.4" filter="url(#featuresGlow)" />
+          <line x1="10%" y1="0%" x2="90%" y2="12%" stroke="url(#featuresConnectionGradient)" strokeWidth="0.8" opacity="0.3" />
+          <line x1="15%" y1="0%" x2="85%" y2="16%" stroke="url(#featuresConnectionGradient)" strokeWidth="0.6" opacity="0.2" />
+        </svg>
         
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-text mb-6">
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Your Gateway to
-            </span>
+        {/* Very subtle animated connection dots */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
+          <div className="w-2 h-2 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-full animate-pulse opacity-30"></div>
+        </div>
+        <div className="absolute top-2 left-1/4 transform -translate-y-0.5">
+          <div className="w-1 h-1 bg-primary/20 rounded-full animate-pulse opacity-20" style={{ animationDelay: '0.5s' }}></div>
+        </div>
+        <div className="absolute top-2 right-1/4 transform -translate-y-0.5">
+          <div className="w-1 h-1 bg-secondary/20 rounded-full animate-pulse opacity-20" style={{ animationDelay: '1s' }}></div>
+        </div>
+      </div>
+
+      <div className="container-page relative z-10">
+        
+        {/* Header Section */}
+        <div className="text-center mb-16 animate-fade-in-up section-px-lg section-py-xl">
+          <h2 className="text-4xl lg:text-5xl font-bold text-text mb-8">
+            <span className="gradient-text">Your Gateway to</span>
             <br />
             Financial Success
           </h2>
-          <p className="text-xl text-textSecondary max-w-3xl mx-auto">
-            Discover exclusive deals, compare platforms, and maximize your trading potential with our 
-            comprehensive affiliate network and expert insights.
-          </p>
+          <div className="content-wide">
+            <p className="text-xl text-textSecondary leading-relaxed">
+              Discover exclusive deals, compare platforms, and maximize your trading potential with our 
+              comprehensive affiliate network and expert insights.
+            </p>
+          </div>
         </div>
 
         {/* Featured Deals Section */}
         {featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length > 0 && (
-          <div className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-text">
-                Featured Trading Platforms
-              </h3>
+          <div className="mb-12 animate-scale-in section-px-lg section-py-lg">
+            {/* Section Header */}
+            <div className="flex-between mb-10">
+              <div>
+                <h3 className="text-3xl font-bold text-text mb-2">
+                  Featured Trading Platforms
+                </h3>
+                <p className="text-textSecondary">
+                  Handpicked platforms with exclusive deals and bonuses
+                </p>
+              </div>
               <a
                 href="/deals"
-                className="inline-flex items-center text-primary hover:text-primaryHover transition-colors"
+                className="flex-center text-primary hover:text-primaryHover transition-colors group"
               >
                 View All Deals
-                <Icons.arrowRight className="w-4 h-4 ml-1" />
+                <Icons.arrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </a>
             </div>
 
-            {/* Category filters */}
+            {/* Enhanced Category Filters */}
             {categoriesQuery.data && categoriesQuery.data.length > 1 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                <button
-                  onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedCategory === 'all'
-                      ? 'bg-primary text-white'
-                      : 'bg-surface/50 text-textSecondary hover:bg-surface hover:text-text border border-border'
-                  }`}
-                >
-                  All Categories
-                </button>
-                {categoriesQuery.data
-                  .filter(cat => cat.value !== 'all')
-                  .slice(0, 5)
-                  .map((category) => (
-                    <button
-                      key={category.value}
-                      onClick={() => setSelectedCategory(category.value)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedCategory === category.value
-                          ? 'bg-primary text-white'
-                          : 'bg-surface/50 text-textSecondary hover:bg-surface hover:text-text border border-border'
-                      }`}
-                    >
-                      {category.label}
-                    </button>
-                  ))}
+              <div className="mb-8 container-px-sm container-py-md">
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-text">Filter by Category</h4>
+                </div>
+                <div className="flex flex-wrap gap-lg">
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className={`container-px-xl container-py-md rounded-xl text-base font-medium transition-all duration-200 ${
+                      selectedCategory === 'all'
+                        ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
+                        : 'glass text-textSecondary hover:text-text hover:bg-content1/50 border border-divider/50'
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {categoriesQuery.data
+                    .filter(cat => cat.value !== 'all')
+                    .slice(0, 5)
+                    .map((category) => (
+                      <button
+                        key={category.value}
+                        onClick={() => setSelectedCategory(category.value)}
+                        className={`container-px-xl container-py-md rounded-xl text-base font-medium transition-all duration-200 ${
+                          selectedCategory === category.value
+                            ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/25'
+                            : 'glass text-textSecondary hover:text-text hover:bg-content1/50 border border-divider/50'
+                        }`}
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                </div>
               </div>
             )}
 
-            {/* Deal cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDeals.slice(0, 6).map((deal) => (
-                <div 
-                  key={deal.id}
-                  className="group bg-surface/50 backdrop-blur-lg rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:transform hover:scale-105"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">
+            {/* Enhanced Deal Cards Grid */}
+            <div className="w-full max-w-7xl mx-auto container-px-md container-py-lg">
+              <div className="grid-deals">
+                {filteredDeals.slice(0, 6).map((deal) => (
+                <div key={deal.id} className="card-deal group">
+                  {/* Card Header */}
+                  <div className="flex-between my-lg">
+                    <div className="flex-start gap-md">
+                      <div className="relative">
                         {deal.company.logo_url ? (
                           <img 
                             src={deal.company.logo_url} 
                             alt={deal.company.name}
-                            className="w-8 h-8 rounded-lg object-cover"
+                            className="w-12 h-12 rounded-xl object-cover border border-divider/50"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
-                              target.nextElementSibling?.setAttribute('style', 'display: inline');
+                              target.nextElementSibling?.setAttribute('style', 'display: flex');
                             }}
                           />
                         ) : null}
-                        <span className={deal.company.logo_url ? 'hidden' : ''}>
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-2xl ${deal.company.logo_url ? 'hidden' : ''}`}>
                           {CATEGORY_ICONS[deal.company.category as keyof typeof CATEGORY_ICONS] || '🏢'}
-                        </span>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="text-lg font-semibold text-text">{deal.company.name}</h4>
-                        <span className="text-xs text-textSecondary bg-primary/10 px-2 py-1 rounded-full">
+                      <div className="flex-1">
+                        <h4 className="text-xl font-bold text-text my-xs">{deal.company.name}</h4>
+                        <span className="inline-flex items-center container-px-sm container-py-xs bg-primary/10 text-primary text-xs font-medium rounded-full">
                           {categoriesQuery.data?.find(cat => cat.value === deal.company.category)?.label || deal.company.category}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center">
-                        <Icons.star className="w-3 h-3 text-warning fill-current mr-1" />
-                        <span className="text-xs text-textSecondary">
+                      <div className="flex items-center justify-end my-xs">
+                        <Icons.star className="w-4 h-4 text-warning fill-current mr-1" />
+                        <span className="text-sm font-semibold text-text">
                           {(deal.company.overall_rating || 0).toFixed(1)}
                         </span>
                       </div>
@@ -296,34 +327,40 @@ const Features = () => {
                     </div>
                   </div>
 
-                  <p className="text-textSecondary text-sm mb-4 line-clamp-2">{deal.description}</p>
-
-                  <div className="mb-4">
-                    <span className={`inline-flex items-center px-3 py-1 bg-gradient-to-r border rounded-full text-xs font-medium ${
+                  {/* Card Content */}
+                  <div className="my-lg">
+                    <p className="text-textSecondary text-sm leading-relaxed line-clamp-3 my-md">
+                      {deal.description}
+                    </p>
+                    
+                    {/* Deal Badge */}
+                    <div className={`inline-flex items-center container-px-md container-py-sm bg-gradient-to-r border rounded-xl text-sm font-semibold ${
                       DEAL_TYPE_STYLES[deal.deal_type] || DEAL_TYPE_STYLES.bonus
                     }`}>
-                      <Icons.gift className="w-3 h-3 mr-1" />
+                      <Icons.gift className="w-4 h-4 mr-sm" />
                       {deal.value || deal.title}
-                    </span>
+                    </div>
                   </div>
 
+                  {/* Card Action */}
                   <a 
                     href={deal.affiliate_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group w-full bg-gradient-to-r from-primary to-secondary px-4 py-3 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center text-center no-underline"
+                    className="btn-primary w-full group"
                   >
                     Get Deal Now
-                    <Icons.externalLink className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <Icons.externalLink className="ml-sm w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </a>
                 </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Empty state for filtered category */}
+            {/* Empty State */}
             {filteredDeals.length === 0 && featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length > 0 && (
-              <div className="text-center py-12">
-                <Icons.gift className="w-12 h-12 mx-auto mb-4 text-textSecondary" />
+              <div className="flex-col-center py-8">
+                <Icons.gift className="w-12 h-12 mb-4 text-textSecondary" />
                 <h3 className="text-lg font-medium text-text mb-2">No deals in this category</h3>
                 <p className="text-textSecondary mb-4">Try selecting a different category or view all deals.</p>
                 <button
@@ -337,182 +374,118 @@ const Features = () => {
           </div>
         )}
 
-        {/* Platform Features Section */}
-        <div className="text-center mb-12">
-          <h3 className="text-2xl font-bold text-text mb-4">
+        {/* Enhanced Platform Features Section */}
+        <div className="text-center mb-8 section-px-lg section-py-xl">
+          <h3 className="text-3xl font-bold text-text mb-4">
             Why Choose Our Platform
           </h3>
+          <p className="text-textSecondary text-lg max-w-2xl mx-auto">
+            Discover the features that make us the trusted choice for traders worldwide
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid-cards section-px-lg section-py-lg">
           {features.map((feature, index) => (
-            <div 
-              key={index}
-              className="group bg-surface/50 backdrop-blur-lg rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:transform hover:scale-105"
-            >
-              <div className="relative overflow-hidden rounded-xl mb-6">
+            <div key={index} className="card-feature group animate-slide-in-left">
+              <div className="relative overflow-hidden rounded-xl mb-8">
                 <img 
                   src={feature.image} 
                   alt={feature.title}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
-                <div className="absolute bottom-4 left-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
-                    <feature.icon className="w-6 h-6 text-white" />
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent"></div>
               </div>
               
-              <h3 className="text-xl font-semibold text-text mb-3">{feature.title}</h3>
-              <p className="text-textSecondary leading-relaxed">{feature.description}</p>
+              <div className="px-2">
+                <h3 className="text-xl font-bold text-text mb-4">{feature.title}</h3>
+                <p className="text-textSecondary leading-relaxed text-sm">{feature.description}</p>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Enhanced CTA Section with Accurate Data */}
-        <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 border border-primary/20">
-            <div className="mb-6">
-              <h3 className="text-3xl font-bold text-text mb-4">
+        {/* Enhanced CTA Section */}
+        <div className="text-center my-3xl section-px-lg section-py-xl">
+          <div className="glass rounded-2xl p-2xl border-primary/20">
+            <div className="my-xl">
+              <h3 className="text-3xl lg:text-4xl font-bold text-text my-lg">
                 Start Trading with Exclusive Bonuses Today
               </h3>
-              <p className="text-lg text-textSecondary mb-6 max-w-2xl mx-auto">
-                Access handpicked trading platforms with member-exclusive deals across crypto, prop trading, and multi-asset markets.
-              </p>
-            </div>
-
-            {/* Dynamic Statistics Grid - Based on Actual Schema */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center justify-center mb-2">
-                  <Icons.shield className="w-5 h-5 text-primary mr-2" />
-                  <span className="text-2xl font-bold text-text">{stats.companies}</span>
-                </div>
-                <p className="text-sm text-textSecondary">Trading Platforms</p>
-              </div>
-              
-              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center justify-center mb-2">
-                  <Icons.gift className="w-5 h-5 text-secondary mr-2" />
-                  <span className="text-2xl font-bold text-text">{stats.deals}</span>
-                </div>
-                <p className="text-sm text-textSecondary">Exclusive Deals</p>
-              </div>
-              
-              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center justify-center mb-2">
-                  <Icons.chart className="w-5 h-5 text-primary mr-2" />
-                  <span className="text-2xl font-bold text-text">{stats.categories}</span>
-                </div>
-                <p className="text-sm text-textSecondary">Market Categories</p>
-              </div>
-              
-              <div className="bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div className="flex items-center justify-center mb-2">
-                  <Icons.users className="w-5 h-5 text-secondary mr-2" />
-                  <span className="text-2xl font-bold text-text">{stats.totalReviews}</span>
-                </div>
-                <p className="text-sm text-textSecondary">User Reviews</p>
+              <div className="content-wide">
+                <p className="text-lg text-textSecondary my-xl leading-relaxed">
+                  Access handpicked trading platforms with member-exclusive deals across crypto, prop trading, and multi-asset markets.
+                </p>
               </div>
             </div>
 
-            {/* Value Propositions */}
-            <div className="grid md:grid-cols-3 gap-4 mb-8 text-left">
-              <div className="flex items-center space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-textSecondary">Member-exclusive bonus offers</span>
+            {/* Enhanced Statistics Grid */}
+            <div className="grid-stats-4 my-2xl">
+              <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
+                <div className="flex-center my-sm">
+                  <Icons.shield className="w-6 h-6 text-primary mr-3" />
+                  <span className="text-3xl font-bold text-text">{stats.companies}</span>
+                </div>
+                <p className="text-sm text-textSecondary font-medium">Trading Platforms</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-textSecondary">Detailed platform reviews</span>
+              
+              <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
+                <div className="flex-center my-sm">
+                  <Icons.gift className="w-6 h-6 text-secondary mr-3" />
+                  <span className="text-3xl font-bold text-text">{stats.deals}</span>
+                </div>
+                <p className="text-sm text-textSecondary font-medium">Exclusive Deals</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 flex-shrink-0" />
-                <span className="text-textSecondary">Regulated broker partnerships</span>
+              
+              <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
+                <div className="flex-center my-sm">
+                  <Icons.chart className="w-6 h-6 text-primary mr-3" />
+                  <span className="text-3xl font-bold text-text">{stats.categories}</span>
+                </div>
+                <p className="text-sm text-textSecondary font-medium">Market Categories</p>
+              </div>
+              
+              <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
+                <div className="flex-center my-sm">
+                  <Icons.users className="w-6 h-6 text-secondary mr-3" />
+                  <span className="text-3xl font-bold text-text">{stats.totalReviews}</span>
+                </div>
+                <p className="text-sm text-textSecondary font-medium">User Reviews</p>
               </div>
             </div>
 
-            {/* Dynamic Platform Categories Preview */}
-            {categoriesQuery.data && categoriesQuery.data.length > 0 && (
-              <div className="mb-8">
-                <div className="flex flex-wrap justify-center gap-3">
-                  {categoriesQuery.data
-                    .filter(cat => cat.value !== 'all') // Exclude 'all' if it exists
-                    .map((category) => {
-                      // Map category values to display info
-                      const categoryDisplay = {
-                        'crypto_exchange': { emoji: '🪙', label: 'Crypto Exchanges', color: 'bg-blue-100 text-blue-800' },
-                        'prop_firm': { emoji: '💼', label: 'Prop Trading Firms', color: 'bg-purple-100 text-purple-800' },
-                        'multi_asset': { emoji: '🏦', label: 'Multi-Asset Brokers', color: 'bg-green-100 text-green-800' },
-                        'trading_tool': { emoji: '🔧', label: 'Trading Tools', color: 'bg-orange-100 text-orange-800' },
-                        'stock_broker': { emoji: '📈', label: 'Stock Brokers', color: 'bg-red-100 text-red-800' },
-                        'forex_broker': { emoji: '💱', label: 'Forex Brokers', color: 'bg-yellow-100 text-yellow-800' }
-                      }
-                      
-                      const display = categoryDisplay[category.value as keyof typeof categoryDisplay] || {
-                        emoji: '🏢',
-                        label: category.label || category.value.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                        color: 'bg-gray-100 text-gray-800'
-                      }
-                      
-                      return (
-                        <span 
-                          key={category.value}
-                          className={`${display.color} px-3 py-1 rounded-full text-sm font-medium`}
-                        >
-                          {display.emoji} {display.label}
-                        </span>
-                      )
-                    })}
+            {/* Enhanced CTA Button */}
+            <div className="my-xl">
+              <a href="/deals" className="btn-primary group text-lg container-px-xl container-py-md">
+                Browse All {stats.deals} Deals
+                <Icons.arrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
+
+            {/* Enhanced Trust Indicators */}
+            <div className="py-xl border-t border-divider/30">
+              <div className="flex flex-wrap items-center justify-center gap-md text-sm text-textSecondary">
+                <div className="flex items-center">
+                  <Icons.shield className="w-4 h-4 text-primary mr-2" />
+                  <span className="font-medium">{stats.companies} verified platforms</span>
                 </div>
-              </div>
-            )}
-
-            {/* Last Updated Info */}
-            {featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length > 0 && (
-              <div className="flex items-center justify-center space-x-2 mb-6 text-sm text-textSecondary">
-                <Icons.time className="w-4 h-4" />
-                <span>
-                  Deals updated: {new Date(Math.max(...featuredDealsQuery.data.featuredDeals.map(deal => new Date(deal.updated_at).getTime()))).toLocaleDateString()}
-                </span>
-              </div>
-            )}
-
-            {/* CTA Button */}
-            <a 
-              href="/deals"
-              className="inline-flex items-center bg-gradient-to-r from-primary to-secondary px-8 py-4 rounded-full text-white font-semibold text-lg hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 no-underline group"
-            >
-              Browse All {stats.deals} Deals
-              <Icons.arrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </a>
-
-            {/* Trust Indicators */}
-            <div className="mt-6 pt-6 border-t border-white/20">
-              <p className="text-sm text-textSecondary">
-                {stats.companies} verified platforms • {stats.deals} active offers • Updated daily
+                <div className="flex items-center">
+                  <Icons.gift className="w-4 h-4 text-secondary mr-2" />
+                  <span className="font-medium">{stats.deals} active offers</span>
+                </div>
+                <div className="flex items-center">
+                  <Icons.refresh className="w-4 h-4 text-primary mr-2" />
+                  <span className="font-medium">Updated daily</span>
+                </div>
                 {stats.avgRating > 0 && (
-                  <span className="inline-flex items-center ml-2">
-                    • <Icons.star className="w-3 h-3 text-warning fill-current mx-1" />
-                    {stats.avgRating.toFixed(1)} platform rating
-                  </span>
+                  <div className="flex items-center">
+                    <Icons.star className="w-4 h-4 text-warning fill-current mr-2" />
+                    <span className="font-medium">{stats.avgRating.toFixed(1)} platform rating</span>
+                  </div>
                 )}
-              </p>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Empty state for no deals */}
-        {featuredDealsQuery.data?.featuredDeals && featuredDealsQuery.data.featuredDeals.length === 0 && (
-          <div className="text-center py-12">
-            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold text-text mb-2">No Featured Deals Available</h3>
-            <p className="text-textSecondary mb-6">
-              Featured deals will appear here once they're added to the database.
-            </p>
-          </div>
-        )}
       </div>
     </section>
   )
