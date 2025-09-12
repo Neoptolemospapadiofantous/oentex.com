@@ -61,16 +61,53 @@ const ToastContainer: React.FC<ToastContainerProps> = ({ position = 'top-right',
       position={position}
       toastOptions={{
         duration: 4000,
+        style: {
+          background: 'hsl(var(--heroui-content1))',
+          color: 'hsl(var(--heroui-foreground))',
+          border: '1px solid hsl(var(--heroui-divider))',
+          borderRadius: '0.75rem',
+          padding: '1rem',
+          fontWeight: '500',
+          boxShadow: '0 10px 40px hsl(var(--heroui-foreground) / 0.15), 0 4px 16px hsl(var(--heroui-foreground) / 0.1)',
+          backdropFilter: 'blur(16px)',
+        },
         success: {
           duration: 3000,
-          style: { background: '#10B981', color: '#FFFFFF', fontWeight: '500' },
+          style: {
+            background: 'hsl(var(--heroui-success))',
+            color: 'hsl(var(--heroui-success-foreground))',
+            border: '1px solid hsl(var(--heroui-success) / 0.3)',
+            borderRadius: '0.75rem',
+            padding: '1rem',
+            fontWeight: '500',
+            boxShadow: '0 10px 40px hsl(var(--heroui-success) / 0.25), 0 4px 16px hsl(var(--heroui-success) / 0.1)',
+            backdropFilter: 'blur(16px)',
+          },
         },
         error: {
           duration: 5000,
-          style: { background: '#EF4444', color: '#FFFFFF', fontWeight: '500' },
+          style: {
+            background: 'hsl(var(--heroui-danger))',
+            color: 'hsl(var(--heroui-danger-foreground))',
+            border: '1px solid hsl(var(--heroui-danger) / 0.3)',
+            borderRadius: '0.75rem',
+            padding: '1rem',
+            fontWeight: '500',
+            boxShadow: '0 10px 40px hsl(var(--heroui-danger) / 0.25), 0 4px 16px hsl(var(--heroui-danger) / 0.1)',
+            backdropFilter: 'blur(16px)',
+          },
         },
         loading: {
-          style: { background: '#3B82F6', color: '#FFFFFF' },
+          style: {
+            background: 'hsl(var(--heroui-primary))',
+            color: 'hsl(var(--heroui-primary-foreground))',
+            border: '1px solid hsl(var(--heroui-primary) / 0.3)',
+            borderRadius: '0.75rem',
+            padding: '1rem',
+            fontWeight: '500',
+            boxShadow: '0 10px 40px hsl(var(--heroui-primary) / 0.25), 0 4px 16px hsl(var(--heroui-primary) / 0.1)',
+            backdropFilter: 'blur(16px)',
+          },
         },
       }}
       containerStyle={containerStyle}
