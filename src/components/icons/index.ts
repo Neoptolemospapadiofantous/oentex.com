@@ -245,6 +245,8 @@ import {
     stop: StopIcon,
     forward: ForwardIcon,
     backward: BackwardIcon,
+    cookie: CircleStackIcon,
+    userCheck: UserIcon,
     
   } as const
   
