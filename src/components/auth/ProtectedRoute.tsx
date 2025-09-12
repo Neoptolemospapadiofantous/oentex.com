@@ -1,8 +1,7 @@
 import React from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Button } from '@heroui/react'
 import { useAuth } from '../../lib/authContext'
-import { AuthModal } from './AuthModals'
-import { useState } from 'react'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -17,16 +16,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, loading } = useAuth()
   const location = useLocation()
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
+  const navigate = useNavigate()
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-textSecondary">Checking authentication...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -44,42 +39,41 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       localStorage.setItem('returnTo', location.pathname + location.search)
     } catch {}
     return (
-      <>
-        <div className="min-h-screen pt-20 flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-text mb-4">Authentication Required</h2>
-            <p className="text-textSecondary mb-6">
-              Please sign in to access this content.
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  setAuthMode('login')
-                  setShowAuthModal(true)
-                }}
-                className="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-4 rounded-lg font-medium hover:from-primary/90 hover:to-secondary/90 transition-all"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => {
-                  setAuthMode('register')
-                  setShowAuthModal(true)
-                }}
-                className="w-full border border-border text-text py-3 px-4 rounded-lg font-medium hover:bg-background transition-all"
-              >
-                Create Account
-              </button>
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-background via-default-50 to-background px-6">
+        <div className="text-center max-w-2xl mx-auto py-16 bg-background rounded-3xl shadow-2xl border border-divider p-16">
+          <div className="w-20 h-20 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <span className="text-primary text-2xl font-bold">🔐</span>
             </div>
           </div>
+          <h2 className="text-5xl font-bold text-foreground mb-8 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            Authentication Required
+          </h2>
+          <p className="text-foreground-500 mb-16 text-2xl font-medium">
+            Please sign in to access this content.
+          </p>
+          <div className="space-y-8">
+            <Button
+              onPress={() => navigate('/login')}
+              color="primary"
+              variant="solid"
+              size="lg"
+              className="w-full font-medium py-8 text-lg shadow-lg"
+            >
+              Sign In
+            </Button>
+            <Button
+              onPress={() => navigate('/register')}
+              color="default"
+              variant="bordered"
+              size="lg"
+              className="w-full font-medium py-8 text-lg shadow-lg border-2"
+            >
+              Create Account
+            </Button>
+          </div>
         </div>
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          mode={authMode}
-          onModeChange={setAuthMode}
-        />
-      </>
+      </div>
     )
   }
 
