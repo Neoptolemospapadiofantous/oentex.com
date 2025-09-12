@@ -75,11 +75,11 @@ const Deals: React.FC = () => {
 
   // ✅ COMPUTED: Deals with user ratings
   const dealsWithUserRatings = useMemo(() => {
-    const userRatings = userRatingsQuery.data || new Map()
+    const userRatings = userRatingsQuery.data || {}
     
     return deals.map(deal => ({
       ...deal,
-      userRating: deal.company?.id ? userRatings.get(deal.company.id) : undefined
+      userRating: deal.company?.id ? userRatings[deal.company.id] : undefined
     } as any)) // Type assertion to fix TypeScript inference issues
   }, [deals, userRatingsQuery.data])
 
