@@ -40,7 +40,8 @@
   --heroui-container-padding-md: 1.5rem;   /* 24px */
   --heroui-container-padding-lg: 2rem;     /* 32px */
   --heroui-container-padding-xl: 2.5rem;   /* 40px */
-  --heroui-container-padding-2xl: 3rem;    /* 48px */
+  --heroui-container-padding-2xl: 3.5rem;  /* 56px - increased for bigger padding */
+  --heroui-container-padding-3xl: 4.5rem;  /* 72px - extra large padding */
 }
 
 /* ===========================
@@ -207,6 +208,7 @@
 .container-p-lg { padding: var(--heroui-container-padding-lg); }
 .container-p-xl { padding: var(--heroui-container-padding-xl); }
 .container-p-2xl { padding: var(--heroui-container-padding-2xl); }
+.container-p-3xl { padding: var(--heroui-container-padding-3xl); }
 
 .container-px-xs { padding-left: var(--heroui-container-padding-xs); padding-right: var(--heroui-container-padding-xs); }
 .container-px-sm { padding-left: var(--heroui-container-padding-sm); padding-right: var(--heroui-container-padding-sm); }
@@ -214,6 +216,7 @@
 .container-px-lg { padding-left: var(--heroui-container-padding-lg); padding-right: var(--heroui-container-padding-lg); }
 .container-px-xl { padding-left: var(--heroui-container-padding-xl); padding-right: var(--heroui-container-padding-xl); }
 .container-px-2xl { padding-left: var(--heroui-container-padding-2xl); padding-right: var(--heroui-container-padding-2xl); }
+.container-px-3xl { padding-left: var(--heroui-container-padding-3xl); padding-right: var(--heroui-container-padding-3xl); }
 
 .container-py-xs { padding-top: var(--heroui-container-padding-xs); padding-bottom: var(--heroui-container-padding-xs); }
 .container-py-sm { padding-top: var(--heroui-container-padding-sm); padding-bottom: var(--heroui-container-padding-sm); }
@@ -221,6 +224,7 @@
 .container-py-lg { padding-top: var(--heroui-container-padding-lg); padding-bottom: var(--heroui-container-padding-lg); }
 .container-py-xl { padding-top: var(--heroui-container-padding-xl); padding-bottom: var(--heroui-container-padding-xl); }
 .container-py-2xl { padding-top: var(--heroui-container-padding-2xl); padding-bottom: var(--heroui-container-padding-2xl); }
+.container-py-3xl { padding-top: var(--heroui-container-padding-3xl); padding-bottom: var(--heroui-container-padding-3xl); }
 
 /* ===========================
    🎨 ADDITIONAL SPACING UTILITIES
@@ -245,6 +249,48 @@
 .m-2xl { margin: var(--heroui-padding-2xl); }
 .m-3xl { margin: var(--heroui-padding-3xl); }
 .m-4xl { margin: var(--heroui-padding-4xl); }
+
+/* Bottom margin utilities */
+.mb-xs { margin-bottom: var(--heroui-padding-xs); }
+.mb-sm { margin-bottom: var(--heroui-padding-sm); }
+.mb-md { margin-bottom: var(--heroui-padding-md); }
+.mb-lg { margin-bottom: var(--heroui-padding-lg); }
+.mb-xl { margin-bottom: var(--heroui-padding-xl); }
+.mb-2xl { margin-bottom: var(--heroui-padding-2xl); }
+.mb-3xl { margin-bottom: var(--heroui-padding-3xl); }
+.mb-4xl { margin-bottom: var(--heroui-padding-4xl); }
+.mb-5xl { margin-bottom: 5rem; }
+.mb-6xl { margin-bottom: 6rem; }
+
+/* Top margin utilities */
+.mt-xs { margin-top: var(--heroui-padding-xs); }
+.mt-sm { margin-top: var(--heroui-padding-sm); }
+.mt-md { margin-top: var(--heroui-padding-md); }
+.mt-lg { margin-top: var(--heroui-padding-lg); }
+.mt-xl { margin-top: var(--heroui-padding-xl); }
+.mt-2xl { margin-top: var(--heroui-padding-2xl); }
+.mt-3xl { margin-top: var(--heroui-padding-3xl); }
+.mt-4xl { margin-top: var(--heroui-padding-4xl); }
+
+/* Left margin utilities */
+.ml-xs { margin-left: var(--heroui-padding-xs); }
+.ml-sm { margin-left: var(--heroui-padding-sm); }
+.ml-md { margin-left: var(--heroui-padding-md); }
+.ml-lg { margin-left: var(--heroui-padding-lg); }
+.ml-xl { margin-left: var(--heroui-padding-xl); }
+.ml-2xl { margin-left: var(--heroui-padding-2xl); }
+.ml-3xl { margin-left: var(--heroui-padding-3xl); }
+.ml-4xl { margin-left: var(--heroui-padding-4xl); }
+
+/* Right margin utilities */
+.mr-xs { margin-right: var(--heroui-padding-xs); }
+.mr-sm { margin-right: var(--heroui-padding-sm); }
+.mr-md { margin-right: var(--heroui-padding-md); }
+.mr-lg { margin-right: var(--heroui-padding-lg); }
+.mr-xl { margin-right: var(--heroui-padding-xl); }
+.mr-2xl { margin-right: var(--heroui-padding-2xl); }
+.mr-3xl { margin-right: var(--heroui-padding-3xl); }
+.mr-4xl { margin-right: var(--heroui-padding-4xl); }
 
 .mx-xs { margin-left: var(--heroui-padding-xs); margin-right: var(--heroui-padding-xs); }
 .mx-sm { margin-left: var(--heroui-padding-sm); margin-right: var(--heroui-padding-sm); }
@@ -557,6 +603,26 @@
    📏 SPACING UTILITIES
    ========================== */
 
+/* Space utilities using theme padding */
+.space-y-xs > * + * { margin-top: var(--heroui-padding-xs); }
+.space-y-sm > * + * { margin-top: var(--heroui-padding-sm); }
+.space-y-md > * + * { margin-top: var(--heroui-padding-md); }
+.space-y-lg > * + * { margin-top: var(--heroui-padding-lg); }
+.space-y-xl > * + * { margin-top: var(--heroui-padding-xl); }
+.space-y-2xl > * + * { margin-top: var(--heroui-padding-2xl); }
+.space-y-3xl > * + * { margin-top: var(--heroui-padding-3xl); }
+.space-y-4xl > * + * { margin-top: var(--heroui-padding-4xl); }
+
+.space-x-xs > * + * { margin-left: var(--heroui-padding-xs); }
+.space-x-sm > * + * { margin-left: var(--heroui-padding-sm); }
+.space-x-md > * + * { margin-left: var(--heroui-padding-md); }
+.space-x-lg > * + * { margin-left: var(--heroui-padding-lg); }
+.space-x-xl > * + * { margin-left: var(--heroui-padding-xl); }
+.space-x-2xl > * + * { margin-left: var(--heroui-padding-2xl); }
+.space-x-3xl > * + * { margin-left: var(--heroui-padding-3xl); }
+.space-x-4xl > * + * { margin-left: var(--heroui-padding-4xl); }
+
+/* Legacy space utilities (keeping for compatibility) */
 .space-y-4 > * + * {
   margin-top: 1rem;
 }
@@ -576,6 +642,13 @@
 .space-x-4 > * + * {
   margin-left: 1rem;
 }
+
+/* Animation delay utilities */
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
 
 /* ===========================
    🎭 ENHANCED ANIMATIONS

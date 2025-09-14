@@ -1,4 +1,4 @@
-// src/pages/auth/MyDeals.tsx - AUTHENTICATED VERSION WITH EDIT
+// src/pages/auth/MyDeals.tsx - ENHANCED PROFESSIONAL VERSION
 import React, { useState, useMemo } from 'react'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
@@ -16,6 +16,46 @@ interface Rating {
   created_at: string
   updated_at: string
 }
+
+// Enhanced Loading Skeleton Components
+const StatCardSkeleton = () => (
+  <div className="bg-content1/60 backdrop-blur-xl rounded-3xl container-p-lg border border-divider/30 animate-pulse">
+    <div className="flex items-start justify-between">
+      <div className="flex-1 space-y-md">
+        <div className="flex items-center justify-between">
+          <div className="w-12 h-12 bg-content2 rounded-2xl"></div>
+          <div className="w-16 h-6 bg-content2 rounded-lg"></div>
+        </div>
+        <div className="space-y-sm">
+          <div className="w-20 h-8 bg-content2 rounded-lg"></div>
+          <div className="w-32 h-4 bg-content2 rounded-md"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+const RatingCardSkeleton = () => (
+  <div className="bg-content1/60 backdrop-blur-xl rounded-3xl container-p-lg border border-divider/30 animate-pulse">
+    <div className="space-y-md">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-md">
+          <div className="w-12 h-12 bg-content2 rounded-2xl"></div>
+          <div className="space-y-sm">
+            <div className="w-32 h-5 bg-content2 rounded-md"></div>
+            <div className="w-24 h-4 bg-content2 rounded-md"></div>
+          </div>
+        </div>
+        <div className="w-16 h-8 bg-content2 rounded-lg"></div>
+      </div>
+      <div className="w-full h-16 bg-content2 rounded-lg"></div>
+      <div className="flex items-center justify-between">
+        <div className="w-24 h-4 bg-content2 rounded-md"></div>
+        <div className="w-20 h-8 bg-content2 rounded-lg"></div>
+      </div>
+    </div>
+  </div>
+)
 
 // helper
 function averageFromCategories(r: any): number {
@@ -156,40 +196,58 @@ const MyDeals: React.FC = () => {
     refetchCompanies()
   }
 
+  // Loading state
   if (ratingsLoading || companiesLoading) {
     return (
-      <div className="space-y-lg">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
-          <p className="mt-2 text-foreground-600">Loading your platform ratings...</p>
-        </div>
-
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <Icons.refresh className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-foreground-600">Loading your ratings...</p>
+      <div className="min-h-screen">
+        <div className="container-page section-py-xl">
+          {/* Loading Header */}
+          <div className="text-center mb-2xl">
+            <div className="w-48 h-8 bg-content2 rounded-lg mx-auto mb-lg animate-pulse"></div>
+            <div className="w-64 h-6 bg-content2 rounded-lg mx-auto animate-pulse"></div>
+          </div>
+          
+          {/* Loading Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-2xl">
+            {[...Array(3)].map((_, index) => (
+              <StatCardSkeleton key={index} />
+            ))}
+          </div>
+          
+          {/* Loading Content */}
+          <div className="space-y-md">
+            {[...Array(4)].map((_, index) => (
+              <RatingCardSkeleton key={index} />
+            ))}
           </div>
         </div>
       </div>
     )
   }
 
+  // Error state
   if (ratingsError || companiesError) {
     return (
-      <div className="space-y-lg">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
-          <p className="mt-2 text-foreground-600">Error loading your ratings</p>
-        </div>
-
-        <div className="bg-content1 rounded-xl border border-divider container-p-lg text-center">
-          <p className="text-danger mb-4">Failed to load your ratings</p>
-          <button
-            onClick={handleRetry}
-            className="container-px-md container-py-sm rounded-lg text-white bg-primary hover:bg-primary-600"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen">
+        <div className="container-page section-py-xl">
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center animate-fade-in-up">
+              <div className="w-20 h-20 bg-gradient-to-br from-danger to-danger/80 rounded-3xl flex items-center justify-center mb-2xl shadow-2xl shadow-danger/20">
+                <Icons.warning className="w-10 h-10 text-danger-foreground" />
+              </div>
+              <h2 className="text-3xl font-bold gradient-text mb-lg">Failed to load your ratings</h2>
+              <p className="text-xl text-foreground/70 mb-2xl max-w-lg mx-auto">
+                There was an error loading your ratings data. Please try refreshing the page.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="px-2xl py-lg bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/25"
+              >
+                <Icons.refresh className="w-5 h-5 mr-sm inline" />
+                Try Again
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -200,171 +258,288 @@ const MyDeals: React.FC = () => {
     ? (ratingsArray.reduce((sum, r: any) => sum + (r.rating || 0), 0) / totalRatings).toFixed(1)
     : '0.0'
 
+  const lastUpdated = totalRatings > 0
+    ? new Date(Math.max(...ratingsArray.map((r: any) => new Date(r.updated_at).getTime()))).toLocaleDateString()
+    : 'Never'
+
   return (
-    <div className="space-y-lg">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">My Ratings</h1>
-        <p className="mt-2 text-foreground-600">Manage and review your platform ratings</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground-600 mb-1">Total Ratings</p>
-              <p className="text-2xl font-bold text-foreground">{totalRatings}</p>
-              <p className="text-sm font-medium text-primary mt-1">Platforms rated</p>
-            </div>
-            <div className="w-12 h-12 flex items-center justify-center">
-              <Icons.star className="w-6 h-6 text-primary" />
-            </div>
-          </div>
+    <div className="min-h-screen">
+      <div className="container-page section-py-xl">
+        {/* Enhanced Header */}
+        <div className="text-center mb-2xl">
+          <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-lg">
+            My Platform Ratings
+          </h1>
+          <p className="text-lg text-foreground/70 mb-sm">
+            Manage and review your platform ratings and reviews
+          </p>
+          <p className="text-sm text-foreground/60">
+            Track your trading platform experiences and share feedback with the community
+          </p>
         </div>
 
-        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground-600 mb-1">Average Rating</p>
-              <p className="text-2xl font-bold text-foreground">{averageRating}</p>
-              <p className="text-sm font-medium text-success mt-1">Your average</p>
-            </div>
-            <div className="w-12 h-12 flex items-center justify-center">
-              <Icons.arrowTrendingUp className="w-6 h-6 text-success" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-content1 rounded-xl border border-divider container-p-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground-600 mb-1">Last Updated</p>
-              <p className="text-2xl font-bold text-foreground">
-                {totalRatings > 0
-                  ? new Date(Math.max(...ratingsArray.map((r: any) => new Date(r.updated_at).getTime()))).toLocaleDateString()
-                  : 'Never'
-                }
-              </p>
-              <p className="text-sm font-medium text-warning mt-1">Most recent</p>
-            </div>
-            <div className="w-12 h-12 flex items-center justify-center">
-              <Icons.calendar className="w-6 h-6 text-warning" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters and Sort */}
-      <div className="bg-content1 rounded-xl border border-divider container-p-lg">
-        <div className="flex flex-col sm:flex-row gap-sm">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-foreground-700 mb-2">Filter by Rating</label>
-            <select
-              value={filterRating}
-              onChange={(e) => setFilterRating(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="w-full container-px-sm container-py-xs border border-divider rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              <option value="all">All Ratings</option>
-              <option value={5}>5 Stars</option>
-              <option value={4}>4 Stars</option>
-              <option value={3}>3 Stars</option>
-              <option value={2}>2 Stars</option>
-              <option value={1}>1 Star</option>
-            </select>
-          </div>
-
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-foreground-700 mb-2">Sort By</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full container-px-sm container-py-xs border border-divider rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="rating">Highest Rating</option>
-              <option value="company">Company A-Z</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Ratings List */}
-      {filteredAndSortedRatings.length > 0 ? (
-        <div className="space-y-sm">
-          {filteredAndSortedRatings.map((rating: any) => (
-            <div key={rating.id} className="bg-content1 rounded-xl border border-divider container-p-lg hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-sm mb-3">
-                    <h3 className="text-lg font-semibold text-foreground">{rating.company_name}</h3>
-                    <div className="flex items-center gap-xs">
-                      {[...Array(5)].map((_, i) => {
-                        const filled = Math.round(rating.rating || 0)
-                        return (
-                          <Icons.star key={i} className={`w-4 h-4 ${i < filled ? 'text-warning fill-current' : 'text-foreground-300'}`} />
-                        )
-                      })}
-                      <span className="ml-2 text-sm font-medium text-foreground-600">
-                        {(rating.rating || 0).toFixed(1)}/5
-                      </span>
+        {/* Enhanced Stats Grid */}
+        <section className="mb-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+            {/* Total Ratings */}
+            <div className="group relative overflow-hidden bg-content1/60 backdrop-blur-xl rounded-3xl container-p-lg border border-divider/30 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 transform hover:scale-[1.02]">
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-lg">
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                      <Icons.star className="w-7 h-7 text-primary-foreground" />
                     </div>
                   </div>
-
-                  {rating.review && <p className="text-foreground-600 mb-3">{rating.review}</p>}
-
-                  <div className="flex items-center gap-md text-sm text-foreground-500">
-                    <span>Rated on {new Date(rating.created_at).toLocaleDateString()}</span>
-                    {rating.updated_at !== rating.created_at && (
-                      <span>Updated on {new Date(rating.updated_at).toLocaleDateString()}</span>
-                    )}
+                  <div className="text-xs font-semibold px-sm py-xs rounded-lg bg-primary/20 text-primary border border-primary/30">
+                    Platforms rated
                   </div>
+                </div>
 
-                  <div className="mt-4">
-                    <button
-                      onClick={() => openEditModal(rating)}
-                      className="container-px-md container-py-sm rounded-lg text-white bg-primary hover:bg-primary-600"
-                    >
-                      Edit rating
-                    </button>
-                  </div>
+                <div className="space-y-sm">
+                  <h3 className="text-4xl font-bold text-primary group-hover:text-primary transition-colors duration-300 tracking-tight">
+                    {totalRatings}
+                  </h3>
+                  <p className="text-base font-semibold text-foreground group-hover:text-foreground transition-colors duration-300">
+                    Total Ratings
+                  </p>
+                  <p className="text-sm text-foreground/60 leading-relaxed">
+                    Platforms you've reviewed
+                  </p>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-content1 rounded-xl border border-divider container-p-lg text-center">
-          <Icons.star className="w-16 h-16 mx-auto mb-4 text-foreground-400" />
-          <h3 className="text-xl font-semibold text-foreground mb-2">
-            {filterRating !== 'all' ? `No ${filterRating}-star ratings found` : 'No ratings yet'}
-          </h3>
-          <p className="text-foreground-600 mb-6">
-            {filterRating !== 'all'
-              ? 'Try adjusting your filter criteria or rate some platforms first.'
-              : 'Start rating platforms to see them appear here.'}
-          </p>
-          <button
-            onClick={() => window.location.href = '/deals'}
-            className="bg-primary text-white container-px-lg container-py-sm rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            Browse Platforms
-          </button>
-        </div>
-      )}
 
-      {/* Rating Modal */}
-      {isModalOpen && activeCompanyId && (
-        <RatingModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          companyId={activeCompanyId}
-          companyName={activeCompanyName}
-          existingRating={existingRating}
-          onRatingSubmitted={handleRatingSubmitted}
-          companyRating={activeCompanyStats}
-        />
-      )}
+            {/* Average Rating */}
+            <div className="group relative overflow-hidden bg-content1/60 backdrop-blur-xl rounded-3xl container-p-lg border border-divider/30 hover:border-success/30 transition-all duration-500 hover:shadow-2xl hover:shadow-success/10 transform hover:scale-[1.02]">
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-lg">
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-success to-success/80 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                      <Icons.arrowTrendingUp className="w-7 h-7 text-success-foreground" />
+                    </div>
+                  </div>
+                  <div className="text-xs font-semibold px-sm py-xs rounded-lg bg-success/20 text-success border border-success/30">
+                    Your average
+                  </div>
+                </div>
+
+                <div className="space-y-sm">
+                  <h3 className="text-4xl font-bold text-success group-hover:text-success transition-colors duration-300 tracking-tight">
+                    {averageRating}
+                  </h3>
+                  <p className="text-base font-semibold text-foreground group-hover:text-foreground transition-colors duration-300">
+                    Average Rating
+                  </p>
+                  <p className="text-sm text-foreground/60 leading-relaxed">
+                    Your satisfaction score
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Last Updated */}
+            <div className="group relative overflow-hidden bg-content1/60 backdrop-blur-xl rounded-3xl container-p-lg border border-divider/30 hover:border-warning/30 transition-all duration-500 hover:shadow-2xl hover:shadow-warning/10 transform hover:scale-[1.02]">
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-lg">
+                  <div className="relative">
+                    <div className="w-14 h-14 bg-gradient-to-br from-warning to-warning/80 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                      <Icons.calendar className="w-7 h-7 text-warning-foreground" />
+                    </div>
+                  </div>
+                  <div className="text-xs font-semibold px-sm py-xs rounded-lg bg-warning/20 text-warning border border-warning/30">
+                    Most recent
+                  </div>
+                </div>
+
+                <div className="space-y-sm">
+                  <h3 className="text-lg font-bold text-warning group-hover:text-warning transition-colors duration-300 tracking-tight">
+                    {lastUpdated}
+                  </h3>
+                  <p className="text-base font-semibold text-foreground group-hover:text-foreground transition-colors duration-300">
+                    Last Updated
+                  </p>
+                  <p className="text-sm text-foreground/60 leading-relaxed">
+                    Latest rating activity
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced Filters */}
+        <section className="mb-xl">
+          <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
+            <div className="flex items-center gap-md mb-lg">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center">
+                <Icons.filter className="w-4 h-4 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">Filter & Sort</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
+              <div className="space-y-sm">
+                <label className="block text-sm font-medium text-foreground mb-sm">Filter by Rating</label>
+                <select
+                  value={filterRating}
+                  onChange={(e) => setFilterRating(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-background/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50"
+                >
+                  <option value="all">All Ratings</option>
+                  <option value={5}>5 Stars ⭐⭐⭐⭐⭐</option>
+                  <option value={4}>4 Stars ⭐⭐⭐⭐</option>
+                  <option value={3}>3 Stars ⭐⭐⭐</option>
+                  <option value={2}>2 Stars ⭐⭐</option>
+                  <option value={1}>1 Star ⭐</option>
+                </select>
+              </div>
+
+              <div className="space-y-sm">
+                <label className="block text-sm font-medium text-foreground mb-sm">Sort By</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-background/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="rating">Highest Rating</option>
+                  <option value="company">Company A-Z</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Enhanced Ratings List */}
+        <section>
+          {filteredAndSortedRatings.length > 0 ? (
+            <div className="space-y-md">
+              {filteredAndSortedRatings.map((rating: any, index) => (
+                <div 
+                  key={rating.id} 
+                  className="group bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 hover:border-primary/20 transform hover:scale-[1.01]"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      {/* Company Header */}
+                      <div className="flex items-center gap-md mb-lg">
+                        <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center">
+                          <Icons.star className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                            {rating.company_name}
+                          </h3>
+                          <div className="flex items-center gap-md">
+                            <div className="flex items-center gap-xs">
+                              {[...Array(5)].map((_, i) => {
+                                const filled = Math.round(rating.rating || 0)
+                                return (
+                                  <Icons.star 
+                                    key={i} 
+                                    className={`w-4 h-4 ${i < filled ? 'text-warning fill-current' : 'text-foreground/300'}`} 
+                                  />
+                                )
+                              })}
+                              <span className="ml-sm text-sm font-semibold text-foreground/80">
+                                {(rating.rating || 0).toFixed(1)}/5
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Review Content */}
+                      {rating.review && (
+                        <div className="bg-content2/30 rounded-2xl container-p-lg mb-lg border border-divider/20">
+                          <p className="text-foreground/80 leading-relaxed italic">
+                            "{rating.review}"
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Rating Details */}
+                      <div className="flex flex-wrap items-center gap-lg text-sm text-foreground/60 mb-lg">
+                        <span className="flex items-center gap-xs">
+                          <Icons.calendar className="w-4 h-4" />
+                          Rated on {new Date(rating.created_at).toLocaleDateString()}
+                        </span>
+                        {rating.updated_at !== rating.created_at && (
+                          <span className="flex items-center gap-xs">
+                            <Icons.refresh className="w-4 h-4" />
+                            Updated on {new Date(rating.updated_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <button
+                        onClick={() => openEditModal(rating)}
+                        className="flex items-center gap-sm px-xl py-md bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white rounded-2xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
+                      >
+                        <Icons.edit className="w-4 h-4" />
+                        Edit Rating
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Enhanced Empty State */
+            <div className="text-center py-4xl">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center mb-2xl mx-auto shadow-2xl shadow-primary/20">
+                <Icons.star className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold gradient-text mb-lg">
+                {filterRating !== 'all' ? `No ${filterRating}-star ratings found` : 'No ratings yet'}
+              </h3>
+              <p className="text-xl text-foreground/70 mb-2xl max-w-lg mx-auto">
+                {filterRating !== 'all'
+                  ? 'Try adjusting your filter criteria or rate some platforms first.'
+                  : 'Start rating platforms to see them appear here and help the community.'}
+              </p>
+              <button
+                onClick={() => window.location.href = '/deals'}
+                className="px-2xl py-lg bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/25"
+              >
+                <Icons.search className="w-5 h-5 mr-sm inline" />
+                Browse Platforms
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Enhanced Footer */}
+        <footer className="section-py-lg">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-lg mb-md">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+              <p className="text-sm text-foreground/60">
+                Your ratings help improve our platform recommendations
+              </p>
+            </div>
+            <p className="text-xs text-foreground/40">
+              Keep rating platforms to build your profile • {totalRatings} ratings and counting
+            </p>
+          </div>
+        </footer>
+
+        {/* Rating Modal */}
+        {isModalOpen && activeCompanyId && (
+          <RatingModal
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            companyId={activeCompanyId}
+            companyName={activeCompanyName}
+            existingRating={existingRating}
+            onRatingSubmitted={handleRatingSubmitted}
+            companyRating={activeCompanyStats}
+          />
+        )}
+      </div>
     </div>
   )
 }
