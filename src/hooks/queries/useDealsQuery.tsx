@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { ratingService, RatingSubmissionData } from '../../lib/services/ratingService'
 import { useAuth } from '../../lib/authContext'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 
 // Interfaces for deals data
 export interface Deal {
@@ -580,7 +580,7 @@ export const useSubmitRatingMutation = () => {
     },
     onError: (error, variables, context) => {
       console.error('❌ Rating submission failed:', error)
-      toast.error('Failed to submit rating. Please try again.')
+      showErrorToast('Failed to submit rating. Please try again.')
       
       // Restore previous data
       if (context?.previousDeals) {
@@ -589,7 +589,7 @@ export const useSubmitRatingMutation = () => {
     },
     onSuccess: (data, { companyId }) => {
       console.log('✅ Rating submitted successfully:', data)
-      toast.success('Rating submitted successfully!')
+      showSuccessToast('Rating submitted successfully!')
       
       // Invalidate and refetch related queries
       queryClient.invalidateQueries({ queryKey: ['deals'] })

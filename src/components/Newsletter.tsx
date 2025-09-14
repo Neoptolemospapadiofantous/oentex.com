@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react'
 import { Icons } from './icons'
 import { supabase } from '../lib/supabase'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from './ui/AppToast'
 
 let useFeaturedDealsQuery: any = null
 try {
@@ -54,13 +54,13 @@ const Newsletter = () => {
     e.preventDefault()
     
     if (!email) {
-      toast.error('Please enter your email address')
+      showErrorToast('Please enter your email address')
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address')
+      showErrorToast('Please enter a valid email address')
       return
     }
 
@@ -84,26 +84,26 @@ const Newsletter = () => {
             error.message?.includes('Conflict') || 
             error.message?.includes('already subscribed') || 
             error.message?.includes('Email already subscribed')) {
-          toast.error('This email is already subscribed to our newsletter')
+          showErrorToast('This email is already subscribed to our newsletter')
         } else if (error.message?.includes('400')) {
-          toast.error('Invalid email address format')
+          showErrorToast('Invalid email address format')
         } else if (error.message?.includes('500')) {
-          toast.error('Server error - please try again later')
+          showErrorToast('Server error - please try again later')
         } else {
-          toast.error('Failed to subscribe. Please try again later.')
+          showErrorToast('Failed to subscribe. Please try again later.')
         }
         return
       }
 
       if (data?.success) {
-        toast.success(data.message || 'Successfully subscribed!')
+        showSuccessToast(data.message || 'Successfully subscribed!')
         setEmail('')
       } else {
-        toast.error('Failed to subscribe. Please try again later.')
+        showErrorToast('Failed to subscribe. Please try again later.')
       }
       
     } catch (error) {
-      toast.error('Failed to subscribe. Please try again later.')
+      showErrorToast('Failed to subscribe. Please try again later.')
     } finally {
       setIsLoading(false)
     }

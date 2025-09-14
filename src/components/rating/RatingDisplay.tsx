@@ -1,4 +1,4 @@
-// src/components/rating/RatingDisplay.tsx - Enhanced with user counts and statistics
+// src/components/rating/RatingDisplay.tsx - Updated with modern design system
 import { useState } from 'react'
 import { Icons } from '../icons'
 
@@ -65,19 +65,19 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
             return (
               <Icons.star
                 key={starNumber}
-                className={`${classes.star} fill-yellow-400 text-yellow-400`}
+                className={`${classes.star} fill-warning text-warning`}
               />
             )
           } else if (rating > starNumber - 1) {
             const fillPercentage = (rating - (starNumber - 1)) * 100
             return (
               <div key={starNumber} className="relative">
-                <Icons.star className={`${classes.star} text-gray-300`} />
+                <Icons.star className={`${classes.star} text-content3`} />
                 <div 
                   className="absolute inset-0 overflow-hidden"
                   style={{ width: `${fillPercentage}%` }}
                 >
-                  <Icons.star className={`${classes.star} text-yellow-400 fill-yellow-400`} />
+                  <Icons.star className={`${classes.star} text-warning fill-warning`} />
                 </div>
               </div>
             )
@@ -85,7 +85,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
             return (
               <Icons.star
                 key={starNumber}
-                className={`${classes.star} text-gray-300`}
+                className={`${classes.star} text-content3`}
               />
             )
           }
@@ -137,19 +137,19 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
 
   if (layout === 'card') {
     return (
-      <div className={`bg-surface rounded-xl border border-border p-4 ${className}`}>
+      <div className={`bg-content1/60 backdrop-blur-xl rounded-2xl border border-divider/30 container-p-lg ${className}`}>
         <div className="text-center">
-          <div className={`${classes.title} font-bold text-text mb-2`}>
+          <div className={`${classes.title} font-bold text-foreground mb-sm`}>
             {formatRating(rating)}
           </div>
-          <div className="mb-3">
+          <div className="mb-md">
             {renderStars(rating)}
           </div>
-          <div className={`${classes.subtitle} text-textSecondary mb-2`}>
+          <div className={`${classes.subtitle} text-foreground/60 mb-sm`}>
             {getRatingDescription(rating)}
           </div>
           {showUserCount && totalRatings > 0 && (
-            <div className="flex items-center justify-center gap-1 text-primary">
+            <div className="flex items-center justify-center gap-xs text-primary">
               <Icons.users className="w-4 h-4" />
               <span className={`${classes.subtitle} font-medium`}>
                 {totalRatings.toLocaleString()} user{totalRatings !== 1 ? 's' : ''} rated
@@ -163,16 +163,16 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
 
   if (layout === 'vertical') {
     return (
-      <div className={`flex flex-col items-center space-y-2 ${className}`}>
-        <div className={`${classes.title} font-bold text-text`}>
+      <div className={`flex flex-col items-center gap-sm ${className}`}>
+        <div className={`${classes.title} font-bold text-foreground`}>
           {formatRating(rating)}
         </div>
         {renderStars(rating)}
-        <div className={`${classes.subtitle} text-textSecondary text-center`}>
+        <div className={`${classes.subtitle} text-foreground/60 text-center`}>
           {getRatingDescription(rating)}
         </div>
         {showUserCount && totalRatings > 0 && (
-          <div className="flex items-center gap-1 text-primary">
+          <div className="flex items-center gap-xs text-primary">
             <Icons.users className="w-3 h-3" />
             <span className="text-xs font-medium">
               {totalRatings.toLocaleString()} rating{totalRatings !== 1 ? 's' : ''}
@@ -185,25 +185,25 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
 
   // Horizontal layout (default)
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-md ${className}`}>
       {/* Main rating display */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-md flex-wrap">
+        <div className="flex items-center gap-sm">
           {renderStars(rating)}
-          <span className={`${classes.text} font-bold text-text`}>
+          <span className={`${classes.text} font-bold text-foreground`}>
             {formatRating(rating)}
           </span>
         </div>
         
-        <div className="flex items-center gap-2 text-textSecondary">
+        <div className="flex items-center gap-sm text-foreground/60">
           <span className={classes.subtitle}>
             {getRatingDescription(rating)}
           </span>
           
           {showUserCount && totalRatings > 0 && (
             <>
-              <span className="text-border">•</span>
-              <div className="flex items-center gap-1">
+              <span className="text-divider">•</span>
+              <div className="flex items-center gap-xs">
                 <Icons.users className="w-4 h-4 text-primary" />
                 <span className={`${classes.subtitle} font-medium text-primary`}>
                   {totalRatings.toLocaleString()} user{totalRatings !== 1 ? 's' : ''} rated
@@ -218,7 +218,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
         {showBreakdown && totalRatings > 0 && (
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-1 text-textSecondary hover:text-text transition-colors text-sm"
+            className="flex items-center gap-xs text-foreground/60 hover:text-foreground transition-colors text-sm"
           >
             <Icons.chart className="w-4 h-4" />
             <span>Details</span>
@@ -233,32 +233,32 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
 
       {/* Detailed breakdown */}
       {showDetails && showBreakdown && totalRatings > 0 && (
-        <div className="bg-background rounded-lg p-4 border border-border space-y-3">
-          <h4 className="font-medium text-text flex items-center gap-2">
+        <div className="bg-content1/40 backdrop-blur-xl rounded-2xl container-p-lg border border-divider/30 space-y-md">
+          <h4 className="font-medium text-foreground flex items-center gap-sm">
             <Icons.chart className="w-4 h-4 text-primary" />
             Rating Breakdown
           </h4>
           
-          <div className="space-y-2">
+          <div className="space-y-sm">
             {Object.entries(generateBreakdown())
               .sort(([a], [b]) => Number(b) - Number(a))
               .map(([stars, count]) => {
                 const percentage = totalRatings > 0 ? (Number(count) / totalRatings) * 100 : 0
                 return (
-                  <div key={stars} className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 min-w-[60px]">
-                      <span className="text-sm font-medium text-text">{stars}</span>
-                      <Icons.star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <div key={stars} className="flex items-center gap-md">
+                    <div className="flex items-center gap-xs min-w-[60px]">
+                      <span className="text-sm font-medium text-foreground">{stars}</span>
+                      <Icons.star className="w-3 h-3 fill-warning text-warning" />
                     </div>
                     
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div className="flex-1 bg-content2 rounded-full h-2">
                       <div 
-                        className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                        className="bg-warning h-2 rounded-full transition-all duration-300"
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
                     
-                    <div className="text-sm text-textSecondary min-w-[40px] text-right">
+                    <div className="text-sm text-foreground/60 min-w-[40px] text-right">
                       {count}
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
               })}
           </div>
           
-          <div className="pt-2 border-t border-border text-xs text-textSecondary">
+          <div className="pt-sm border-t border-divider text-xs text-foreground/60">
             Based on {totalRatings.toLocaleString()} user rating{totalRatings !== 1 ? 's' : ''}
           </div>
         </div>
@@ -302,19 +302,19 @@ export const CompactRatingDisplay: React.FC<{
             return (
               <Icons.star
                 key={starNumber}
-                className={`${starClass} fill-yellow-400 text-yellow-400`}
+                className={`${starClass} fill-warning text-warning`}
               />
             )
           } else if (rating > starNumber - 1) {
             const fillPercentage = (rating - (starNumber - 1)) * 100
             return (
               <div key={starNumber} className="relative">
-                <Icons.star className={`${starClass} text-gray-300`} />
+                <Icons.star className={`${starClass} text-content3`} />
                 <div 
                   className="absolute inset-0 overflow-hidden"
                   style={{ width: `${fillPercentage}%` }}
                 >
-                  <Icons.star className={`${starClass} text-yellow-400 fill-yellow-400`} />
+                  <Icons.star className={`${starClass} text-warning fill-warning`} />
                 </div>
               </div>
             )
@@ -322,7 +322,7 @@ export const CompactRatingDisplay: React.FC<{
             return (
               <Icons.star
                 key={starNumber}
-                className={`${starClass} text-gray-300`}
+                className={`${starClass} text-content3`}
               />
             )
           }
@@ -333,21 +333,21 @@ export const CompactRatingDisplay: React.FC<{
 
   if (rating === 0) {
     return (
-      <div className={`flex items-center gap-1 text-textSecondary ${textClass} ${className}`}>
-        <Icons.star className={`${starClass} text-gray-300`} />
+      <div className={`flex items-center gap-xs text-foreground/60 ${textClass} ${className}`}>
+        <Icons.star className={`${starClass} text-content3`} />
         {showLabel && <span>No ratings yet</span>}
       </div>
     )
   }
 
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
+    <div className={`flex items-center gap-xs ${className}`}>
       {renderStars()}
-      <span className={`text-text font-medium ${textClass}`}>
+      <span className={`text-foreground font-medium ${textClass}`}>
         {rating.toFixed(1)}
       </span>
       {showCount && totalRatings > 0 && (
-        <div className="flex items-center gap-1 text-primary">
+        <div className="flex items-center gap-xs text-primary">
           <Icons.users className="w-3 h-3" />
           <span className={`${textClass} font-medium`}>
             {totalRatings.toLocaleString()}
@@ -367,7 +367,7 @@ export const DealRatingSummary: React.FC<{
 }> = ({ rating, totalRatings, companyName, className = '' }) => {
   if (totalRatings === 0) {
     return (
-      <div className={`flex items-center gap-2 text-textSecondary text-sm ${className}`}>
+      <div className={`flex items-center gap-sm text-foreground/60 text-sm ${className}`}>
         <Icons.star className="w-4 h-4" />
         <span>No ratings yet - be the first to rate {companyName}!</span>
       </div>
@@ -375,8 +375,8 @@ export const DealRatingSummary: React.FC<{
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <div className="flex items-center gap-2">
+    <div className={`space-y-sm ${className}`}>
+      <div className="flex items-center gap-sm">
         <CompactRatingDisplay 
           rating={rating} 
           totalRatings={totalRatings}
@@ -385,7 +385,7 @@ export const DealRatingSummary: React.FC<{
         />
       </div>
       
-      <div className="text-xs text-textSecondary">
+      <div className="text-xs text-foreground/60">
         <span className="font-medium text-primary">{totalRatings.toLocaleString()}</span>
         {" "}user{totalRatings !== 1 ? 's have' : ' has'} rated <span className="font-medium">{companyName}</span>
       </div>

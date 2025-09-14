@@ -1,10 +1,10 @@
 // src/pages/Deals.tsx - AUTHENTICATION-BASED ADAPTIVE VERSION
 import React, { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import { DealCard } from '@components/deals/DealCard'
 import { RatingModal } from '@components/rating/RatingModal'
-import { AuthModal } from '@components/auth/AuthModals'
 import { 
   useDealsQuery, 
   useUserRatingsQuery, 
@@ -25,6 +25,7 @@ interface Filters {
 
 const Deals: React.FC = () => {
   const { user, isFullyReady } = useAuth()
+  const navigate = useNavigate()
   
   // ✅ PERFECT: Use authentication status to detect layout context
   // When logged in = dashboard layout (no top padding)
@@ -70,8 +71,6 @@ const Deals: React.FC = () => {
   })
   const [selectedDeal, setSelectedDeal] = useState<any>(null)
   const [showRatingModal, setShowRatingModal] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
   // ✅ COMPUTED: Deals with user ratings
   const dealsWithUserRatings = useMemo(() => {
@@ -142,8 +141,8 @@ const Deals: React.FC = () => {
 
   const handleRateClick = useCallback((deal: any) => {
     if (!user) {
-      setAuthMode('login')
-      setShowAuthModal(true)
+      // Redirect to register page when not authenticated
+      navigate('/register')
       return
     }
 
@@ -151,7 +150,7 @@ const Deals: React.FC = () => {
 
     setSelectedDeal(deal)
     setShowRatingModal(true)
-  }, [user])
+  }, [user, navigate])
 
   const handleTrackClick = useCallback(async (deal: any) => {
     try {
@@ -172,6 +171,7 @@ const Deals: React.FC = () => {
     dealsQuery.refetch()
     categoriesQuery.refetch()
   }, [dealsQuery, categoriesQuery])
+
 
   // ✅ ERROR STATES
   if (categoriesQuery.error) {
@@ -509,14 +509,6 @@ const Deals: React.FC = () => {
           />
         )}
 
-        {showAuthModal && (
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-            mode={authMode}
-            onModeChange={setAuthMode}
-          />
-        )}
       </div>
     </GuestLayout>
   )

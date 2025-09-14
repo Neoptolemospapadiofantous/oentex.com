@@ -151,8 +151,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           success: true 
         })
         
-        // Auto-close after success
-        setTimeout(onClose, 2000)
+        // Auto-close after success with shorter delay for better UX
+        setTimeout(onClose, 1500)
       }
     } catch (error) {
       const errorMessage = error instanceof Error 

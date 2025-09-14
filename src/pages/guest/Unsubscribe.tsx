@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { supabase } from '../../lib/supabase'
 import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
  
 
 interface Subscriber {
@@ -80,7 +80,7 @@ const Unsubscribe = () => {
       
       if (subscriber?.status === 'unsubscribed') {
         setSuccess(true)
-        toast.success('Already unsubscribed')
+        showSuccessToast('Already unsubscribed')
         return
       }
 
@@ -104,7 +104,7 @@ const Unsubscribe = () => {
         if (data?.success) {
           console.log('✅ Edge function unsubscribe successful')
           setSuccess(true)
-          toast.success('Successfully unsubscribed from newsletter')
+          showSuccessToast('Successfully unsubscribed from newsletter')
           return
         } else {
           throw new Error(data?.error || 'Edge function returned unsuccessful')
@@ -154,13 +154,13 @@ const Unsubscribe = () => {
 
         console.log('✅ Direct database update successful - Updated records:', updateByIdResult.length)
         setSuccess(true)
-        toast.success('Successfully unsubscribed from newsletter')
+        showSuccessToast('Successfully unsubscribed from newsletter')
       }
 
     } catch (err) {
       console.error('❌ Complete unsubscribe failure:', err)
       setError('Failed to unsubscribe. Please try again.')
-      toast.error('Failed to unsubscribe. Please try again.')
+      showErrorToast('Failed to unsubscribe. Please try again.')
     } finally {
       setSubmitting(false)
     }

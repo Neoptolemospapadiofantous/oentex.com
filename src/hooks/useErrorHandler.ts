@@ -1,7 +1,7 @@
 // src/hooks/useErrorHandler.ts
 import { useState, useCallback } from 'react'
 import { logger } from '../utils/logger'
-import toast from 'react-hot-toast'
+import { showErrorToast } from '../components/ui/AppToast'
 
 export interface AppError {
   message: string
@@ -21,7 +21,7 @@ export const useErrorHandler = () => {
     
     // Show toast for user-facing errors
     if (appError.type !== 'validation') {
-      toast.error(appError.message)
+      showErrorToast(appError.message)
     }
     
     return appError

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/authContext';
-import toast from 'react-hot-toast';
+import { showSuccessToast } from '../components/ui/AppToast';
 import ToastContainer from '@components/ui/ToastContainer';
 import { Icons } from '../components/icons';
 import logo from '../assets/logo.png';
@@ -269,20 +269,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const providerName = provider === 'google' ? 'Google' : 
                         provider === 'azure' ? 'Microsoft' : 'OAuth'
     setTimeout(() => {
-      toast(
-        <div className="flex items-center gap-3">
-          <Icons.success className="w-5 h-5" />
-          <div>
-            <div className="font-semibold">Welcome to Oentex!</div>
-            <div className="text-sm opacity-80">Successfully signed in with {providerName}</div>
-          </div>
-        </div>,
-        {
-          id: `welcome-${userId}`,
-          duration: 5000,
-          position: 'top-right',
-          icon: null // Explicitly disable automatic icon
-        }
+      showSuccessToast(
+        `Successfully signed in with ${providerName}`,
+        'Welcome to Oentex!',
+        5000
       );
     }, 500);
   }, [user?.id, session?.user?.app_metadata?.provider])

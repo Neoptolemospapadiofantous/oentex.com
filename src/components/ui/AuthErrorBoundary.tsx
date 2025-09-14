@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/authContext'
 import { AuthError } from '../../types/auth'
 import { AuthModal } from '../auth/AuthModals'
 import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from './AppToast'
 
 interface AuthErrorBoundaryProps {
   error: AuthError
@@ -78,7 +78,7 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
 
   const handleRetry = useCallback(async () => {
     if (retryCount >= MAX_RETRIES) {
-      toast.error('Maximum retry attempts reached. Please refresh the page.')
+      showErrorToast('Maximum retry attempts reached. Please refresh the page.')
       return
     }
 
@@ -93,10 +93,10 @@ export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({
         await onRetry()
       }
       
-      toast.success('Authentication retry successful!')
+      showSuccessToast('Authentication retry successful!')
     } catch (error) {
       console.error('Auth retry failed:', error)
-      toast.error('Retry failed. Please try again.')
+      showErrorToast('Retry failed. Please try again.')
     } finally {
       setIsRetrying(false)
     }

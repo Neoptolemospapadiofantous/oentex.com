@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Icons } from '@components/icons'
 import { emailService } from '../../lib/email'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 import GuestLayout from '../../layouts/GuestLayout'
 
 const Contact = () => {
@@ -25,7 +25,7 @@ const Contact = () => {
     e.preventDefault()
     
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error('Please fill in all fields')
+      showErrorToast('Please fill in all fields')
       return
     }
 
@@ -34,7 +34,7 @@ const Contact = () => {
     try {
       await emailService.sendContactEmail(formData)
       setIsSubmitted(true)
-      toast.success('Message sent successfully!')
+      showSuccessToast('Message sent successfully!')
       
       // Reset form after 3 seconds
       setTimeout(() => {
@@ -48,7 +48,7 @@ const Contact = () => {
       }, 3000)
     } catch (error) {
       console.error('Contact form error:', error)
-      toast.error('Failed to send message. Please try again.')
+      showErrorToast('Failed to send message. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -56,7 +56,7 @@ const Contact = () => {
 
   const handleChatBotClick = () => {
     // This could scroll to chatbot or highlight it
-    toast.success('Look for the chat icon on the bottom-right corner!')
+    showSuccessToast('Look for the chat icon on the bottom-right corner!')
   }
 
   const contactInfo = [
@@ -166,8 +166,8 @@ const Contact = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-xl my-2xl max-w-6xl mx-auto">
               {contactInfo.map((item, index) => (
                 <div key={index} className="text-center p-lg bg-content1/50 rounded-2xl border border-divider hover:bg-content1/70 transition-all duration-300 flex flex-col items-center justify-center">
-                  <a href={item.link} className="block w-full">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center my-md mx-auto`}>
+                  <a href={item.link} className="block w-full flex flex-col items-center justify-center">
+                    <div className={`w-12 h-12 bg-gradient-to-r ${item.color} rounded-lg flex items-center justify-center my-md`}>
                       <item.icon className="w-6 h-6 text-white" />
                     </div>
                     <h3 className="font-semibold text-foreground my-sm text-center">{item.title}</h3>
@@ -178,9 +178,10 @@ const Contact = () => {
               ))}
             </div>
 
-            {/* Response Times Card */}
-            <div className="flex justify-center my-2xl">
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-lg max-w-4xl">
+            {/* Response Times and Chatbot Cards */}
+            <div className="flex flex-col lg:flex-row gap-xl my-2xl max-w-6xl mx-auto">
+              {/* Response Times Card */}
+              <div className="flex-1 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-lg">
                 <div className="flex flex-col items-center">
                   <div className="flex items-center gap-3 mb-md">
                     <Icons.time className="w-6 h-6 text-primary" />
@@ -202,11 +203,9 @@ const Contact = () => {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Chatbot Promotion */}
-            <div className="flex justify-center my-2xl">
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 rounded-2xl p-lg max-w-4xl">
+              {/* Chatbot Promotion */}
+              <div className="flex-1 bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/30 rounded-2xl p-lg">
                 <div className="flex flex-col items-center">
                   <div className="flex items-center gap-3 mb-md">
                     <Icons.chatBubble className="w-6 h-6 text-primary" />

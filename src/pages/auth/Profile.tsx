@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 
 const Profile: React.FC = () => {
   const { user, updatePassword } = useAuth()
@@ -35,7 +35,7 @@ const Profile: React.FC = () => {
 
   const handleSaveProfile = async () => {
     if (!formData.fullName.trim()) {
-      toast.error('Full name is required')
+      showErrorToast('Full name is required')
       return
     }
 
@@ -43,11 +43,11 @@ const Profile: React.FC = () => {
     try {
       // Simulate API call - replace with actual implementation
       await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('Profile updated successfully!')
+      showSuccessToast('Profile updated successfully!')
       setIsEditing(false)
     } catch (error) {
       console.error('Error updating profile:', error)
-      toast.error('Failed to update profile. Please try again.')
+      showErrorToast('Failed to update profile. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -55,24 +55,24 @@ const Profile: React.FC = () => {
 
   const handleChangePassword = async () => {
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      toast.error('All password fields are required')
+      showErrorToast('All password fields are required')
       return
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match')
+      showErrorToast('New passwords do not match')
       return
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters long')
+      showErrorToast('New password must be at least 6 characters long')
       return
     }
 
     setIsLoading(true)
     try {
       await updatePassword(passwordData.newPassword)
-      toast.success('Password changed successfully!')
+      showSuccessToast('Password changed successfully!')
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -81,7 +81,7 @@ const Profile: React.FC = () => {
       setIsChangingPassword(false)
     } catch (error) {
       console.error('Error changing password:', error)
-      toast.error('Failed to change password. Please try again.')
+      showErrorToast('Failed to change password. Please try again.')
     } finally {
       setIsLoading(false)
     }

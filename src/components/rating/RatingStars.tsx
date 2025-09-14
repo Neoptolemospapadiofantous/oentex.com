@@ -1,4 +1,4 @@
-// src/components/rating/RatingStars.tsx - Enhanced for perfect UX
+// src/components/rating/RatingStars.tsx - Enhanced with modern design system
 import { useState, useId, useCallback } from 'react'
 import { Icons } from '../icons'
 
@@ -14,6 +14,7 @@ interface RatingStarsProps {
   allowClear?: boolean
   disabled?: boolean
   highlightOnHover?: boolean
+  precision?: number
 }
 
 export const RatingStars: React.FC<RatingStarsProps> = ({
@@ -27,7 +28,8 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
   allowHalfStars = true,
   allowClear = true,
   disabled = false,
-  highlightOnHover = true
+  highlightOnHover = true,
+  precision = 1
 }) => {
   const [hoverRating, setHoverRating] = useState(0)
   const [isInteracting, setIsInteracting] = useState(false)
@@ -35,16 +37,16 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
 
   const sizeClasses = {
     sm: { star: 'w-4 h-4', text: 'text-sm', gap: 'gap-0.5' },
-    md: { star: 'w-5 h-5', text: 'text-base', gap: 'gap-1' },
-    lg: { star: 'w-6 h-6', text: 'text-lg', gap: 'gap-1' }
+    md: { star: 'w-5 h-5', text: 'text-base', gap: 'gap-xs' },
+    lg: { star: 'w-6 h-6', text: 'text-lg', gap: 'gap-xs' }
   }
 
   const { star: starSize, text: textSize, gap } = sizeClasses[size]
 
   const formatRating = useCallback((value: number): string => {
     if (value === 0) return '0.0'
-    return value.toFixed(1)
-  }, [])
+    return value.toFixed(precision)
+  }, [precision])
 
   const handleStarClick = useCallback((starNumber: number, event: React.MouseEvent) => {
     if (readonly || disabled || !onRatingChange) return
@@ -129,18 +131,18 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
         return (
           <Icons.star
             key={starNumber}
-            className={`${starSize} text-yellow-400 fill-yellow-400 transition-all duration-200`}
+            className={`${starSize} text-warning fill-warning transition-all duration-200`}
           />
         )
       } else if (isPartial) {
         return (
           <div key={starNumber} className="relative">
-            <Icons.star className={`${starSize} text-gray-300`} />
+            <Icons.star className={`${starSize} text-content3`} />
             <div 
               className="absolute inset-0 overflow-hidden"
               style={{ width: `${fillPercentage}%` }}
             >
-              <Icons.star className={`${starSize} text-yellow-400 fill-yellow-400`} />
+              <Icons.star className={`${starSize} text-warning fill-warning`} />
             </div>
           </div>
         )
@@ -148,7 +150,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
         return (
           <Icons.star
             key={starNumber}
-            className={`${starSize} text-gray-300 transition-all duration-200`}
+            className={`${starSize} text-content3 transition-all duration-200`}
           />
         )
       }
@@ -176,9 +178,9 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
         onKeyDown={(e) => handleKeyDown(e, starNumber)}
         disabled={disabled}
         className={`
-          relative transition-all duration-200 rounded-sm
+          relative transition-all duration-200 rounded-sm container-p-xs
           ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:scale-110 focus:scale-110'}
-          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+          focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2
           ${isInteracting ? 'z-10' : ''}
         `}
         aria-label={`Rate ${starNumber} out of 5 stars`}
@@ -187,8 +189,8 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
         {/* Half-star indicator zones */}
         {!readonly && allowHalfStars && (
           <div className="absolute inset-0 flex">
-            <div className="w-1/2 hover:bg-yellow-100 hover:bg-opacity-30 rounded-l transition-colors duration-150" />
-            <div className="w-1/2 hover:bg-yellow-100 hover:bg-opacity-30 rounded-r transition-colors duration-150" />
+            <div className="w-1/2 hover:bg-warning/10 rounded-l transition-colors duration-150" />
+            <div className="w-1/2 hover:bg-warning/10 rounded-r transition-colors duration-150" />
           </div>
         )}
         
@@ -197,8 +199,8 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
           className={`
             ${starSize} transition-all duration-200
             ${shouldHighlight 
-              ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' 
-              : 'text-gray-300 hover:text-yellow-300'
+              ? 'text-warning fill-warning drop-shadow-sm' 
+              : 'text-content3 hover:text-warning/70'
             }
           `}
         />
@@ -220,16 +222,16 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
       
       {/* Rating value display */}
       {showValue && (
-        <div className={`${textSize} font-medium text-text ml-2 min-w-[3rem]`}>
+        <div className={`${textSize} font-medium text-foreground ml-sm min-w-[3rem]`}>
           {rating > 0 ? formatRating(rating) : '0.0'}
         </div>
       )}
       
       {/* Interactive hints */}
       {!readonly && !disabled && (
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-sm ml-sm">
           {allowHalfStars && (
-            <span className="text-xs text-textSecondary opacity-75">
+            <span className="text-xs text-foreground/50 opacity-75">
               Half stars
             </span>
           )}
@@ -237,7 +239,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
             <button
               type="button"
               onClick={() => onRatingChange?.(0)}
-              className="text-xs text-textSecondary hover:text-text underline transition-colors"
+              className="text-xs text-foreground/50 hover:text-foreground underline transition-colors"
               title="Clear rating"
             >
               Clear
@@ -248,7 +250,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
       
       {/* Live rating feedback */}
       {!readonly && hoverRating > 0 && (
-        <div className={`${textSize} text-primary font-medium ml-2 animate-pulse`}>
+        <div className={`${textSize} text-primary font-medium ml-sm animate-pulse`}>
           {formatRating(hoverRating)}
         </div>
       )}
@@ -265,7 +267,7 @@ export const CompactRating: React.FC<{
   className?: string
 }> = ({ rating, totalRatings = 0, size = 'sm', showText = true, className = '' }) => {
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
+    <div className={`flex items-center gap-xs ${className}`}>
       <RatingStars
         rating={rating}
         readonly
@@ -275,12 +277,12 @@ export const CompactRating: React.FC<{
       />
       {showText && (
         <>
-          <span className="text-text font-medium text-sm">
+          <span className="text-foreground font-medium text-sm">
             {rating > 0 ? rating.toFixed(1) : '0.0'}
           </span>
           {totalRatings > 0 && (
-            <span className="text-textSecondary text-xs">
-              ({totalRatings})
+            <span className="text-foreground/60 text-xs">
+              ({totalRatings.toLocaleString()})
             </span>
           )}
         </>

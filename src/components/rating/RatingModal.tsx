@@ -1,10 +1,10 @@
-// src/components/rating/RatingModal.tsx - MODERNIZED: Uses mutation hook
+// src/components/rating/RatingModal.tsx - Updated with modern design system
 import { useState, useEffect } from 'react'
 import { Icons } from '../icons'
 import { useAuth } from '../../lib/authContext'
 import { useSubmitRatingMutation } from '../../hooks/queries/useDealsQuery'
 import { RATING_CATEGORIES, RatingSubmissionData } from '../../lib/services/ratingService'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../ui/AppToast'
 
 interface RatingModalProps {
   isOpen: boolean
@@ -40,8 +40,6 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   companyRating
 }) => {
   const { user } = useAuth()
-  
-  // ✅ MODERN: Use the mutation hook for automatic optimistic updates
   const submitRatingMutation = useSubmitRatingMutation()
 
   const [ratings, setRatings] = useState<RatingState>({
@@ -55,7 +53,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     mobile_app: 0
   })
 
-  // ✅ MODERN: Initialize with existing rating data
+  // Initialize with existing rating data
   useEffect(() => {
     if (existingRating) {
       const mode = existingRating.overall_rating ? 'overall' : 'categories'
@@ -73,20 +71,20 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     }
   }, [existingRating])
 
-  // ✅ MODERN: Handle rating submission with mutation hook
+  // Handle rating submission with mutation hook
   const handleSubmit = async () => {
     if (!user) {
-      toast.error('Please sign in to submit a rating')
+      showErrorToast('Please sign in to submit a rating')
       return
     }
 
     try {
-      // ✅ PREPARE RATING DATA: Based on selected mode
+      // Prepare rating data based on selected mode
       const ratingData: RatingSubmissionData = {}
       
       if (ratings.mode === 'overall') {
         if (ratings.overall_rating === 0) {
-          toast.error('Please select an overall rating')
+          showErrorToast('Please select an overall rating')
           return
         }
         ratingData.overall_rating = ratings.overall_rating
@@ -102,14 +100,14 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         // Validate at least one category is rated
         const hasAnyRating = Object.values(ratingData).some(rating => rating && rating > 0)
         if (!hasAnyRating) {
-          toast.error('Please rate at least one category')
+          showErrorToast('Please rate at least one category')
           return
         }
       }
 
-      console.log('🔄 Modern rating submission via mutation hook...')
+      console.log('📊 Modern rating submission via mutation hook...')
 
-      // ✅ MODERN: Use mutation hook - handles ALL optimistic updates automatically
+      // Use mutation hook - handles ALL optimistic updates automatically
       await submitRatingMutation.mutateAsync({
         userId: user.id,
         companyId,
@@ -117,7 +115,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         existingRating
       })
 
-      // ✅ SUCCESS: Close modal and notify parent
+      // Success: Close modal and notify parent
       onClose()
       onRatingSubmitted?.()
 
@@ -134,27 +132,27 @@ export const RatingModal: React.FC<RatingModalProps> = ({
     onRatingChange: (rating: number) => void
     label: string
   }> = ({ rating, onRatingChange, label }) => (
-    <div className="flex items-center justify-between py-3">
-      <span className="text-sm font-medium text-text">{label}</span>
-      <div className="flex items-center gap-1">
+    <div className="flex items-center justify-between container-py-md">
+      <span className="text-sm font-medium text-foreground">{label}</span>
+      <div className="flex items-center gap-xs">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
             onClick={() => onRatingChange(star)}
-            className="p-1 hover:scale-110 transition-transform"
+            className="container-p-xs hover:scale-110 transition-transform rounded-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
             disabled={submitRatingMutation.isPending}
           >
             <Icons.star
               className={`w-6 h-6 transition-colors ${
                 star <= rating
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-gray-300 hover:text-yellow-400'
+                  ? 'fill-warning text-warning'
+                  : 'text-content3 hover:text-warning'
               }`}
             />
           </button>
         ))}
-        <span className="ml-2 text-sm text-textSecondary min-w-[3ch]">
+        <span className="ml-sm text-sm text-foreground/60 min-w-[3ch]">
           {rating > 0 ? rating.toFixed(1) : ''}
         </span>
       </div>
@@ -164,21 +162,21 @@ export const RatingModal: React.FC<RatingModalProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-background rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 container-p-lg">
+      <div className="bg-content1/90 backdrop-blur-xl rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-divider/30 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between container-p-2xl border-b border-divider/30">
           <div>
-            <h2 className="text-xl font-bold text-text">Rate {companyName}</h2>
+            <h2 className="text-xl font-bold text-foreground">Rate {companyName}</h2>
             {companyRating && (
-              <p className="text-sm text-textSecondary">
+              <p className="text-sm text-foreground/60 mt-xs">
                 Current: {companyRating.averageRating.toFixed(1)}⭐ ({companyRating.totalRatings} reviews)
               </p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-surface rounded-lg transition-colors"
+            className="container-p-sm hover:bg-content2 rounded-lg transition-colors"
             disabled={submitRatingMutation.isPending}
           >
             <Icons.close className="w-5 h-5" />
@@ -186,15 +184,15 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         </div>
 
         {/* Rating Mode Selection */}
-        <div className="p-6 border-b border-border">
-          <div className="flex gap-2">
+        <div className="container-p-2xl border-b border-divider/30">
+          <div className="flex gap-sm">
             <button
               type="button"
               onClick={() => setRatings(prev => ({ ...prev, mode: 'overall' }))}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`container-px-lg container-py-sm rounded-xl text-sm font-medium transition-colors ${
                 ratings.mode === 'overall'
                   ? 'bg-primary text-white'
-                  : 'bg-surface text-textSecondary hover:bg-primary/10'
+                  : 'bg-content2 text-foreground/70 hover:bg-primary/10'
               }`}
               disabled={submitRatingMutation.isPending}
             >
@@ -203,10 +201,10 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             <button
               type="button"
               onClick={() => setRatings(prev => ({ ...prev, mode: 'categories' }))}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`container-px-lg container-py-sm rounded-xl text-sm font-medium transition-colors ${
                 ratings.mode === 'categories'
                   ? 'bg-primary text-white'
-                  : 'bg-surface text-textSecondary hover:bg-primary/10'
+                  : 'bg-content2 text-foreground/70 hover:bg-primary/10'
               }`}
               disabled={submitRatingMutation.isPending}
             >
@@ -216,10 +214,10 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         </div>
 
         {/* Rating Content */}
-        <div className="p-6">
+        <div className="container-p-2xl">
           {ratings.mode === 'overall' ? (
             <div>
-              <p className="text-sm text-textSecondary mb-4">
+              <p className="text-sm text-foreground/60 mb-lg">
                 Rate your overall experience with {companyName}
               </p>
               <StarRating
@@ -230,10 +228,10 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             </div>
           ) : (
             <div>
-              <p className="text-sm text-textSecondary mb-4">
+              <p className="text-sm text-foreground/60 mb-lg">
                 Rate different aspects of {companyName} (optional categories)
               </p>
-              <div className="space-y-1">
+              <div className="space-y-xs">
                 {RATING_CATEGORIES.map((category) => (
                   <StarRating
                     key={category.key}
@@ -250,11 +248,11 @@ export const RatingModal: React.FC<RatingModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-border">
+        <div className="flex gap-md container-p-2xl border-t border-divider/30">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-border rounded-lg text-textSecondary hover:bg-surface transition-colors"
+            className="flex-1 container-px-lg container-py-md border border-divider rounded-xl text-foreground/70 hover:bg-content2 transition-colors"
             disabled={submitRatingMutation.isPending}
           >
             Cancel
@@ -263,7 +261,7 @@ export const RatingModal: React.FC<RatingModalProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={submitRatingMutation.isPending}
-            className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 container-px-lg container-py-md bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-sm"
           >
             {submitRatingMutation.isPending ? (
               <>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 import { authService } from '../../lib/services/authService'
 import GuestLayout from '../../layouts/GuestLayout'
 
@@ -27,7 +27,7 @@ const ResetPassword = () => {
       if (session) {
         setIsValidSession(true)
       } else {
-        toast.error('Invalid or expired reset link')
+        showErrorToast('Invalid or expired reset link')
         navigate('/')
       }
     }
@@ -67,13 +67,13 @@ const ResetPassword = () => {
       const { error } = await updatePassword(password)
       
       if (error) {
-        toast.error(error.message)
+        showErrorToast(error.message)
       } else {
-        toast.success('Password updated successfully!')
+        showSuccessToast('Password updated successfully!')
         navigate('/deals')
       }
     } catch (error: any) {
-      toast.error('Failed to update password')
+      showErrorToast('Failed to update password')
     } finally {
       setIsLoading(false)
     }
