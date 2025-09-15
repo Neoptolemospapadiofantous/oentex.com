@@ -54,7 +54,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           </p>
           <div className="space-y-8">
             <Button
-              onPress={() => navigate('/login')}
+              onPress={() => navigate('/authentication')}
               color="primary"
               variant="solid"
               size="lg"
@@ -63,7 +63,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
               Sign In
             </Button>
             <Button
-              onPress={() => navigate('/register')}
+              onPress={() => navigate('/authentication')}
               color="default"
               variant="bordered"
               size="lg"
