@@ -1,7 +1,6 @@
 import { Icons } from '@components/icons'
 import AnimatedInnovation from '@components/AnimatedInnovation'
 import '@components/AnimatedInnovation.css'
-import GuestLayout from '../../layouts/GuestLayout'
 
 
 const About = () => {
@@ -40,7 +39,6 @@ const About = () => {
   ]
 
   return (
-    <GuestLayout>
       <div className="min-h-screen pb-12 text-center">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -177,7 +175,6 @@ const About = () => {
           </div>
         </div>
       </div>
-    </GuestLayout>
   )
 }
 
