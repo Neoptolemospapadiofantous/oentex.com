@@ -146,7 +146,7 @@ const PublicApp: React.FC = () => {
                     <p className="text-textSecondary mb-6">Page not found</p>
                     <a 
                       href="/" 
-                      className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                      className="btn-primary"
                     >
                       Go Home
                     </a>
