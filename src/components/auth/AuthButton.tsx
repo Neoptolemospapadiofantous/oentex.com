@@ -30,12 +30,8 @@ export const AuthButton: React.FC = () => {
     }
   }, [signOut, isSigningOut])
 
-  const handleShowLogin = useCallback(() => {
-    navigate('/login')
-  }, [navigate])
-
-  const handleShowRegister = useCallback(() => {
-    navigate('/register')
+  const handleShowAuthentication = useCallback(() => {
+    navigate('/authentication')
   }, [navigate])
 
   if (loading) {
@@ -154,25 +150,18 @@ export const AuthButton: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="flex items-center space-x-6 px-4 py-3 bg-gradient-to-r from-background to-default-50 rounded-2xl border border-default-200 shadow-sm">
-        <Button
-          variant="light"
-          onPress={handleShowLogin}
-          className="text-foreground hover:text-primary font-medium px-8 py-3 rounded-xl hover:bg-default-100 transition-all duration-300"
-        >
-          Sign In
-        </Button>
-        
-        <Button
-          color="primary"
-          variant="solid"
-          onPress={handleShowRegister}
-          className="bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transform hover:scale-105 transition-all px-8 py-3 rounded-xl shadow-lg"
-        >
-          Get Started
-        </Button>
-      </div>
-
+      <Button
+        color="primary"
+        variant="solid"
+        onPress={handleShowAuthentication}
+        className="bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-all rounded-2xl"
+        classNames={{
+          base: "px-lg py-md",
+          innerWrapper: "gap-sm"
+        }}
+      >
+        Launch App
+      </Button>
     </ErrorBoundary>
   )
 }
