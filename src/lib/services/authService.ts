@@ -32,7 +32,7 @@ class AuthService {
         currentOrigin: typeof window !== 'undefined' ? window.location.origin : 'server'
       })
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -81,7 +81,7 @@ class AuthService {
         supabaseProjectUrl: config.supabase.url
       })
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           redirectTo: redirectUrl,
@@ -322,6 +322,79 @@ class AuthService {
     )
   }
 
+  // ✅ NEW: Email signup function
+  async signUpWithEmail(email: string, password: string, metadata?: { full_name?: string }): Promise<OAuthResult> {
+    try {
+      console.log('🔧 Starting email signup:', { 
+        email, 
+        hasPassword: !!password, 
+        passwordLength: password?.length,
+        metadata 
+      })
+
+      // Validate inputs
+      if (!email || !password) {
+        return {
+          error: this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Email and password are required')
+        }
+      }
+
+      if (password.length < 12) {
+        return {
+          error: this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Password must be at least 12 characters long')
+        }
+      }
+
+      // Check if Supabase is properly configured
+      if (!supabase) {
+        console.error('🔧 Supabase client not initialized')
+        return {
+          error: this.createError(AuthErrorType.UNKNOWN_ERROR, 'Authentication service not available. Please try again later.')
+        }
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata || {}
+        }
+      })
+
+      console.log('🔧 Supabase signup response:', { data, error })
+
+      if (error) {
+        console.error('🔧 Email signup error:', {
+          code: error.code,
+          message: error.message,
+          status: error.status,
+          fullError: error
+        })
+        
+        const customError = this.handleAuthError(error)
+        console.log('🔧 Custom error created:', customError)
+        
+        return { 
+          error: customError
+        }
+      }
+
+      console.log('🔧 Email signup success:', { 
+        email, 
+        userId: data.user?.id,
+        userConfirmed: data.user?.email_confirmed_at,
+        session: !!data.session
+      })
+      
+      return { error: null }
+    } catch (error) {
+      console.error('🔧 Email signup exception:', error)
+      return { 
+        error: this.handleAuthError(error as Error)
+      }
+    }
+  }
+
   handleAuthError(error: AuthError | Error | unknown): CustomAuthError {
     if (error && typeof error === 'object' && 'code' in error) {
       const authError = error as AuthError
@@ -344,11 +417,26 @@ class AuthService {
         case 'user_not_found':
           return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'User not found. Please try again')
         case 'signup_disabled':
-          return this.createError(AuthErrorType.SERVICE_UNAVAILABLE, 'Account creation is temporarily disabled')
+          return this.createError(AuthErrorType.PROVIDER_DISABLED, 'Account creation is temporarily disabled')
         case 'email_address_not_authorized':
-          return this.createError(AuthErrorType.AUTHORIZATION_ERROR, 'This email address is not authorized')
+          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'This email address is not authorized')
+        case 'weak_password':
+          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Password must be at least 12 characters long')
+        case 'password_too_short':
+          return this.createError(AuthErrorType.INVALID_CREDENTIALS, 'Password must be at least 12 characters long')
+        case 'invalid_email':
+          return this.createError(AuthErrorType.INVALID_EMAIL, 'Please enter a valid email address')
+        case 'signup_not_allowed':
+          return this.createError(AuthErrorType.PROVIDER_DISABLED, 'Email signup is not enabled. Please contact support')
+        case 'email_rate_limit_exceeded':
+          return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many signup attempts. Please wait before trying again')
+        case 'email_provider_disabled':
+          return this.createError(AuthErrorType.PROVIDER_DISABLED, 'Email signups are currently disabled. Please contact support or use social login.')
+        case 'user_already_exists':
+          return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this email already exists. Please try signing in instead.')
         default:
-          return this.createError(AuthErrorType.UNKNOWN_ERROR, 'An unexpected error occurred. Please try again')
+          console.warn('🔧 Unhandled auth error code:', authError.code, authError.message)
+          return this.createError(AuthErrorType.UNKNOWN_ERROR, authError.message || 'An unexpected error occurred. Please try again')
       }
     }
     
@@ -386,6 +474,7 @@ class AuthService {
       type,
       message,
       timestamp: new Date().toISOString(),
+      details: null,
     }
   }
 
