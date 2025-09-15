@@ -14,7 +14,6 @@ interface Subscriber {
 const Unsubscribe = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
-  
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
