@@ -7,9 +7,11 @@ import ToastContainer from '../components/ui/ToastContainer'
 interface GuestLayoutProps {
   children: React.ReactNode
   className?: string
+  hideHeader?: boolean
+  hideFooter?: boolean
 }
 
-const GuestLayout: React.FC<GuestLayoutProps> = ({ children, className = "" }) => {
+const GuestLayout: React.FC<GuestLayoutProps> = ({ children, className = "", hideHeader = false, hideFooter = false }) => {
   return (
     <div className={`min-h-screen bg-background text-foreground background-enhanced ${className}`}>
       {/* ✅ ENHANCED BACKGROUND EFFECTS */}
@@ -18,23 +20,23 @@ const GuestLayout: React.FC<GuestLayoutProps> = ({ children, className = "" }) =
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-secondary/5 to-transparent rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '-3s' }}></div>
 
       {/* ✅ FIXED HEADER */}
-      <Header />
+      {!hideHeader && <Header />}
 
       {/* ✅ MAIN CONTENT WITH PROPER SPACING */}
-      <main className="relative z-10 flex-1 pt-16 layout-transition">
+      <main className={`relative z-10 flex-1 layout-transition ${hideHeader ? 'pt-0' : 'pt-16'}`}>
         <div className="component-transition">
           {children}
         </div>
       </main>
 
       {/* ✅ ENHANCED FOOTER */}
-      <Footer />
+      {!hideFooter && <Footer />}
       
       {/* ✅ TOAST CONTAINER WITH PROPER POSITIONING */}
       <ToastContainer 
-        position="top-right" 
-        topAnchorSelector="#site-header" 
-        topMargin={8} 
+        position={hideHeader ? "bottom-center" : "top-right"} 
+        topAnchorSelector={hideHeader ? undefined : "#site-header"} 
+        topMargin={hideHeader ? 0 : 8} 
       />
     </div>
   )
