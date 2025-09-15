@@ -151,9 +151,8 @@ const CTA = () => {
                 <div className="my-2xl">
                   <button 
                     onClick={handleMainAction}
-                    className="btn-primary text-xl container-px-2xl container-py-lg group relative overflow-hidden transform hover:scale-110 hover:rotate-1"
+                    className="btn-primary text-xl group relative overflow-hidden transform hover:scale-105 hover:rotate-1"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                     <div className="flex-center gap-4 relative z-10">
                       <Icons.externalLink className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
                       <span>Get Binance Deal Now</span>
