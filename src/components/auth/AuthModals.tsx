@@ -199,6 +199,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         className="w-full font-medium"
         startContent={isProviderLoading ? <Spinner size="sm" /> : icon}
         isLoading={isProviderLoading}
+        classNames={{
+          base: "h-14",
+          startContent: "flex items-center justify-center w-6 h-6"
+        }}
       >
         {isProviderLoading ? 'Connecting...' : label}
       </Button>
@@ -271,7 +275,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <div className="space-y-8 py-4">
                     <ProviderButton
                       provider="google"
-                      icon={<Icons.globe className="w-6 h-6" />}
+                      icon={<Icons.globe className="w-6 h-6 flex-shrink-0" />}
                       label="Continue with Google"
                       variant="bordered"
                       color="default"
@@ -279,7 +283,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                     <ProviderButton
                       provider="microsoft"
-                      icon={<MicrosoftIcon />}
+                      icon={<div className="w-6 h-6 flex-shrink-0"><MicrosoftIcon /></div>}
                       label="Continue with Microsoft"
                       variant="solid"
                       color="primary"
