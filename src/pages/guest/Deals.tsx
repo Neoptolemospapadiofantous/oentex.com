@@ -15,7 +15,6 @@ import {
   useCategoryStatsQuery, 
   useCategoryInfoQuery 
 } from '../../hooks/queries/useCategoriesQuery'
-import GuestLayout from '../../layouts/GuestLayout'
 
 interface Filters {
   searchTerm: string
@@ -142,7 +141,7 @@ const Deals: React.FC = () => {
   const handleRateClick = useCallback((deal: any) => {
     if (!user) {
       // Redirect to register page when not authenticated
-      navigate('/register')
+      navigate('/authentication')
       return
     }
 
@@ -176,7 +175,6 @@ const Deals: React.FC = () => {
   // ✅ ERROR STATES
   if (categoriesQuery.error) {
     return (
-      <GuestLayout>
         <div className={containerClasses}>
           <div className="container-page section-px-lg section-py-xl">
             <div className="flex items-center justify-center min-h-96">
@@ -202,7 +200,6 @@ const Deals: React.FC = () => {
             </div>
           </div>
         </div>
-      </GuestLayout>
     )
   }
 
@@ -211,7 +208,6 @@ const Deals: React.FC = () => {
 
   if (isLoading) {
     return (
-      <GuestLayout>
         <div className={containerClasses}>
           <div className="container-page section-px-lg section-py-xl">
             <div className="text-center mb-4xl">
@@ -225,14 +221,12 @@ const Deals: React.FC = () => {
             </div>
           </div>
         </div>
-      </GuestLayout>
     )
   }
 
   // ✅ DEALS ERROR STATE
   if (dealsQuery.error) {
     return (
-      <GuestLayout>
         <div className={containerClasses}>
           <div className="container-page section-px-lg section-py-xl">
             <div className="flex items-center justify-center min-h-96">
@@ -253,14 +247,12 @@ const Deals: React.FC = () => {
             </div>
           </div>
         </div>
-      </GuestLayout>
     )
   }
 
   // ✅ NO CATEGORIES STATE
   if (!categories.length) {
     return (
-      <GuestLayout>
         <div className={containerClasses}>
           <div className="container-page section-px-lg section-py-xl">
             <div className="flex items-center justify-center min-h-96">
@@ -281,13 +273,11 @@ const Deals: React.FC = () => {
             </div>
           </div>
         </div>
-      </GuestLayout>
     )
   }
 
   // ✅ MAIN CONTENT
   return (
-    <GuestLayout>
       <div className={containerClasses}>
         <div className="container-page section-px-lg section-py-xl">
           
@@ -510,7 +500,6 @@ const Deals: React.FC = () => {
         )}
 
       </div>
-    </GuestLayout>
   )
 }
 
