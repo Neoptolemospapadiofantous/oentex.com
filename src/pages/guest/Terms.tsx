@@ -1,6 +1,5 @@
 // src/pages/guest/Terms.tsx - Terms and Conditions Page
 import { Icons } from '@components/icons';
-import GuestLayout from '../../layouts/GuestLayout';
 
 const Terms = () => {
   const sections = [
@@ -413,7 +412,6 @@ const Terms = () => {
   ];
 
   return (
-    <GuestLayout>
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
@@ -468,7 +466,6 @@ const Terms = () => {
           </div>
         </section>
       </div>
-    </GuestLayout>
   );
 };
 
