@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
-import GuestLayout from '../../layouts/GuestLayout'
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
@@ -67,7 +66,6 @@ const FAQ = () => {
   }
 
   return (
-    <GuestLayout>
       <div className="min-h-screen pb-12 text-center">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -155,7 +153,6 @@ const FAQ = () => {
           </div>
         </div>
       </div>
-    </GuestLayout>
   )
 }
 
