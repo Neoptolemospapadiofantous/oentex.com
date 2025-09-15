@@ -1380,3 +1380,24 @@ body {
   .backdrop-blur-strong {
     backdrop-filter: blur(24px);
   }
+
+/* ===========================
+   🎨 INPUT TEXT COLOR OVERRIDE
+   ========================== */
+
+/* Override HeroUI input text color to white when input has value */
+.group[data-has-value="true"] * {
+  color: white !important;
+}
+
+/* Ensure input text is white when typing */
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  color: white !important;
+}
+
+/* Override any HeroUI default foreground color for inputs */
+.heroui-input input {
+  color: white !important;
+}
