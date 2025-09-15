@@ -1,7 +1,7 @@
 // src/components/Footer.tsx - Final version
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Mail } from 'lucide-react'
+import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import logo from '../assets/logo.png'
 
 // Custom X (Twitter) icon since Lucide doesn't have the new X logo

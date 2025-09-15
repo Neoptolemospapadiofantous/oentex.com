@@ -1,7 +1,7 @@
 // src/components/auth/AuthModals.tsx - REPLACE THIS FILE SIXTH (OPTIONAL - Better UX)
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Chrome, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { Icons } from '../icons'
 import { useAuth } from '../../lib/authContext'
 
 interface AuthModalProps {
@@ -200,7 +200,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       >
         {isProviderLoading && (
           <div className="absolute inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Icons.refresh className="w-5 h-5 animate-spin" />
           </div>
         )}
         
@@ -256,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Close authentication modal"
           >
-            <X className="w-5 h-5" />
+            <Icons.close className="w-5 h-5" />
           </button>
         </div>
 
@@ -266,7 +266,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             /* ✅ IMPROVED: Success State */
             <div className="text-center py-8" role="alert" aria-live="polite">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <Icons.success className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 Success!
@@ -286,7 +286,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               {state.error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert" aria-live="assertive">
                   <div className="flex items-center gap-3">
-                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                    <Icons.warning className="w-5 h-5 text-red-500 flex-shrink-0" />
                     <p className="text-red-700 text-sm">{state.error}</p>
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <div className="space-y-3">
                 <ProviderButton
                   provider="google"
-                  icon={<Chrome className="w-6 h-6" />}
+                  icon={<Icons.globe className="w-6 h-6" />}
                   label="Continue with Google"
                   className="bg-white border-2 border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50"
                 />

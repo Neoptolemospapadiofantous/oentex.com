@@ -1,6 +1,5 @@
 // src/components/ui/EnhancedStates.tsx - Better loading and error UX
-import React from 'react'
-import { AlertCircle, RefreshCw, Star, Gift, TrendingUp } from 'lucide-react'
+import { Icons } from '../icons'
 
 // Enhanced loading spinner with context
 export const ContextualSpinner: React.FC<{
@@ -17,13 +16,13 @@ export const ContextualSpinner: React.FC<{
   const getContextIcon = () => {
     switch (context) {
       case 'deals':
-        return <Gift className={`${sizeClasses[size]} animate-spin text-primary`} />
+        return <Icons.gift className={`${sizeClasses[size]} animate-spin text-primary`} />
       case 'ratings':
-        return <Star className={`${sizeClasses[size]} animate-spin text-yellow-500`} />
+        return <Icons.star className={`${sizeClasses[size]} animate-spin text-yellow-500`} />
       case 'auth':
-        return <RefreshCw className={`${sizeClasses[size]} animate-spin text-blue-500`} />
+        return <Icons.refresh className={`${sizeClasses[size]} animate-spin text-blue-500`} />
       default:
-        return <RefreshCw className={`${sizeClasses[size]} animate-spin text-primary`} />
+        return <Icons.refresh className={`${sizeClasses[size]} animate-spin text-primary`} />
     }
   }
 
@@ -86,7 +85,7 @@ export const ErrorDisplay: React.FC<{
   return (
     <div className={`bg-red-50 border border-red-200 rounded-xl ${containerClasses[size]} text-center`}>
       <div className="flex flex-col items-center gap-3">
-        <AlertCircle className={`${iconClasses[size]} text-red-500`} />
+        <Icons.warning className={`${iconClasses[size]} text-red-500`} />
         <div>
           <h3 className="font-medium text-red-800 mb-1">{getContextTitle()}</h3>
           <p className="text-red-600 text-sm">{errorMessage}</p>
@@ -96,7 +95,7 @@ export const ErrorDisplay: React.FC<{
             onClick={onRetry}
             className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
           >
-            <RefreshCw className="w-4 h-4" />
+            <Icons.refresh className="w-4 h-4" />
             Try Again
           </button>
         )}
@@ -177,7 +176,7 @@ export const SuccessState: React.FC<{
 }> = ({ title, message, icon, action }) => (
   <div className="text-center py-8">
     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-      {icon || <TrendingUp className="w-8 h-8 text-green-600" />}
+      {icon || <Icons.arrowTrendingUp className="w-8 h-8 text-green-600" />}
     </div>
     <h3 className="text-xl font-semibold text-text mb-2">{title}</h3>
     <p className="text-textSecondary mb-6">{message}</p>
@@ -204,7 +203,7 @@ export const EmptyState: React.FC<{
 }> = ({ title, message, icon, action }) => (
   <div className="text-center py-12">
     <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-      {icon || <Gift className="w-8 h-8 text-gray-400" />}
+      {icon || <Icons.gift className="w-8 h-8 text-gray-400" />}
     </div>
     <h3 className="text-xl font-semibold text-text mb-2">{title}</h3>
     <p className="text-textSecondary mb-6">{message}</p>

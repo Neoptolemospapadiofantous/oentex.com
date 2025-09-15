@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { User, LogOut, AlertCircle } from 'lucide-react'
+import { Icon } from '../icons'
 import {
   Button,
   Avatar,
@@ -7,7 +7,6 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  Chip,
   Spinner
 } from '@heroui/react'
 import { useAuth } from '../../lib/authContext'
@@ -54,7 +53,7 @@ export const AuthButton: React.FC = () => {
   if (error) {
     return (
       <div className="flex items-center space-x-2">
-        <AlertCircle className="w-4 h-4 text-danger" />
+        <Icon name="warning" size="sm" color="danger" />
         <Button
           size="sm"
           variant="light"
@@ -142,7 +141,7 @@ export const AuthButton: React.FC = () => {
                 isSigningOut ? (
                   <Spinner size="sm" color="danger" />
                 ) : (
-                  <LogOut className="w-4 h-4" />
+                  <Icon name="logout" size="sm" />
                 )
               }
             >

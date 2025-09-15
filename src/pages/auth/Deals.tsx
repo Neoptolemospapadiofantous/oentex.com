@@ -1,6 +1,6 @@
 // src/pages/auth/Deals.tsx - AUTHENTICATED VERSION FOR DASHBOARD
 import React, { useState, useMemo, useCallback } from 'react'
-import { Search, AlertCircle, RefreshCw, Gift, Users, Database } from 'lucide-react'
+import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import { DealCard } from '@components/deals/DealCard'
 import { RatingModal } from '@components/rating/RatingModal'
@@ -163,7 +163,7 @@ const Deals = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Database className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <Icons.database className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Categories Not Available</h2>
               <p className="text-gray-600 mb-6">
                 Categories table not found. Please run the SQL script to create the categories table.
@@ -177,7 +177,7 @@ const Deals = () => {
                 onClick={handleRetry}
                 className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
+                <Icons.refresh className="w-4 h-4" />
                 Retry Connection
               </button>
             </div>
@@ -201,7 +201,7 @@ const Deals = () => {
           
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+              <Icons.refresh className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
               <p className="text-gray-600">Loading deals, categories, and community ratings...</p>
             </div>
           </div>
@@ -217,7 +217,7 @@ const Deals = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+              <Icons.warning className="w-12 h-12 text-red-600 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Deals</h2>
               <p className="text-gray-600 mb-6">
                 {dealsQuery.error instanceof Error ? dealsQuery.error.message : 'Failed to load deals'}
@@ -226,7 +226,7 @@ const Deals = () => {
                 onClick={handleRetry}
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
+                <Icons.refresh className="w-4 h-4" />
                 Try Again
               </button>
             </div>
@@ -243,7 +243,7 @@ const Deals = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <Icons.database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">No Categories Found</h2>
               <p className="text-gray-600 mb-6">
                 The categories table exists but contains no data. Please add categories to the database.
@@ -252,7 +252,7 @@ const Deals = () => {
                 onClick={handleRetry}
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <RefreshCw className="w-4 h-4" />
+                <Icons.refresh className="w-4 h-4" />
                 Reload Categories
               </button>
             </div>
@@ -284,7 +284,7 @@ const Deals = () => {
         <div className="bg-white p-6 rounded-xl border border-gray-200 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search deals, companies..."
@@ -405,7 +405,7 @@ const Deals = () => {
         {/* Footer */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 sm:p-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Users className="w-6 h-6 text-blue-600" />
+            <Icons.users className="w-6 h-6 text-blue-600" />
             <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto mb-6">
@@ -442,7 +442,7 @@ const Deals = () => {
         {/* Empty Deals State */}
         {deals.length === 0 && !dealsQuery.isLoading && (
           <div className="text-center py-12">
-            <Gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deals Available</h3>
             <p className="text-gray-600 mb-6">
               No trading deals found. Please check back later or contact support.

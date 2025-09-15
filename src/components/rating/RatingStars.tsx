@@ -1,6 +1,6 @@
 // src/components/rating/RatingStars.tsx - Enhanced for perfect UX
-import React, { useState, useId, useCallback } from 'react'
-import { Star } from 'lucide-react'
+import { useState, useId, useCallback } from 'react'
+import { Icons } from '../icons'
 
 interface RatingStarsProps {
   rating: number
@@ -127,7 +127,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
       // Readonly stars with precise decimal rendering
       if (isFilled) {
         return (
-          <Star
+          <Icons.star
             key={starNumber}
             className={`${starSize} text-yellow-400 fill-yellow-400 transition-all duration-200`}
           />
@@ -135,18 +135,18 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
       } else if (isPartial) {
         return (
           <div key={starNumber} className="relative">
-            <Star className={`${starSize} text-gray-300`} />
+            <Icons.star className={`${starSize} text-gray-300`} />
             <div 
               className="absolute inset-0 overflow-hidden"
               style={{ width: `${fillPercentage}%` }}
             >
-              <Star className={`${starSize} text-yellow-400 fill-yellow-400`} />
+              <Icons.star className={`${starSize} text-yellow-400 fill-yellow-400`} />
             </div>
           </div>
         )
       } else {
         return (
-          <Star
+          <Icons.star
             key={starNumber}
             className={`${starSize} text-gray-300 transition-all duration-200`}
           />
@@ -193,7 +193,7 @@ export const RatingStars: React.FC<RatingStarsProps> = ({
         )}
         
         {/* Star icon */}
-        <Star
+        <Icons.star
           className={`
             ${starSize} transition-all duration-200
             ${shouldHighlight 
