@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Icons } from '@components/icons'
 import { emailService } from '../../lib/email'
 import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
-import GuestLayout from '../../layouts/GuestLayout'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -113,7 +112,6 @@ const Contact = () => {
   ]
 
   return (
-    <GuestLayout>
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -396,7 +394,6 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </GuestLayout>
   )
 }
 
