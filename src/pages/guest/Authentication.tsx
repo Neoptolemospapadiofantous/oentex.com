@@ -362,8 +362,7 @@ export const Authentication: React.FC = () => {
           success: true 
         }))
         
-        // Show success toast
-        showSuccessToast(`Successfully signed in with ${provider}! Redirecting to dashboard...`, 'Welcome Back!', 3000)
+        // Success toast removed as requested
         
         // Redirect to dashboard after success
         setTimeout(() => navigate('/dashboard'), 2000)
