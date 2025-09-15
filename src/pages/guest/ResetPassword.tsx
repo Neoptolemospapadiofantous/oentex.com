@@ -1,11 +1,10 @@
 // src/pages/ResetPassword.tsx - Handle password reset
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 import { authService } from '../../lib/services/authService'
-import GuestLayout from '../../layouts/GuestLayout'
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('')
@@ -17,7 +16,6 @@ const ResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false)
   
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const { updatePassword } = useAuth()
 
   useEffect(() => {
@@ -81,20 +79,17 @@ const ResetPassword = () => {
 
   if (!isValidSession) {
     return (
-      <GuestLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-foreground/70">Verifying reset link...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-foreground/70">Verifying reset link...</p>
         </div>
-      </GuestLayout>
+      </div>
     )
   }
 
   return (
-    <GuestLayout>
-      <div className="min-h-screen flex items-center justify-center py-20">
+    <div className="min-h-screen flex items-center justify-center py-20">
         <div className="max-w-md w-full container-p-md">
           <div className="bg-content1 rounded-2xl container-p-2xl border border-border">
             <div className="text-center mb-10">
@@ -199,7 +194,6 @@ const ResetPassword = () => {
           </div>
         </div>
       </div>
-    </GuestLayout>
   )
 }
 
