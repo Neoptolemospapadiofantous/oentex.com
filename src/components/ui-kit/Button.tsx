@@ -13,6 +13,7 @@ export const Button: React.FC<UIButtonProps> = ({
   rightIcon,
   children,
   disabled,
+  className,
   ...props
 }) => {
   return (
@@ -21,6 +22,15 @@ export const Button: React.FC<UIButtonProps> = ({
       isDisabled={disabled || loading}
       startContent={loading ? <Spinner size="sm" color="white" /> : leftIcon}
       endContent={!loading ? rightIcon : undefined}
+      className={`${className || ''} ${
+        props.color === 'primary' || !props.color 
+          ? 'shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105' 
+          : ''
+      }`}
+      classNames={{
+        base: "font-semibold",
+        ...props.classNames
+      }}
     >
       {children}
     </HButton>
