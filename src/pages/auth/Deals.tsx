@@ -1,20 +1,21 @@
-// src/pages/auth/Deals.tsx - AUTHENTICATED VERSION FOR DASHBOARD
+// src/pages/Deals.tsx - ENHANCED PROFESSIONAL VERSION
 import React, { useState, useMemo, useCallback } from 'react'
 import { Icons } from '@components/icons'
 import { useAuth } from '../../lib/authContext'
 import { DealCard } from '@components/deals/DealCard'
 import { RatingModal } from '@components/rating/RatingModal'
+import { AuthModal } from '@components/auth/AuthModals'
 import { 
   useDealsQuery, 
   useUserRatingsQuery, 
-  useUpdateDealClickMutation,
-  useSubmitRatingMutation 
+  useUpdateDealClickMutation
 } from '../../hooks/queries/useDealsQuery'
 import { 
   useCategoriesQuery, 
   useCategoryStatsQuery, 
   useCategoryInfoQuery 
 } from '../../hooks/queries/useCategoriesQuery'
+import GuestLayout from '../../layouts/GuestLayout'
 
 interface Filters {
   searchTerm: string
@@ -22,18 +23,18 @@ interface Filters {
   sortBy: string
 }
 
-const Deals = () => {
+
+const Deals: React.FC = () => {
   const { user, isFullyReady } = useAuth()
   
-  // ✅ AUTHENTICATED: Always use dashboard layout (no top padding needed)
-  const containerClasses = "min-h-screen bg-gray-50"
+  // Layout determination
+  const isInDashboard = !!user
 
-  // ✅ DYNAMIC: All data from React Query
+  // Data queries
   const dealsQuery = useDealsQuery()
   const deals = dealsQuery.data?.deals || []
   const companies = dealsQuery.data?.companies || []
   
-  // ✅ CRITICAL: Categories from dedicated categories table
   const categoriesQuery = useCategoriesQuery()
   const categories = categoriesQuery.data || []
 
@@ -43,18 +44,15 @@ const Deals = () => {
   )
   const userRatingsQuery = useUserRatingsQuery(user?.id, companyIds)
 
-  // ✅ DYNAMIC: Category statistics and info
   const categoryStatsQuery = useCategoryStatsQuery(deals)
   const categoryStats = categoryStatsQuery.data || new Map()
   
   const categoryInfoQuery = useCategoryInfoQuery(companies)
   const categoryInfo = categoryInfoQuery.data || new Map()
 
-  // ✅ MODERN: Mutations for updates
   const updateDealClickMutation = useUpdateDealClickMutation()
-  const submitRatingMutation = useSubmitRatingMutation()
 
-  // ✅ UI State
+  // UI State
   const [filters, setFilters] = useState<Filters>({
     searchTerm: '',
     category: 'all',
@@ -62,18 +60,20 @@ const Deals = () => {
   })
   const [selectedDeal, setSelectedDeal] = useState<any>(null)
   const [showRatingModal, setShowRatingModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login')
 
-  // ✅ COMPUTED: Deals with user ratings
+  // Computed data
   const dealsWithUserRatings = useMemo(() => {
-    const userRatings = userRatingsQuery.data || new Map()
+    const userRatings = userRatingsQuery.data || {}
     
     return deals.map(deal => ({
       ...deal,
-      userRating: deal.company?.id ? userRatings.get(deal.company.id) : undefined
-    }))
+      userRating: deal.company?.id ? userRatings[deal.company.id] : undefined
+    } as any))
   }, [deals, userRatingsQuery.data])
 
-  // ✅ FILTERED: Deals based on filters
+  // Filtered deals
   const filteredDeals = useMemo(() => {
     let filtered = dealsWithUserRatings
 
@@ -110,7 +110,7 @@ const Deals = () => {
     return filtered
   }, [dealsWithUserRatings, filters])
 
-  // ✅ DYNAMIC: Selected category info
+  // Selected category info
   const selectedCategoryInfo = useMemo(() => {
     if (filters.category === 'all') return null
     
@@ -125,16 +125,22 @@ const Deals = () => {
     }
   }, [filters.category, categories, categoryInfo])
 
-  // ✅ EVENT HANDLERS
+  // Event handlers
   const handleFilterChange = useCallback((key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }, [])
 
   const handleRateClick = useCallback((deal: any) => {
+    if (!user) {
+      setAuthMode('login')
+      setShowAuthModal(true)
+      return
+    }
+
     if (!deal.company) return
     setSelectedDeal(deal)
     setShowRatingModal(true)
-  }, [])
+  }, [user])
 
   const handleTrackClick = useCallback(async (deal: any) => {
     try {
@@ -156,26 +162,27 @@ const Deals = () => {
     categoriesQuery.refetch()
   }, [dealsQuery, categoriesQuery])
 
+
   // ✅ ERROR STATES
   if (categoriesQuery.error) {
     return (
-      <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="min-h-screen">
+        <div className="container-page section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.database className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Categories Not Available</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.database className="w-12 h-12 text-danger mx-auto mb-xl" />
+              <h2 className="text-xl font-semibold text-foreground mb-md">Categories Not Available</h2>
+              <p className="text-foreground/70 mb-2xl">
                 Categories table not found. Please run the SQL script to create the categories table.
               </p>
-              <div className="space-y-2 text-sm text-gray-500 mb-6">
+              <div className="space-y-md text-sm text-foreground/50 mb-2xl">
                 <p>• Run the categories SQL in your Supabase SQL editor</p>
                 <p>• Ensure the categories table has data</p>
                 <p>• Check RLS policies allow public read access</p>
               </div>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-danger text-danger-foreground px-xl py-md rounded-lg hover:bg-danger/90 transition-colors font-medium"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Retry Connection
@@ -192,18 +199,16 @@ const Deals = () => {
 
   if (isLoading) {
     return (
-      <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Trading Deals & Bonuses</h1>
-            <p className="text-xl text-gray-600">Loading exclusive offers with real-time ratings...</p>
+      <div className="min-h-screen">
+        <div className="container-page section-px-lg section-py-xl">
+          <div className="text-center mb-4xl">
+            <h1 className="text-4xl font-bold text-foreground mb-xl">Trading Deals & Bonuses</h1>
+            <p className="text-xl text-foreground/70">Loading exclusive offers with real-time ratings...</p>
           </div>
           
-          <div className="flex items-center justify-center min-h-96">
-            <div className="text-center">
-              <Icons.refresh className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-              <p className="text-gray-600">Loading deals, categories, and community ratings...</p>
-            </div>
+          <div className="flex flex-col items-center justify-center min-h-96">
+            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-xl"></div>
+            <p className="text-foreground/70 text-center">Loading deals, categories, and community ratings...</p>
           </div>
         </div>
       </div>
@@ -213,18 +218,18 @@ const Deals = () => {
   // ✅ DEALS ERROR STATE
   if (dealsQuery.error) {
     return (
-      <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="min-h-screen">
+        <div className="container-page section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.warning className="w-12 h-12 text-red-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Deals</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.warning className="w-12 h-12 text-warning mx-auto mb-xl" />
+              <h2 className="text-xl font-semibold text-foreground mb-md">Unable to Load Deals</h2>
+              <p className="text-foreground/70 mb-2xl">
                 {dealsQuery.error instanceof Error ? dealsQuery.error.message : 'Failed to load deals'}
               </p>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-primary text-primary-foreground px-xl py-md rounded-lg hover:bg-primary/90 transition-colors font-medium"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Try Again
@@ -239,18 +244,18 @@ const Deals = () => {
   // ✅ NO CATEGORIES STATE
   if (!categories.length) {
     return (
-      <div className={containerClasses}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="min-h-screen">
+        <div className="container-page section-px-lg section-py-xl">
           <div className="flex items-center justify-center min-h-96">
             <div className="text-center">
-              <Icons.database className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No Categories Found</h2>
-              <p className="text-gray-600 mb-6">
+              <Icons.database className="w-12 h-12 text-foreground/40 mx-auto mb-xl" />
+              <h2 className="text-xl font-semibold text-foreground mb-md">No Categories Found</h2>
+              <p className="text-foreground/70 mb-2xl">
                 The categories table exists but contains no data. Please add categories to the database.
               </p>
               <button
                 onClick={handleRetry}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-sm bg-primary text-primary-foreground px-xl py-md rounded-lg hover:bg-primary/90 transition-colors font-medium"
               >
                 <Icons.refresh className="w-4 h-4" />
                 Reload Categories
@@ -262,203 +267,210 @@ const Deals = () => {
     )
   }
 
-  // ✅ MAIN CONTENT
-  return (
-    <div className={containerClasses}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
+  // Main content
+  const mainContent = (
+    <div className="min-h-screen">
+      <div className="container-page section-px-lg section-py-xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Trading Deals & Exclusive Bonuses
-          </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            Curated offers from top platforms across {categories.length - 1} categories
-          </p>
-          <p className="text-gray-600">
-            {companies.length} vetted platforms • Real community ratings • Updated daily
-          </p>
-        </div>
+        <div className="text-center mb-4xl">
+        <h1 className="text-3xl font-bold text-foreground mb-2xl">
+          Trading Deals & Exclusive Bonuses
+        </h1>
+        <p className="text-lg text-foreground/70 mb-lg">
+          Curated offers from top platforms across {categories.length - 1} categories
+        </p>
+        <p className="text-foreground/70">
+          {companies.length} vetted platforms • Real community ratings • Updated daily
+        </p>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-xl border border-gray-200 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="relative">
-              <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search deals, companies..."
-                value={filters.searchTerm}
-                onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
-              />
+      {/* Filters */}
+      <div className="bg-gradient-to-r from-content1 via-content2 to-content1 container-p-lg rounded-xl border border-border/50 mb-xl shadow-lg backdrop-blur-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-2xl">
+          <div className="relative">
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex items-center gap-3">
+              <Icons.search className="text-foreground/70 w-4 h-4 flex-shrink-0" />
+              <span className="text-foreground/60 text-sm font-medium">Search deals, companies...</span>
             </div>
-
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
-            >
-              {categories.map((category) => (
-                <option key={category.value} value={category.value}>
-                  {category.label} {category.value !== 'all' && `(${categoryStats.get(category.value) || 0})`}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filters.sortBy}
-              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-gray-900"
-            >
-              <option value="rating">Highest Rated</option>
-              <option value="newest">Newest First</option>
-              <option value="popular">Most Claimed</option>
-              <option value="name">Company A-Z</option>
-            </select>
+            <input
+              type="text"
+              placeholder=""
+              value={filters.searchTerm}
+              onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+              className="w-full pl-12 pr-xl py-lg bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground text-sm"
+            />
           </div>
 
-          {/* Category Quick Filters */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const Icon = category.icon
-              const count = categoryStats.get(category.value) || 0
-              const isActive = filters.category === category.value
-              
-              return (
-                <button
-                  key={category.value}
-                  onClick={() => handleFilterChange('category', category.value)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  {category.label}
-                  {category.value !== 'all' && (
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${
-                      isActive ? 'bg-white/20' : 'bg-gray-200'
-                    }`}>
-                      {count}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Category Description */}
-        {selectedCategoryInfo && (
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 mb-8 border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {selectedCategoryInfo.title}
-            </h3>
-            <p className="text-gray-600 mb-3">
-              {selectedCategoryInfo.description}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {selectedCategoryInfo.companies.slice(0, 8).map((company: string) => (
-                <span key={company} className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm">
-                  {company}
-                </span>
-              ))}
-              {selectedCategoryInfo.companies.length > 8 && (
-                <span className="text-gray-600 text-sm">
-                  +{selectedCategoryInfo.companies.length - 8} more
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* No Results */}
-        {filteredDeals.length === 0 && deals.length > 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No deals found</h3>
-            <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria</p>
-            <button
-              onClick={() => setFilters({ searchTerm: '', category: 'all', sortBy: 'rating' })}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Clear Filters
-            </button>
-          </div>
-        )}
-
-        {/* Deal Cards */}
-        {filteredDeals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {filteredDeals.map((deal) => (
-              <DealCard
-                key={deal.id}
-                deal={deal}
-                onRateClick={handleRateClick}
-                onTrackClick={handleTrackClick}
-              />
+          <select
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="w-full px-xl py-lg bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground"
+          >
+            {categories.map((category) => (
+              <option key={category.value} value={category.value}>
+                {category.label} {category.value !== 'all' && `(${categoryStats.get(category.value) || 0})`}
+              </option>
             ))}
-          </div>
-        )}
+          </select>
 
-        {/* Footer */}
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 sm:p-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Icons.users className="w-6 h-6 text-blue-600" />
-            <h3 className="text-xl font-semibold text-gray-900">Curated Trading Platforms</h3>
+          <select
+            value={filters.sortBy}
+            onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+            className="w-full px-xl py-lg bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-foreground"
+          >
+            <option value="rating">Highest Rated</option>
+            <option value="newest">Newest First</option>
+            <option value="popular">Most Claimed</option>
+            <option value="name">Company A-Z</option>
+          </select>
+        </div>
+
+        {/* Spacer between search/filter and category buttons */}
+        <div className="h-4"></div>
+
+        {/* Category Quick Filters */}
+        <div className="flex flex-wrap gap-md mb-md">
+          {categories.map((category) => {
+            const count = categoryStats.get(category.value) || 0
+            const isActive = filters.category === category.value
+            
+            return (
+              <button
+                key={category.value}
+                onClick={() => handleFilterChange('category', category.value)}
+                className={`flex items-center gap-lg px-2xl py-lg rounded-lg text-sm font-medium transition-colors ${
+                  isActive 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-background text-foreground/70 hover:bg-content2 hover:text-foreground border border-border'
+                }`}
+              >
+                {category.label}
+                {category.value !== 'all' && (
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    isActive 
+                      ? 'bg-primary/20 text-primary-foreground' 
+                      : 'bg-foreground/10 text-foreground/80'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Category Description */}
+      {selectedCategoryInfo && (
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 rounded-xl container-p-lg mb-xl border border-primary/20 shadow-md backdrop-blur-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-md">
+            {selectedCategoryInfo.title}
+          </h3>
+          <p className="text-foreground/70 mb-lg">
+            {selectedCategoryInfo.description}
+          </p>
+          <div className="flex flex-wrap gap-md">
+            {selectedCategoryInfo.companies.slice(0, 8).map((company: string) => (
+              <span key={company} className="bg-primary-100 text-primary-700 px-md py-sm rounded text-sm">
+                {company}
+              </span>
+            ))}
+            {selectedCategoryInfo.companies.length > 8 && (
+              <span className="text-foreground/70 text-sm">
+                +{selectedCategoryInfo.companies.length - 8} more
+              </span>
+            )}
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-6">
+        </div>
+      )}
+
+      {/* No Results */}
+      {filteredDeals.length === 0 && deals.length > 0 && (
+        <div className="text-center py-4xl">
+          <h3 className="text-lg font-medium text-foreground mb-md">No deals found</h3>
+          <p className="text-foreground/70 mb-2xl">Try adjusting your search or filter criteria</p>
+          <button
+            onClick={() => setFilters({ searchTerm: '', category: 'all', sortBy: 'rating' })}
+            className="bg-primary text-primary-foreground px-xl py-md rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
+
+      {/* Deal Cards */}
+      {filteredDeals.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg my-2xl">
+          {filteredDeals.map((deal) => (
+            <DealCard
+              key={deal.id}
+              deal={deal}
+              onRateClick={handleRateClick}
+              onTrackClick={handleTrackClick}
+              // isSubmittingRating={submitRatingMutation.isPending}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Empty Deals State */}
+      {deals.length === 0 && !dealsQuery.isLoading && (
+        <div className="text-center py-4xl">
+          <Icons.gift className="w-16 h-16 mx-auto mb-xl text-foreground/40" />
+          <h3 className="text-xl font-semibold text-foreground mb-md">No Deals Available</h3>
+          <p className="text-foreground/70 mb-2xl">
+            No trading deals found. Please check back later or contact support.
+          </p>
+          <button
+            onClick={handleRetry}
+            className="bg-primary text-primary-foreground px-xl py-md rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            <Icons.refresh className="w-4 h-4 mr-sm inline" />
+            Reload Deals
+          </button>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 rounded-xl container-p-lg text-center shadow-lg backdrop-blur-sm border border-primary/10">
+        <div className="flex items-center justify-center gap-md my-lg">
+          <Icons.users className="w-6 h-6 text-primary" />
+          <h3 className="text-lg font-semibold text-foreground">Curated Trading Platforms</h3>
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <p className="text-foreground/70 max-w-3xl mx-auto my-lg text-center text-base leading-relaxed">
             {companies.length} handpicked platforms across {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length} categories. 
             Every company is verified, regulated, and trusted by our trading community.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-gray-600">
-            {categories
-              .filter(cat => cat.value !== 'all')
-              .filter(cat => (categoryStats.get(cat.value) || 0) > 0)
-              .slice(0, 3)
-              .map((category) => {
-                const count = categoryStats.get(category.value) || 0
-                return (
-                  <span key={category.value} className="flex items-center gap-1">
-                    <span className="text-green-500">✓</span>
-                    <span>{count} {category.label}</span>
-                  </span>
-                )
-              })}
-            {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length === 0 ? (
-              <span className="flex items-center gap-1">
-                <span className="text-green-500">✓</span>
-                <span>Verified Companies</span>
-              </span>
-            ) : null}
-            <span className="flex items-center gap-1">
-              <span className="text-green-500">✓</span>
-              <span>Real Reviews</span>
-            </span>
-          </div>
         </div>
-        
-        {/* Empty Deals State */}
-        {deals.length === 0 && !dealsQuery.isLoading && (
-          <div className="text-center py-12">
-            <Icons.gift className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Deals Available</h3>
-            <p className="text-gray-600 mb-6">
-              No trading deals found. Please check back later or contact support.
-            </p>
-            <button
-              onClick={handleRetry}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4 mr-2 inline" />
-              Reload Deals
-            </button>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center justify-center gap-lg text-sm text-foreground/70">
+          {categories
+            .filter(cat => cat.value !== 'all')
+            .filter(cat => (categoryStats.get(cat.value) || 0) > 0)
+            .slice(0, 3)
+            .map((category) => {
+              const count = categoryStats.get(category.value) || 0
+              return (
+                <span key={category.value} className="flex items-center gap-xs">
+                  <span className="text-success">✓</span>
+                  <span>{count} {category.label}</span>
+                </span>
+              )
+            })}
+          {categories.filter(cat => cat.value !== 'all' && (categoryStats.get(cat.value) || 0) > 0).length === 0 ? (
+            <span className="flex items-center gap-xs">
+              <span className="text-success">✓</span>
+              <span>Verified Companies</span>
+            </span>
+          ) : null}
+          <span className="flex items-center gap-xs">
+            <span className="text-success">✓</span>
+            <span>Real Reviews</span>
+          </span>
+        </div>
       </div>
 
-      {/* Rating Modal */}
+      {/* Modals */}
       {showRatingModal && selectedDeal && (
         <RatingModal
           isOpen={showRatingModal}
@@ -476,8 +488,21 @@ const Deals = () => {
           }}
         />
       )}
+
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          mode={authMode}
+          onModeChange={setAuthMode}
+        />
+      )}
+      </div>
     </div>
   )
+
+  // Render with appropriate layout
+  return isInDashboard ? mainContent : <GuestLayout>{mainContent}</GuestLayout>
 }
 
 export default Deals

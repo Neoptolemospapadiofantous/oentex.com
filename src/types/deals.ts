@@ -25,6 +25,7 @@ export interface CompanyDeal {
   is_active: boolean
   click_count: number
   conversion_rate: number
+  commission_rate?: number
   affiliate_link: string
   created_at: string
   updated_at: string
@@ -46,6 +47,7 @@ export interface UserRating {
   security_trust?: number
   educational_resources?: number
   mobile_app?: number
+  rating_type?: string
 }
 
 export interface CompanyRating {
@@ -57,6 +59,7 @@ export interface DealWithRating extends CompanyDeal {
   company?: Company
   userRating?: UserRating
   companyRating?: CompanyRating
+  company_name?: string
 }
 
 export interface DealFilters {

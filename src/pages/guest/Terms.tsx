@@ -1,275 +1,409 @@
-// React import removed as it's not used
+// src/pages/guest/Terms.tsx - Terms and Conditions Page
 import { Icons } from '@components/icons';
-import GuestLayout from '../../layouts/GuestLayout';
 
 const Terms = () => {
   const sections = [
     {
-      id: 'acceptance',
-      title: 'Acceptance of Terms',
+      id: 'overview',
+      title: 'Terms of Service Overview',
       icon: <Icons.document className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            By accessing and using RateWise (the "Service"), operated by RateWise LLC ("we," "us," or "our"), 
-            you accept and agree to be bound by the terms and provisions of this agreement ("Terms of Service"). 
-            If you do not agree to abide by these terms, please do not use this service.
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            Welcome to Oentex, operated by RateWise LLC ("we," "us," or "our"). These Terms of Service 
+            ("Terms") govern your use of our affiliate rating platform and services. By accessing or using 
+            our platform, you agree to be bound by these Terms.
           </p>
-          <p className="text-foreground/70 leading-relaxed">
-            These Terms of Service apply to all visitors, users, and others who access or use the Service, 
-            including registered users who create accounts and submit reviews.
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            These Terms apply to all users of our platform, including visitors, registered users, and 
+            anyone who submits reviews, ratings, or other content.
           </p>
-        </div>
-      )
-    },
-    {
-      id: 'description',
-      title: 'Description of Service',
-      icon: <Icons.star className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            RateWise is an affiliate marketing platform that provides product and service reviews, ratings, 
-            and recommendations across multiple categories including:
-          </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Tech Gadgets and Electronics</li>
-            <li>• Software Tools and Applications</li>
-            <li>• Online Courses and Educational Platforms</li>
-            <li>• Financial Services and Investment Platforms</li>
-            <li>• Health & Wellness Products and Services</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            We connect users with third-party merchants and service providers through affiliate relationships 
-            and may receive compensation for referrals, purchases, or sign-ups made through our platform.
-          </p>
-        </div>
-      )
-    },
-    {
-      id: 'user-accounts',
-      title: 'User Accounts and Registration',
-      icon: <Icons.users className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            To access certain features of our Service, you may be required to create an account. When creating an account, you agree to:
-          </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Provide accurate, current, and complete information</li>
-            <li>• Maintain and update your account information</li>
-            <li>• Maintain the security and confidentiality of your login credentials</li>
-            <li>• Accept responsibility for all activities under your account</li>
-            <li>• Notify us immediately of any unauthorized use of your account</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            You must be at least 18 years old to create an account. We reserve the right to refuse service, 
-            terminate accounts, or remove content at our sole discretion.
-          </p>
-        </div>
-      )
-    },
-    {
-      id: 'user-content',
-      title: 'User-Generated Content and Reviews',
-      icon: <Icons.star className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            Our Service allows users to submit reviews, ratings, comments, photos, and other content ("User Content"). 
-            By submitting User Content, you agree that:
-          </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Your content is based on your genuine experience with the product or service</li>
-            <li>• You will not submit false, misleading, or fraudulent reviews</li>
-            <li>• Your content does not violate any laws or third-party rights</li>
-            <li>• You grant us a worldwide, non-exclusive, royalty-free license to use, modify, and display your content</li>
-            <li>• You will not submit content that is defamatory, offensive, or inappropriate</li>
-            <li>• You will not attempt to manipulate ratings or reviews through fake accounts or incentives</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            We reserve the right to moderate, edit, or remove any User Content that violates these terms or our community guidelines.
-          </p>
-        </div>
-      )
-    },
-    {
-      id: 'affiliate-disclosure',
-      title: 'Affiliate Relationships and Compensation',
-      icon: <Icons.link className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            RateWise participates in various affiliate marketing programs and may receive compensation when users:
-          </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Click on affiliate links</li>
-            <li>• Make purchases through our referral links</li>
-            <li>• Sign up for services through our platform</li>
-            <li>• Complete specific actions with partner companies</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            This compensation does not affect the price you pay for products or services. Our affiliate relationships 
-            are disclosed throughout the site, and we strive to maintain editorial independence in our reviews and recommendations.
-          </p>
-          <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <Icons.warning className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-              <p className="text-foreground text-sm">
-                <strong>Important:</strong> We may earn commissions from affiliate partnerships, but this does not 
-                influence our honest reviews and recommendations. We are committed to providing unbiased information to help you make informed decisions.
-              </p>
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+            <div className="flex items-start space-x-4">
+              <Icons.shield className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-foreground mb-3 text-lg">Important Notice</h3>
+                <p className="text-foreground/70 text-base">
+                  Please read these Terms carefully. If you do not agree to these Terms, please do not use our platform. 
+                  We may update these Terms from time to time, and your continued use constitutes acceptance of any changes.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       )
     },
     {
-      id: 'prohibited-uses',
-      title: 'Prohibited Uses and Conduct',
-      icon: <Icons.shield className="w-6 h-6" />,
+      id: 'acceptance',
+      title: 'Acceptance of Terms',
+      icon: <Icons.check className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            You agree not to use the Service for any unlawful purpose or in any way that could damage, disable, 
-            overburden, or impair our servers. Prohibited activities include:
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            By accessing, browsing, or using our platform, you acknowledge that you have read, understood, 
+            and agree to be bound by these Terms and our Privacy Policy.
           </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Submitting false, fraudulent, or misleading reviews</li>
-            <li>• Creating multiple accounts to manipulate ratings</li>
-            <li>• Harassing, threatening, or defaming other users</li>
-            <li>• Attempting to gain unauthorized access to our systems</li>
-            <li>• Distributing malware, viruses, or harmful code</li>
-            <li>• Scraping or harvesting user data without permission</li>
-            <li>• Violating any applicable laws or regulations</li>
-            <li>• Impersonating others or providing false identity information</li>
-          </ul>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-success/10 border border-success/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-3 flex items-center">
+                <Icons.check className="w-5 h-5 text-success mr-2" />
+                What You Agree To
+              </h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Comply with all applicable laws and regulations</li>
+                <li>• Provide accurate and truthful information</li>
+                <li>• Respect other users and their content</li>
+                <li>• Use the platform for lawful purposes only</li>
+                <li>• Maintain the security of your account</li>
+              </ul>
+            </div>
+            
+            <div className="bg-warning/10 border border-warning/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-3 flex items-center">
+                <Icons.warning className="w-5 h-5 text-warning mr-2" />
+                What You Cannot Do
+              </h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Violate any laws or regulations</li>
+                <li>• Post false, misleading, or harmful content</li>
+                <li>• Infringe on intellectual property rights</li>
+                <li>• Attempt to gain unauthorized access</li>
+                <li>• Interfere with platform operations</li>
+              </ul>
+            </div>
+          </div>
         </div>
       )
     },
     {
-      id: 'intellectual-property',
-      title: 'Intellectual Property Rights',
+      id: 'account-security',
+      title: 'Account Security',
+      icon: <Icons.lock className="w-6 h-6" />,
+      content: (
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            You are responsible for maintaining the security of your account and all activities that occur 
+            under your account. We strongly recommend implementing additional security measures.
+          </p>
+          
+          <div className="space-y-6">
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Security Requirements</h4>
+              <ul className="text-foreground/70 space-y-3 text-base">
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <span>Two-factor authentication strongly recommended for all accounts</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <span>Users are responsible for maintaining account security and password strength</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <span>Regular security updates and notifications will be provided</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <span>Suspicious activity monitoring is in place to protect users</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-warning/10 border border-warning/20 rounded-2xl p-6">
+              <div className="flex items-start space-x-4">
+                <Icons.warning className="w-6 h-6 text-warning mt-1 flex-shrink-0" />
+                <div>
+                  <h4 className="font-semibold text-foreground mb-2 text-lg">Important Security Notice</h4>
+                  <p className="text-foreground/70 text-base">
+                    If you suspect unauthorized access to your account, immediately change your password 
+                    and contact our support team. We are not responsible for losses due to compromised accounts.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'technical-requirements',
+      title: 'Technical Requirements',
+      icon: <Icons.settings className="w-6 h-6" />,
+      content: (
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            To use our platform effectively, you need to meet certain technical requirements and use 
+            compatible devices and software.
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-surface/30 border border-border rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg flex items-center">
+                <Icons.desktop className="w-5 h-5 text-primary mr-2" />
+                System Requirements
+              </h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Modern web browser (Chrome, Firefox, Safari, Edge)</li>
+                <li>• Mobile app available for iOS and Android</li>
+                <li>• Stable internet connection required</li>
+                <li>• JavaScript enabled in browser</li>
+                <li>• Cookies enabled for functionality</li>
+              </ul>
+            </div>
+            
+            <div className="bg-surface/30 border border-border rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg flex items-center">
+                <Icons.wifi className="w-5 h-5 text-secondary mr-2" />
+                Performance
+              </h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Minimum 2GB RAM recommended</li>
+                <li>• 4G/WiFi connection for optimal experience</li>
+                <li>• Regular browser updates recommended</li>
+                <li>• Ad blockers may affect functionality</li>
+                <li>• VPN usage may impact performance</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'trading-guidelines',
+      title: 'Trading Guidelines and Risk Warnings',
+      icon: <Icons.chart className="w-6 h-6" />,
+      content: (
+        <div className="space-y-6">
+          <div className="bg-danger/10 border border-danger/20 rounded-2xl p-6">
+            <div className="flex items-start space-x-4">
+              <Icons.warning className="w-6 h-6 text-danger mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-foreground mb-3 text-lg">Important Risk Warning</h3>
+                <p className="text-foreground/70 text-base mb-4">
+                  Trading and investing involve significant risk. You should only trade with funds you can afford to lose. 
+                  Past performance does not guarantee future results.
+                </p>
+                <ul className="text-foreground/70 space-y-2 text-base">
+                  <li>• Educational resources are strongly recommended for beginners</li>
+                  <li>• Start with small amounts and gradually increase as you gain experience</li>
+                  <li>• Never invest more than you can afford to lose</li>
+                  <li>• Consider seeking professional financial advice</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Best Practices</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Research thoroughly before making decisions</li>
+                <li>• Diversify your investments</li>
+                <li>• Keep detailed records of your trades</li>
+                <li>• Stay informed about market conditions</li>
+                <li>• Use stop-loss orders when appropriate</li>
+              </ul>
+            </div>
+            
+            <div className="bg-secondary/10 border border-secondary/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Platform Guidelines</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Reviews must be based on personal experience</li>
+                <li>• Provide constructive and helpful feedback</li>
+                <li>• Respect other users' opinions</li>
+                <li>• Report suspicious or inappropriate content</li>
+                <li>• Follow community guidelines at all times</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'content-policy',
+      title: 'Content Policy and User-Generated Content',
       icon: <Icons.document className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            The Service and its original content, features, and functionality are owned by RateWise LLC and are 
-            protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            Our platform allows users to submit reviews, ratings, comments, and other content. 
+            By submitting content, you grant us certain rights and agree to follow our content policies.
           </p>
-          <p className="text-foreground/70 leading-relaxed">
-            You may not reproduce, distribute, modify, create derivative works of, publicly display, publicly perform, 
-            republish, download, store, or transmit any of the material on our Service without our prior written consent.
-          </p>
-          <p className="text-foreground/70 leading-relaxed">
-            Product names, logos, and brands mentioned on our Service are property of their respective owners and 
-            are used for identification purposes only.
-          </p>
+          
+          <div className="space-y-6">
+            <div className="bg-success/10 border border-success/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Content Guidelines</h4>
+              <ul className="text-foreground/70 space-y-3 text-base">
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-success mt-1 flex-shrink-0" />
+                  <span>Content must be accurate, truthful, and based on personal experience</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-success mt-1 flex-shrink-0" />
+                  <span>Reviews should be constructive and helpful to other users</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-success mt-1 flex-shrink-0" />
+                  <span>Respect intellectual property rights of others</span>
+                </li>
+                <li className="flex items-start space-x-3">
+                  <Icons.check className="w-5 h-5 text-success mt-1 flex-shrink-0" />
+                  <span>Follow community standards and be respectful</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-warning/10 border border-warning/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Prohibited Content</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• False, misleading, or fraudulent information</li>
+                <li>• Spam, promotional content, or affiliate links</li>
+                <li>• Harassment, abuse, or threatening language</li>
+                <li>• Copyrighted material without permission</li>
+                <li>• Content that violates laws or regulations</li>
+              </ul>
+            </div>
+          </div>
         </div>
       )
     },
     {
-      id: 'disclaimers',
-      title: 'Disclaimers and Warranties',
-      icon: <Icons.warning className="w-6 h-6" />,
+      id: 'affiliate-disclosure',
+      title: 'Affiliate Disclosure and Commissions',
+      icon: <Icons.dollar className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            The information provided on RateWise is for general informational purposes only. We make no representations 
-            or warranties of any kind, express or implied, about:
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            Oentex operates as an affiliate platform. We may receive commissions when users make 
+            purchases through our affiliate links. This section explains our affiliate relationships and policies.
           </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• The accuracy, reliability, or completeness of product information</li>
-            <li>• The availability or functionality of third-party products and services</li>
-            <li>• The results you may achieve from using recommended products</li>
-            <li>• The uninterrupted or error-free operation of our Service</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            User reviews and ratings represent individual opinions and experiences. Results may vary, and we cannot 
-            guarantee that you will have the same experience as other users.
-          </p>
+          
+          <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+            <h4 className="font-semibold text-foreground mb-4 text-lg">Transparency Commitment</h4>
+            <p className="text-foreground/70 text-base mb-4">
+              We are committed to transparency in our affiliate relationships. All affiliate links are clearly 
+              marked, and we only recommend products and services we believe provide value to our users.
+            </p>
+            <ul className="text-foreground/70 space-y-2 text-base">
+              <li>• Affiliate links are clearly identified and marked</li>
+              <li>• Commissions do not influence our editorial content</li>
+              <li>• We maintain editorial independence in our reviews</li>
+              <li>• Users are not obligated to use our affiliate links</li>
+            </ul>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-surface/30 border border-border rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">How It Works</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• We partner with reputable trading platforms</li>
+                <li>• Users can access exclusive offers and bonuses</li>
+                <li>• We track referrals through secure systems</li>
+                <li>• Commissions help support our platform</li>
+              </ul>
+            </div>
+            
+            <div className="bg-surface/30 border border-border rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">User Benefits</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Access to exclusive promotions</li>
+                <li>• Free account upgrades and bonuses</li>
+                <li>• Lower fees and better rates</li>
+                <li>• Priority customer support</li>
+              </ul>
+            </div>
+          </div>
         </div>
       )
     },
     {
       id: 'limitation-liability',
-      title: 'Limitation of Liability',
+      title: 'Limitation of Liability and Disclaimers',
       icon: <Icons.shield className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            To the fullest extent permitted by applicable law, RateWise LLC shall not be liable for any indirect, 
-            incidental, special, consequential, or punitive damages, including but not limited to:
-          </p>
-          <ul className="text-foreground/70 space-y-2 ml-6">
-            <li>• Loss of profits, data, or business opportunities</li>
-            <li>• Damages resulting from third-party products or services</li>
-            <li>• Technical failures or service interruptions</li>
-            <li>• Actions or omissions of other users</li>
-            <li>• Unauthorized access to your account or data</li>
-          </ul>
-          <p className="text-foreground/70 leading-relaxed">
-            Our total liability to you for all claims shall not exceed the amount you paid us in the twelve months 
-            preceding the claim, or $100, whichever is greater.
-          </p>
+        <div className="space-y-6">
+          <div className="bg-warning/10 border border-warning/20 rounded-2xl p-6">
+            <div className="flex items-start space-x-4">
+              <Icons.warning className="w-6 h-6 text-warning mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-foreground mb-3 text-lg">Important Legal Notice</h3>
+                <p className="text-foreground/70 text-base">
+                  Our platform is provided "as is" without warranties of any kind. We are not responsible 
+                  for any losses, damages, or consequences resulting from your use of our platform or 
+                  any third-party services.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Limitations</h4>
+              <ul className="text-foreground/70 space-y-3 text-base">
+                <li>• We do not guarantee the accuracy of user-generated content</li>
+                <li>• We are not responsible for third-party platform performance</li>
+                <li>• Trading decisions and their consequences are your responsibility</li>
+                <li>• We do not provide financial or investment advice</li>
+                <li>• Platform availability is not guaranteed 100% of the time</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Disclaimers</h4>
+              <ul className="text-foreground/70 space-y-3 text-base">
+                <li>• Information is for educational purposes only</li>
+                <li>• Past performance does not guarantee future results</li>
+                <li>• Market conditions can change rapidly</li>
+                <li>• Always conduct your own research</li>
+                <li>• Consider consulting with financial professionals</li>
+              </ul>
+            </div>
+          </div>
         </div>
       )
     },
     {
-      id: 'modifications',
-      title: 'Modifications to Terms and Service',
-      icon: <Icons.time className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            We reserve the right to modify or replace these Terms of Service at any time. If a revision is material, 
-            we will provide at least 30 days' notice prior to any new terms taking effect.
-          </p>
-          <p className="text-foreground/70 leading-relaxed">
-            We may also modify, suspend, or discontinue any part of our Service at any time. We will provide reasonable 
-            notice of significant changes when possible.
-          </p>
-          <p className="text-foreground/70 leading-relaxed">
-            Your continued use of the Service after any changes constitutes acceptance of the new Terms of Service.
-          </p>
-        </div>
-      )
-    },
-    {
-      id: 'termination',
-      title: 'Account Termination',
-      icon: <Icons.users className="w-6 h-6" />,
-      content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            You may terminate your account at any time by contacting us or using the account deletion feature in your profile.
-          </p>
-          <p className="text-foreground/70 leading-relaxed">
-            We may terminate or suspend your account and access to the Service immediately, without prior notice, 
-            if you breach these Terms of Service or engage in prohibited activities.
-          </p>
-          <p className="text-foreground/70 leading-relaxed">
-            Upon termination, your right to use the Service will cease immediately, but these Terms will remain in 
-            effect regarding your past use of the Service.
-          </p>
-        </div>
-      )
-    },
-    {
-      id: 'contact',
-      title: 'Contact Information',
+      id: 'contact-support',
+      title: 'Contact Information and Support',
       icon: <Icons.mail className="w-6 h-6" />,
       content: (
-        <div className="space-y-4">
-          <p className="text-foreground/70 leading-relaxed">
-            If you have any questions about these Terms of Service, please contact us:
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            If you have questions about these Terms or need support, we're here to help. 
+            Contact us through any of the channels below.
           </p>
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <div className="space-y-2">
-              <p className="text-foreground font-medium">RateWise LLC</p>
-              <p className="text-foreground/70">Email: legal@ratewise.com</p>
-              <p className="text-foreground/70">Address: 123 Review Street, San Francisco, CA 94105</p>
-              <p className="text-foreground/70">Phone: (555) 123-4567</p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">General Support</h4>
+              <div className="space-y-3 text-foreground/70 text-base">
+                <p><strong>Email:</strong> support@oentex.com</p>
+                <p><strong>Response Time:</strong> Within 24 hours</p>
+                <p><strong>Phone:</strong> (555) 123-4567</p>
+                <p><strong>Hours:</strong> Monday-Friday, 9 AM - 6 PM EST</p>
+              </div>
+            </div>
+            
+            <div className="bg-secondary/10 border border-secondary/20 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Legal Inquiries</h4>
+              <div className="space-y-3 text-foreground/70 text-base">
+                <p><strong>Email:</strong> legal@oentex.com</p>
+                <p><strong>Response Time:</strong> Within 48 hours</p>
+                <p><strong>Address:</strong> RateWise LLC</p>
+                <p>123 Review Street, San Francisco, CA 94105</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-surface/30 border border-border rounded-2xl p-6">
+            <h4 className="font-semibold text-foreground mb-3 text-lg">Mailing Address</h4>
+            <div className="text-foreground/70 text-base space-y-1">
+              <p>RateWise LLC</p>
+              <p>Attention: Legal Department</p>
+              <p>123 Review Street</p>
+              <p>San Francisco, CA 94105</p>
+              <p>United States</p>
             </div>
           </div>
         </div>
@@ -278,16 +412,15 @@ const Terms = () => {
   ];
 
   return (
-    <GuestLayout>
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-7xl mx-auto px-6 text-center">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Terms of Service
+              Terms & Conditions
             </h1>
             <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-4">
-              Please read these terms carefully before using our service
+              Please read these terms carefully before using our platform.
             </p>
             <p className="text-foreground/70">Last updated: January 30, 2025</p>
           </div>
@@ -295,12 +428,12 @@ const Terms = () => {
 
         {/* Content */}
         <section className="py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="space-y-8">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="space-y-12">
               {sections.map((section, index) => (
-                <div key={section.id} className="bg-surface/50 rounded-2xl border border-border overflow-hidden">
+                <div key={section.id} className="bg-content1 rounded-2xl border border-divider overflow-hidden shadow-lg">
                   <div className="p-8">
-                    <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-6 mb-8">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
                         {section.icon}
                       </div>
@@ -317,15 +450,15 @@ const Terms = () => {
             </div>
 
             {/* Footer Notice */}
-            <div className="mt-16 p-6 bg-warning/10 border border-warning/30 rounded-2xl">
-              <div className="flex items-start space-x-3">
-                <Icons.warning className="w-6 h-6 text-warning flex-shrink-0 mt-0.5" />
+            <div className="mt-20 bg-secondary/10 border border-secondary/20 rounded-2xl p-8">
+              <div className="flex items-start space-x-4">
+                <Icons.shield className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="font-semibold text-foreground mb-2">Important Legal Notice</h3>
-                  <p className="text-foreground/70 text-sm leading-relaxed">
-                    These Terms of Service constitute a legally binding agreement between you and RateWise LLC. 
-                    By using our service, you acknowledge that you have read, understood, and agree to be bound by these terms. 
-                    If you do not agree with any part of these terms, you must not use our service.
+                  <h3 className="font-semibold text-foreground mb-3 text-lg">Your Agreement Matters</h3>
+                  <p className="text-foreground/70 text-base leading-relaxed">
+                    By using our platform, you acknowledge that you have read, understood, and agree to be bound 
+                    by these Terms of Service. If you have any questions or concerns, please don't hesitate to 
+                    contact our support team. We're committed to providing a transparent and fair service.
                   </p>
                 </div>
               </div>
@@ -333,7 +466,6 @@ const Terms = () => {
           </div>
         </section>
       </div>
-    </GuestLayout>
   );
 };
 

@@ -1,4 +1,4 @@
-// src/components/PageTransition.tsx
+// src/components/PageTransition.tsx - Updated with theme integration
 import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 

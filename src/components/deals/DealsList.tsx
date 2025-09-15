@@ -21,9 +21,9 @@ export const DealsList: React.FC<DealsListProps> = React.memo(({
 }) => {
   if (deals.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Icons.gift className="w-16 h-16 text-textSecondary mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-text mb-2">No deals found</h3>
+      <div className="text-center py-3xl">
+        <Icons.gift className="w-16 h-16 text-textSecondary mx-auto my-md" />
+        <h3 className="text-xl font-semibold text-text my-sm">No deals found</h3>
         <p className="text-textSecondary">
           {searchTerm || selectedCategory !== 'all' 
             ? 'Try adjusting your search or filters'
@@ -35,7 +35,7 @@ export const DealsList: React.FC<DealsListProps> = React.memo(({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
       {deals.map((deal) => (
         <DealCard
           key={deal.id}

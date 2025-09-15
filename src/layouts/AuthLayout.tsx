@@ -1,26 +1,28 @@
 // src/components/dashboard/DashboardLayout.tsx (MOBILE OPTIMIZED)
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/authContext';
-import toast from 'react-hot-toast';
+import { showSuccessToast } from '../components/ui/AppToast';
 import ToastContainer from '@components/ui/ToastContainer';
-
-
+import { Icons } from '../components/icons';
+import logo from '../assets/logo.png';
 
 interface SidebarProps {
   isMobileOpen: boolean;
   setIsMobileOpen: (open: boolean) => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen, isCollapsed, onToggleCollapse }) => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   const navItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: Home, path: '/dashboard' },
-    { id: 'deals', name: 'Browse Platforms', icon: Search, path: '/dashboard/deals' },
-    { id: 'my-deals', name: 'My Ratings', icon: Star, path: '/my-deals' },
+    { id: 'dashboard', name: 'Dashboard', icon: Icons.home, path: '/dashboard' },
+    { id: 'deals', name: 'Browse Platforms', icon: Icons.search, path: '/dashboard/deals' },
+    { id: 'my-deals', name: 'My Ratings', icon: Icons.star, path: '/my-deals' },
   ];
 
   const handleSignOut = async () => {
@@ -41,122 +43,208 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen }) => {
 
   return (
     <>
-      {/* Mobile Overlay */}
-      {isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
+      {/* Desktop Sidebar - Flex Layout */}
+      <div className={`hidden lg:block h-screen lg:flex-shrink-0 transition-all duration-300 relative ${isCollapsed ? 'w-16' : 'w-64'}`}>
+        {/* Toggle Button - Positioned at the tip/edge with offset */}
+        <button
+          onClick={onToggleCollapse}
+          className="absolute top-1/2 -right-4 z-50 w-8 h-8 bg-content1 border-2 border-border rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:bg-content2 hover:border-primary/30 group hover:scale-105 active:scale-95"
+          style={{ transform: 'translateY(-50%)' }}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <Icons.chevronRight className="w-4 h-4 text-foreground/70 group-hover:text-primary transition-colors duration-200" />
+          ) : (
+            <Icons.chevronLeft className="w-4 h-4 text-foreground/70 group-hover:text-primary transition-colors duration-200" />
+          )}
+        </button>
 
-      {/* Sidebar - Mobile Optimized */}
-      <div className={`fixed top-0 left-0 z-50 w-72 sm:w-80 lg:w-64 h-screen bg-white border-r transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`} style={{ borderColor: 'var(--border)' }}>
-        <div className="flex flex-col h-full">
-          {/* Header with close button for mobile */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
-                Oentex
-              </span>
+        <div className="flex flex-col h-full w-full bg-content1 border-r border-border overflow-x-hidden">
+
+          <div className={`flex flex-col h-full ${isCollapsed ? 'container-p-sm pb-0' : 'container-p-xs'}`}>
+            {/* Header */}
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} container-p-sm border-b border-border flex-shrink-0 mb-md`}>
+              {!isCollapsed && (
+                <div className="flex items-center gap-xs container-p-xs">
+                  <img src={logo} alt="Oentex" className="h-8 w-auto" />
+                  <span className="text-lg font-bold text-foreground">Oentex</span>
+                </div>
+              )}
+              {isCollapsed && (
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+
+                  <img src={logo} alt="Oentex" className="h-6 w-auto" />
+                </div>
+              )}
             </div>
-            
-            {/* Mobile close button */}
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="lg:hidden p-2 rounded-lg transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
 
-          {/* User Profile - Clickable section for better mobile UX */}
-          <div className="p-4 sm:p-6 border-b flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleProfileClick}
-              className="w-full flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:bg-opacity-10"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))'
-              }}>
-                <User className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm sm:text-base font-medium truncate" style={{ color: 'var(--text)' }}>
-                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                </p>
-                <p className="text-xs sm:text-sm truncate" style={{ color: 'var(--text-secondary)' }}>
-                  {user?.email}
-                </p>
-              </div>
-            </button>
-          </div>
+            {/* User Profile Section */}
+            <div className={`${isCollapsed ? 'flex justify-center' : ''} container-p-sm border-b border-border flex-shrink-0 mb-md`}>
+              <button 
+                onClick={handleProfileClick}
+                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-xs'} container-p-sm rounded-lg transition-colors duration-200 hover:bg-content2`}
+                aria-label="View profile"
+                title={isCollapsed ? (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User') : undefined}
+              >
+                {/* avatar/icon – same visual weight as nav icons */}
+                <div className={`${isCollapsed ? 'w-12 h-12' : 'w-8 h-8'} flex items-center justify-center flex-shrink-0 ${isCollapsed ? 'rounded-lg' : 'rounded-full bg-content2'}`}>
+                  <Icons.user className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} text-foreground/70`} />
+                </div>
 
-          {/* Navigation - Scrollable content */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.id}
-                  to={item.path}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={`w-full flex items-center space-x-3 px-4 py-4 sm:py-3 rounded-lg text-left transition-all duration-200 ${
-                    isActive
-                      ? 'text-white border-r-2'
-                      : 'hover:bg-opacity-50'
-                  }`}
-                  style={isActive ? {
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                    borderColor: 'var(--primary)'
-                  } : {
-                    color: 'var(--text-secondary)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'var(--surface)';
-                      e.currentTarget.style.color = 'var(--primary)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'var(--text-secondary)';
-                    }
-                  }}
-                >
-                  <item.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  <span className="font-medium text-sm sm:text-base">{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
+                {!isCollapsed && (
+                  <div className="flex-1 min-w-0 text-left container-p-xs">
+                    <p className="text-xs font-medium truncate text-foreground">
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="text-xs truncate text-foreground/60">
+                      {user?.email || 'user@example.com'}
+                    </p>
+                  </div>
+                )}
+              </button>
+            </div>
 
-          {/* Logout Button - Always visible at bottom */}
-          <div className="p-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center justify-center sm:justify-start space-x-3 px-4 py-4 sm:py-3 rounded-lg transition-colors duration-200 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200"
-            >
-              <LogOut className="w-5 h-5 sm:w-4 sm:h-4" />
-              <span className="text-sm sm:text-base font-medium">Sign Out</span>
-            </button>
+            {/* Navigation */}
+             <nav className={`flex-1 ${isCollapsed ? 'flex flex-col items-center' : 'container-p-sm'} space-y-1 overflow-y-auto overflow-x-hidden mb-md`}>
+
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <a
+                    key={item.id}
+                    href={item.path}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(item.path);
+                      setIsMobileOpen(false);
+                    }}
+                    className={`${isCollapsed ? 'w-12 h-12' : 'w-full'} flex items-center ${isCollapsed ? 'justify-center' : 'gap-xs'} ${isCollapsed ? 'container-p-sm' : 'container-px-sm container-py-xs'} rounded-lg text-left transition-colors duration-200 ${
+                      isActive 
+                        ? 'text-white bg-primary' 
+                        : 'hover:bg-content2 text-foreground/60'
+                    }`}
+                    aria-label={`Navigate to ${item.name}`}
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <item.icon className="w-6 h-6" />
+                    {!isCollapsed && (
+                      <span className="font-medium text-xs container-p-xs">{item.name}</span>
+                    )}
+                  </a>
+                );
+              })}
+            </nav>
+
+            {/* Sign Out Button */}
+            <div className={`${isCollapsed ? 'flex justify-center' : ''} container-p-sm border-t border-border flex-shrink-0 mt-md mb-0`}>
+              <button
+                onClick={handleSignOut}
+                className={`${isCollapsed ? 'w-12 h-12' : 'w-full'} flex items-center ${isCollapsed ? 'justify-center' : 'justify-center sm:justify-start gap-xs'} ${isCollapsed ? 'container-p-sm' : 'container-px-sm container-py-sm'} rounded-lg transition-colors duration-200 bg-content2 hover:bg-content3 text-foreground/70 hover:text-foreground`}
+                aria-label="Sign out of account"
+                title={isCollapsed ? 'Sign Out' : undefined}
+              >
+                <Icons.logout className="w-6 h-6" />
+                {!isCollapsed && (
+                  <span className="text-xs font-medium container-p-xs">Sign Out</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile Sidebar - Overlay */}
+      {isMobileOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setIsMobileOpen(false)}
+            aria-label="Close sidebar"
+          />
+          {/* Mobile Sidebar */}
+          <div className="fixed top-0 left-0 z-50 w-72 sm:w-80 h-screen bg-content1 border-r border-border lg:hidden">
+            <div className="flex flex-col h-full container-p-xs">
+              {/* Header with close button for mobile */}
+              <div className="flex items-center justify-between container-p-sm border-b border-border flex-shrink-0 mb-md">
+                <div className="flex items-center gap-xs container-p-xs">
+                  <img src={logo} alt="Oentex" className="h-8 w-auto" />
+                  <span className="text-lg font-bold text-foreground">Oentex</span>
+                </div>
+                
+                {/* Mobile close button */}
+                <button
+                  onClick={() => setIsMobileOpen(false)}
+                  className="lg:hidden container-p-xs rounded-lg transition-colors hover:bg-content2 text-foreground/60"
+                  aria-label="Close sidebar"
+                >
+                  <Icons.close className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* User Profile Section */}
+              <div className="container-p-sm border-b border-border flex-shrink-0 mb-md">
+                <button 
+                  onClick={handleProfileClick}
+                  className="w-full flex items-center gap-xs container-p-sm rounded-lg transition-colors duration-200 hover:bg-content2" 
+                  aria-label="View profile"
+                >
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-primary">
+                    <Icons.user className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left container-p-xs">
+                    <p className="text-xs font-medium truncate text-foreground">
+                      {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                    </p>
+                    <p className="text-xs truncate text-foreground/60">
+                      {user?.email || 'user@example.com'}
+                    </p>
+                  </div>
+                </button>
+              </div>
+
+              {/* Navigation */}
+              <nav className="flex-1 container-p-sm space-y-1 overflow-y-auto mb-md">
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.path}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(item.path);
+                        setIsMobileOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-xs container-px-sm container-py-xs rounded-lg text-left transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-white bg-primary' 
+                          : 'hover:bg-content2 text-foreground/60'
+                      }`}
+                      aria-label={`Navigate to ${item.name}`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span className="font-medium text-xs container-p-xs">{item.name}</span>
+                    </a>
+                  );
+                })}
+              </nav>
+
+              {/* Sign Out Button */}
+              <div className="container-p-sm border-t border-border flex-shrink-0 mt-md">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center justify-center sm:justify-start gap-xs container-px-sm container-py-sm rounded-lg transition-colors duration-200 bg-content2 hover:bg-content3 text-foreground/70 hover:text-foreground"
+                  aria-label="Sign out of account"
+                >
+                  <Icons.logout className="w-4 h-4" />
+                  <span className="text-xs font-medium container-p-xs">Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 };
@@ -167,6 +255,7 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { user, session } = useAuth();
 
   // ✅ WELCOME TOAST: Show welcome toast once per session
@@ -179,22 +268,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     sessionStorage.setItem(toastKey, 'true')
     const providerName = provider === 'google' ? 'Google' : 
                         provider === 'azure' ? 'Microsoft' : 'OAuth'
-    const Icon = Chrome;
     setTimeout(() => {
-      toast.success(
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5" />
-          <div>
-            <div className="font-semibold">Welcome to Oentex!</div>
-            <div className="text-sm text-gray-600">Successfully signed in with {providerName}</div>
-          </div>
-        </div>,
-        {
-          id: `welcome-${userId}`,
-          duration: 5000,
-          position: 'top-right',
-          style: { background: '#10B981', color: 'white', padding: '16px', borderRadius: '12px' }
-        }
+      showSuccessToast(
+        `Successfully signed in with ${providerName}`,
+        'Welcome to Oentex!',
+        5000
       );
     }, 500);
   }, [user?.id, session?.user?.app_metadata?.provider])
@@ -223,42 +301,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ backgroundColor: 'var(--surface)' }}>
+    <div className="h-screen bg-background flex">
       <ToastContainer position="top-right" topAnchorSelector="#auth-topbar" topMargin={8} />
+      
+      {/* Sidebar - Fixed Position */}
       <Sidebar 
         isMobileOpen={isMobileMenuOpen}
         setIsMobileOpen={setIsMobileMenuOpen}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
       
-      {/* Main Content - Mobile Optimized */}
-      <div className="flex-1 flex flex-col lg:ml-64 h-screen overflow-hidden">
+      {/* Main Content - Flex to fill remaining space */}
+      <div className="flex-1 h-screen overflow-y-auto">
         {/* Top Bar - Mobile Optimized */}
-        <header id="auth-topbar" className="bg-white border-b px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
+        <header id="auth-topbar" className="bg-content1 border-b border-border container-px-sm md:container-px-md container-py-sm md:container-py-md flex-shrink-0">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg transition-colors duration-200 -ml-2"
-              style={{ color: 'var(--text-secondary)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-                e.currentTarget.style.color = 'var(--text)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = 'var(--text-secondary)';
-              }}
+              className="lg:hidden container-p-sm rounded-lg transition-colors duration-200 -ml-2 hover:bg-content2 text-foreground/60"
+              aria-label="Open sidebar menu"
             >
-              <Menu className="w-6 h-6" />
+              <Icons.menu className="w-6 h-6" />
             </button>
 
             {/* Mobile Logo - Show when sidebar is closed */}
-            <div className="lg:hidden flex items-center space-x-2">
-              <span className="text-lg font-bold" style={{
-                background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
+            <div className="lg:hidden flex items-center gap-xs container-p-xs">
+              <span className="text-lg font-bold text-foreground">
                 Oentex
               </span>
             </div>
@@ -269,8 +338,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </header>
 
         {/* Page Content - Mobile Optimized */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-          {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container-p-sm md:container-p-md lg:container-p-lg">
+            {children}
+          </div>
         </main>
       </div>
     </div>

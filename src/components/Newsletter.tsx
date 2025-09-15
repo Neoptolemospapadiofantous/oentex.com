@@ -1,7 +1,8 @@
+// src/components/Newsletter.tsx - Refactored with Page Structure
 import React, { useState, useMemo } from 'react'
 import { Icons } from './icons'
 import { supabase } from '../lib/supabase'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from './ui/AppToast'
 
 let useFeaturedDealsQuery: any = null
 try {
@@ -53,13 +54,13 @@ const Newsletter = () => {
     e.preventDefault()
     
     if (!email) {
-      toast.error('Please enter your email address')
+      showErrorToast('Please enter your email address')
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email address')
+      showErrorToast('Please enter a valid email address')
       return
     }
 
@@ -83,135 +84,159 @@ const Newsletter = () => {
             error.message?.includes('Conflict') || 
             error.message?.includes('already subscribed') || 
             error.message?.includes('Email already subscribed')) {
-          toast.error('This email is already subscribed to our newsletter')
+          showErrorToast('This email is already subscribed to our newsletter')
         } else if (error.message?.includes('400')) {
-          toast.error('Invalid email address format')
+          showErrorToast('Invalid email address format')
         } else if (error.message?.includes('500')) {
-          toast.error('Server error - please try again later')
+          showErrorToast('Server error - please try again later')
         } else {
-          toast.error('Failed to subscribe. Please try again later.')
+          showErrorToast('Failed to subscribe. Please try again later.')
         }
         return
       }
 
       if (data?.success) {
-        toast.success(data.message || 'Successfully subscribed!')
+        showSuccessToast(data.message || 'Successfully subscribed!')
         setEmail('')
       } else {
-        toast.error('Failed to subscribe. Please try again later.')
+        showErrorToast('Failed to subscribe. Please try again later.')
       }
       
     } catch (error) {
-      toast.error('Failed to subscribe. Please try again later.')
+      showErrorToast('Failed to subscribe. Please try again later.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="bg-surface/50 backdrop-blur-lg rounded-3xl p-8 lg:p-12 border border-border">
-          <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-6">
-            <Icons.mail className="w-8 h-8 text-white" />
-          </div>
-          
-          <h2 className="text-3xl lg:text-4xl font-bold text-text mb-4">
-            Stay Ahead of the Trading Game
-          </h2>
-          
-          <p className="text-xl text-textSecondary mb-8 max-w-2xl mx-auto">
-            Get exclusive trading insights, market analysis, and the latest bonus deals delivered directly to your inbox. 
-            Join thousands of smart traders who never miss an opportunity.
-          </p>
-
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 bg-background border border-border rounded-full text-text placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
-                disabled={isLoading}
-                required
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none whitespace-nowrap"
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Subscribing...
-                  </span>
-                ) : 'Subscribe Now'}
-              </button>
-            </div>
-          </form>
-
-          <div className="flex items-center justify-center mt-6 text-sm text-textSecondary">
-            <Icons.success className="w-4 h-4 mr-2 text-green-600" />
-            <span>No spam • Exclusive deals • Unsubscribe anytime</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Icons.users className="w-5 h-5 text-primary mr-2" />
-                <div className="text-2xl font-bold text-text">{stats.subscribers}</div>
+    <section className="page-section relative section-py-2xl section-transition component-fade-in">
+      
+      <div className="container-page relative z-10">
+        <div className="content-wide">
+          <div className="card-feature border-border animate-scale-in">
+            
+            {/* Newsletter Icon */}
+            <div className="flex-center my-xl">
+              <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-full flex-center">
+                <Icons.mail className="w-8 h-8 text-white" />
               </div>
-              <div className="text-textSecondary text-sm">Active Subscribers</div>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Icons.arrowTrendingUp className="w-5 h-5 text-secondary mr-2" />
-                <div className="text-2xl font-bold text-text">{stats.deals}</div>
+            
+            {/* Header */}
+            <div className="text-center my-xl">
+              <h2 className="text-3xl lg:text-4xl font-bold text-text my-lg">
+                Stay Ahead of the Trading Game
+              </h2>
+              
+              <div className="content-narrow">
+                <p className="text-xl text-textSecondary">
+                  Get exclusive trading insights, market analysis, and the latest bonus deals delivered directly to your inbox. 
+                  Join thousands of smart traders who never miss an opportunity.
+                </p>
               </div>
-              <div className="text-textSecondary text-sm">Market Updates</div>
             </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Icons.gift className="w-5 h-5 text-primary mr-2" />
-                <div className="text-2xl font-bold text-text">{stats.exclusive}</div>
-              </div>
-              <div className="text-textSecondary text-sm">Exclusive Deals</div>
-            </div>
-          </div>
 
-          <div className="mt-12 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-2xl border border-primary/20">
-            <h3 className="text-lg font-semibold text-text mb-4">What You'll Receive:</h3>
-            <div className="grid md:grid-cols-2 gap-4 text-left">
-              <div className="flex items-start space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-text">Weekly Market Insights</div>
-                  <div className="text-sm text-textSecondary">Expert analysis and trading opportunities</div>
+            {/* Newsletter Form */}
+            <form onSubmit={handleSubmit} className="content-narrow my-xl">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email address"
+                  className="flex-1 container-px-lg container-py-md bg-background border border-border rounded-full text-text placeholder-textSecondary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300"
+                  disabled={isLoading}
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="btn-primary whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isLoading ? (
+                    <span className="flex-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Subscribing...
+                    </span>
+                  ) : 'Subscribe Now'}
+                </button>
+              </div>
+            </form>
+
+            {/* Trust Badge */}
+            <div className="flex-center my-xl text-sm text-textSecondary">
+              <Icons.success className="w-4 h-4 mr-2 text-green-600" />
+              <span>No spam • Exclusive deals • Unsubscribe anytime</span>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid-stats my-xl">
+              <div className="text-center">
+                <div className="flex-center my-sm">
+                  <Icons.users className="w-5 h-5 text-primary mr-2" />
+                  <div className="text-2xl font-bold text-text">{stats.subscribers}</div>
                 </div>
+                <div className="text-textSecondary text-sm">Active Subscribers</div>
               </div>
-              <div className="flex items-start space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-text">Exclusive Bonus Alerts</div>
-                  <div className="text-sm text-textSecondary">First access to new platform deals</div>
+              
+              <div className="text-center">
+                <div className="flex-center my-sm">
+                  <Icons.arrowTrendingUp className="w-5 h-5 text-secondary mr-2" />
+                  <div className="text-2xl font-bold text-text">{stats.deals}</div>
                 </div>
+                <div className="text-textSecondary text-sm">Market Updates</div>
               </div>
-              <div className="flex items-start space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-text">Platform Reviews</div>
-                  <div className="text-sm text-textSecondary">Detailed analysis of new trading platforms</div>
+              
+              <div className="text-center">
+                <div className="flex-center my-sm">
+                  <Icons.gift className="w-5 h-5 text-primary mr-2" />
+                  <div className="text-2xl font-bold text-text">{stats.exclusive}</div>
                 </div>
+                <div className="text-textSecondary text-sm">Exclusive Deals</div>
               </div>
-              <div className="flex items-start space-x-3">
-                <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="font-medium text-text">Educational Content</div>
-                  <div className="text-sm text-textSecondary">Trading tips and strategy guides</div>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="glass rounded-2xl p-lg border-primary/20">
+              <h3 className="text-lg font-semibold text-text my-md text-center">
+                What You'll Receive:
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-md text-left">
+                <div className="flex-start gap-sm">
+                  <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium text-text">Weekly Market Insights</div>
+                    <div className="text-sm text-textSecondary">Expert analysis and trading opportunities</div>
+                  </div>
+                </div>
+                
+                <div className="flex-start gap-sm">
+                  <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium text-text">Exclusive Bonus Alerts</div>
+                    <div className="text-sm text-textSecondary">First access to new platform deals</div>
+                  </div>
+                </div>
+                
+                <div className="flex-start gap-sm">
+                  <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium text-text">Platform Reviews</div>
+                    <div className="text-sm text-textSecondary">Detailed analysis of new trading platforms</div>
+                  </div>
+                </div>
+                
+                <div className="flex-start gap-sm">
+                  <Icons.success className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium text-text">Educational Content</div>
+                    <div className="text-sm text-textSecondary">Trading tips and strategy guides</div>
+                  </div>
                 </div>
               </div>
             </div>

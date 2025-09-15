@@ -67,7 +67,7 @@ const ParallaxMission: React.FC<ParallaxMissionProps> = ({ className = '' }) => 
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-80 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl overflow-hidden ${className}`}
+      className={`relative w-full h-64 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl overflow-hidden ${className}`}
     >
       {/* Animated Background Layer */}
       <div 
@@ -75,9 +75,9 @@ const ParallaxMission: React.FC<ParallaxMissionProps> = ({ className = '' }) => 
         className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(30, 64, 175, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, rgba(5, 150, 105, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(220, 38, 38, 0.05) 0%, transparent 50%)
+            radial-gradient(circle at 20% 30%, rgba(var(--heroui-primary), 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(var(--heroui-secondary), 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(var(--heroui-accent), 0.05) 0%, transparent 50%)
           `
         }}
       />
@@ -102,8 +102,8 @@ const ParallaxMission: React.FC<ParallaxMissionProps> = ({ className = '' }) => 
           className="w-full h-full"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(30, 64, 175, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(30, 64, 175, 0.1) 1px, transparent 1px)
+              linear-gradient(rgba(var(--heroui-primary), 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(var(--heroui-primary), 0.1) 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px'
           }}
@@ -118,12 +118,12 @@ const ParallaxMission: React.FC<ParallaxMissionProps> = ({ className = '' }) => 
         }`}
       >
         {/* Rocket Icon with Pulse Animation */}
-        <div className={`text-6xl mb-4 ${!prefersReducedMotion ? 'animate-bounce-subtle' : ''}`}>
+        <div className={`text-6xl my-md ${!prefersReducedMotion ? 'animate-bounce-subtle' : ''}`}>
           🚀
         </div>
 
         {/* Innovation Driven Text */}
-        <div className="relative mb-2">
+        <div className="relative my-sm">
           <h3 
             className={`text-text font-semibold text-xl transition-all duration-700 ${
               isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'
@@ -149,10 +149,10 @@ const ParallaxMission: React.FC<ParallaxMissionProps> = ({ className = '' }) => 
 
         {/* Subtle Progress Indicator */}
         {!prefersReducedMotion && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+          <div className="absolute bottom-md left-1/2 transform -translate-x-1/2">
             <div className="w-16 h-1 bg-white/20 rounded-full overflow-hidden">
               <div 
-                className={`h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-1000 ${
+                className={`h-full gradient-text rounded-full transition-all duration-1000 ${
                   isVisible ? 'w-full' : 'w-0'
                 }`}
                 style={{ transitionDelay: '0.8s' }}

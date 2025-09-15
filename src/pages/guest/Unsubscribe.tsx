@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { supabase } from '../../lib/supabase'
 import { Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
+import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
  
 
 interface Subscriber {
@@ -14,7 +14,6 @@ interface Subscriber {
 const Unsubscribe = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
-  
   const [subscriber, setSubscriber] = useState<Subscriber | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -80,7 +79,7 @@ const Unsubscribe = () => {
       
       if (subscriber?.status === 'unsubscribed') {
         setSuccess(true)
-        toast.success('Already unsubscribed')
+        showSuccessToast('Already unsubscribed')
         return
       }
 
@@ -104,7 +103,7 @@ const Unsubscribe = () => {
         if (data?.success) {
           console.log('✅ Edge function unsubscribe successful')
           setSuccess(true)
-          toast.success('Successfully unsubscribed from newsletter')
+          showSuccessToast('Successfully unsubscribed from newsletter')
           return
         } else {
           throw new Error(data?.error || 'Edge function returned unsuccessful')
@@ -154,13 +153,13 @@ const Unsubscribe = () => {
 
         console.log('✅ Direct database update successful - Updated records:', updateByIdResult.length)
         setSuccess(true)
-        toast.success('Successfully unsubscribed from newsletter')
+        showSuccessToast('Successfully unsubscribed from newsletter')
       }
 
     } catch (err) {
       console.error('❌ Complete unsubscribe failure:', err)
       setError('Failed to unsubscribe. Please try again.')
-      toast.error('Failed to unsubscribe. Please try again.')
+      showErrorToast('Failed to unsubscribe. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -169,10 +168,10 @@ const Unsubscribe = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+        <div className="bg-content1 rounded-2xl container-p-2xl shadow-lg max-w-md w-full container-p-md">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-foreground/70">Loading unsubscribe page...</p>
+            <p className="mt-6 text-foreground/70">Loading unsubscribe page...</p>
           </div>
         </div>
       </div>
@@ -182,19 +181,19 @@ const Unsubscribe = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+        <div className="bg-content1 rounded-2xl container-p-2xl shadow-lg max-w-md w-full container-p-md">
           <div className="text-center">
-            <Icons.warning className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground mb-4">Error</h1>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <Icons.warning className="w-16 h-16 text-red-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-foreground mb-6">Error</h1>
+            <div className="bg-red-50 border border-red-200 rounded-lg container-p-md mb-8">
               <p className="text-red-700 font-medium">{error}</p>
             </div>
-            <p className="text-foreground/70 mb-6">
+            <p className="text-foreground/70 mb-8">
               Please contact our support team if you continue to experience issues.
             </p>
             <Link 
               to="/" 
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-white container-px-lg container-py-sm rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               <Icons.arrowLeft className="w-4 h-4" />
               Return to Oentex
@@ -208,25 +207,25 @@ const Unsubscribe = () => {
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-        <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
+        <div className="bg-content1 rounded-2xl container-p-2xl shadow-lg max-w-md w-full container-p-md">
           <div className="text-center">
-            <Icons.success className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground mb-4">Successfully Unsubscribed</h1>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <Icons.success className="w-16 h-16 text-green-500 mx-auto mb-6" />
+            <h1 className="text-2xl font-bold text-foreground mb-6">Successfully Unsubscribed</h1>
+            <div className="bg-green-50 border border-green-200 rounded-lg container-p-md mb-8">
               <p className="text-green-700 font-medium">
                 You have been removed from our newsletter list
               </p>
             </div>
-            <p className="text-foreground/70 mb-4">
+            <p className="text-foreground/70 mb-6">
               We're sorry to see you go! If you change your mind, you can always 
               resubscribe on our website.
             </p>
-            <p className="text-sm text-foreground/70 mb-6">
+            <p className="text-sm text-foreground/70 mb-8">
               <strong>Email:</strong> {subscriber?.email}
             </p>
             <Link 
               to="/" 
-              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-white container-px-lg container-py-sm rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               <Icons.arrowLeft className="w-4 h-4" />
               Return to Oentex
@@ -239,29 +238,29 @@ const Unsubscribe = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full mx-4">
-        <div className="text-center mb-6">
-          <Icons.mail className="w-16 h-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Unsubscribe from Newsletter</h1>
+      <div className="bg-content1 rounded-2xl container-p-2xl shadow-lg max-w-md w-full container-p-md">
+        <div className="text-center mb-8">
+          <Icons.mail className="w-16 h-16 text-primary mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-foreground mb-3">Unsubscribe from Newsletter</h1>
           <p className="text-foreground/70">We're sorry to see you go!</p>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <div className="bg-content2 rounded-lg container-p-md mb-8">
           <p className="text-sm text-foreground/70">
             <strong>Email:</strong> {subscriber?.email}
           </p>
         </div>
 
-        <form onSubmit={handleUnsubscribe} className="space-y-6">
+        <form onSubmit={handleUnsubscribe} className="space-y-8">
           <div>
-            <label htmlFor="reason" className="block text-sm font-medium text-foreground mb-2">
+            <label htmlFor="reason" className="block text-sm font-medium text-foreground mb-3">
               Why are you unsubscribing? (Optional)
             </label>
             <select
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+              className="w-full container-px-md container-py-sm border border-border rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
             >
               <option value="1">Too many emails</option>
               <option value="2">Content not relevant</option>
@@ -274,7 +273,7 @@ const Unsubscribe = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-red-500 text-white container-py-sm container-px-lg rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>
@@ -289,7 +288,7 @@ const Unsubscribe = () => {
           </button>
         </form>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-8">
           <Link 
             to="/" 
             className="text-primary hover:text-primary/80 font-medium transition-colors inline-flex items-center gap-1"

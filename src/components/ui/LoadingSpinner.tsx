@@ -84,11 +84,8 @@ export const PageLoader = ({
   variant?: 'auth' | 'deals' | 'default'
 }) => {
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center bg-white dark:bg-slate-900">
-      <div className="text-center">
-        <LoadingSpinner size="xl" variant={variant} className="mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 text-lg">{message}</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
     </div>
   )
 }
@@ -205,39 +202,9 @@ export const DealsSkeleton = () => {
 export const AuthLoader = ({ stage = 'initializing' }: { 
   stage?: 'initializing' | 'validating' | 'loading-profile' | 'complete'
 }) => {
-  const getStageMessage = () => {
-    switch (stage) {
-      case 'initializing':
-        return 'Initializing authentication...'
-      case 'validating':
-        return 'Validating session...'
-      case 'loading-profile':
-        return 'Loading user profile...'
-      case 'complete':
-        return 'Authentication complete!'
-      default:
-        return 'Loading...'
-    }
-  }
-
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center bg-white dark:bg-slate-900">
-      <div className="text-center">
-        <LoadingSpinner size="xl" variant="auth" className="mb-4" />
-        <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">{getStageMessage()}</p>
-        <div className="w-64 mx-auto">
-          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-              style={{ 
-                width: stage === 'initializing' ? '25%' : 
-                       stage === 'validating' ? '50%' : 
-                       stage === 'loading-profile' ? '75%' : '100%' 
-              }}
-            />
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
     </div>
   )
 }

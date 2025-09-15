@@ -17,6 +17,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   signInWithGoogle: () => Promise<{ error: CustomAuthError | null }>
   signInWithMicrosoft: () => Promise<{ error: CustomAuthError | null }>
+  signUpWithEmail: (email: string, password: string, metadata?: { full_name?: string }) => Promise<{ error: CustomAuthError | null }>
   signOut: () => Promise<{ error: CustomAuthError | null }>
   clearError: () => void
   retryAuth: () => Promise<void>
@@ -391,6 +392,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [clearError, handleAuthError])
 
+  const signUpWithEmail = useCallback(async (email: string, password: string, metadata?: { full_name?: string }) => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    clearError()
+
+    try {
+      console.log('🔍 AuthContext: Starting email signup...')
+      const result = await authService.signUpWithEmail(email, password, metadata)
+      
+      if (result.error) {
+        console.error('🔍 AuthContext: Email signup error:', result.error)
+      } else {
+        console.log('🔍 AuthContext: Email signup initiated successfully')
+      }
+      
+      return result
+    } catch (error) {
+      console.error('🔍 AuthContext: Email signup exception:', error)
+      return { error: handleAuthError(error) }
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false })
+    }
+  }, [clearError, handleAuthError])
+
   const signOut = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true })
     clearError()
@@ -424,6 +448,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isFullyReady,
     signInWithGoogle,
     signInWithMicrosoft,
+    signUpWithEmail,
     signOut,
     clearError,
     retryAuth,
@@ -434,6 +459,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isFullyReady,
     signInWithGoogle,
     signInWithMicrosoft,
+    signUpWithEmail,
     signOut,
     clearError,
     retryAuth,

@@ -1,132 +1,143 @@
-import React from 'react'
-import { Icon } from './icons'
+import { Icons } from './icons'
 
 const Platforms = () => {
   const platforms = [
     {
-      icon: 'mobile',
-      name: 'Mobile App',
-      description: 'Trade on the go with our award-winning mobile app',
-      features: ['Real-time notifications', 'Biometric login', 'Offline mode'],
-      rating: 4.8,
-      downloads: '1M+',
-      image: 'https://images.pexels.com/photos/887751/pexels-photo-887751.jpeg?auto=compress&cs=tinysrgb&w=600'
+      name: 'Binance',
+      logo: '🟡',
+      description: 'World\'s largest cryptocurrency exchange',
+      rating: 4.6,
+      users: '120M+',
+      features: ['Spot Trading', 'Futures', 'Staking', 'NFT Marketplace']
     },
     {
-      icon: 'desktop',
-      name: 'Web Platform',
-      description: 'Full-featured trading platform in your browser',
-      features: ['Advanced charting', 'Multi-monitor support', 'Custom layouts'],
-      rating: 4.9,
-      downloads: '500K+',
-      image: 'https://images.pexels.com/photos/265087/pexels-photo-265087.jpeg?auto=compress&cs=tinysrgb&w=600'
+      name: 'Coinbase',
+      logo: '🔵',
+      description: 'Leading US-based crypto exchange',
+      rating: 4.4,
+      users: '100M+',
+      features: ['Buy & Sell', 'Coinbase Pro', 'Earn Rewards', 'Wallet']
     },
     {
-      icon: 'tablet',
-      name: 'Tablet App',
-      description: 'Optimized experience for tablet trading',
-      features: ['Split-screen trading', 'Gesture controls', 'Portfolio overview'],
-      rating: 4.7,
-      downloads: '250K+',
-      image: 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600'
+      name: 'Kraken',
+      logo: '🐙',
+      description: 'Secure and reliable crypto trading',
+      rating: 4.2,
+      users: '9M+',
+      features: ['Spot Trading', 'Futures', 'Margin', 'Staking']
+    },
+    {
+      name: 'Bybit',
+      logo: '🟨',
+      description: 'Professional crypto derivatives exchange',
+      rating: 4.3,
+      users: '10M+',
+      features: ['Derivatives', 'Spot Trading', 'Copy Trading', 'NFTs']
+    },
+    {
+      name: 'OKX',
+      logo: '⚫',
+      description: 'Global crypto exchange and Web3 ecosystem',
+      rating: 4.1,
+      users: '20M+',
+      features: ['Trading', 'DeFi', 'NFTs', 'Web3 Wallet']
+    },
+    {
+      name: 'KuCoin',
+      logo: '🔴',
+      description: 'The People\'s Exchange',
+      rating: 4.0,
+      users: '20M+',
+      features: ['Spot Trading', 'Futures', 'Margin', 'Earn']
     }
   ]
 
   return (
-    <section className="py-20 bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-text mb-6">
-            Trade Anywhere,
+    <section className="page-section">
+      <div className="container-page">
+        {/* Header */}
+        <div className="text-center my-3xl">
+          <h2 className="text-4xl lg:text-5xl font-bold text-text my-lg">
+            <span className="gradient-text">Trusted Trading</span>
             <br />
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Anytime
-            </span>
+            Platforms
           </h2>
-          <p className="text-xl text-textSecondary max-w-3xl mx-auto">
-            Access your portfolio and trade across all your devices with seamless synchronization 
-            and consistent user experience.
-          </p>
+          <div className="content-wide">
+            <p className="text-xl text-textSecondary">
+              Discover the best cryptocurrency exchanges and trading platforms. 
+              Compare features, fees, and security to find your perfect match.
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Platforms Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-xl">
           {platforms.map((platform, index) => (
             <div 
-              key={index}
-              className="group bg-surface/50 backdrop-blur-lg rounded-2xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:transform hover:scale-105"
+              key={platform.name}
+              className="card-feature group animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={platform.image} 
-                  alt={platform.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
-                <div className="absolute top-4 right-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-xl flex items-center justify-center">
-                    <Icon name={platform.icon} size="lg" className="text-white" />
+              {/* Platform Header */}
+              <div className="flex items-center justify-between my-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
+                    {platform.logo}
                   </div>
-                </div>
-                <div className="absolute bottom-4 left-4 right-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      <Icon name="star" size="sm" color="warning" />
-                      <span className="text-white font-medium">{platform.rating}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Icon name="download" size="sm" className="text-white" />
-                      <span className="text-white font-medium">{platform.downloads}</span>
+                  <div>
+                    <h3 className="text-xl font-bold text-text">{platform.name}</h3>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center">
+                        <Icons.star className="w-4 h-4 text-warning fill-current" />
+                        <span className="text-sm text-textSecondary ml-1">{platform.rating}</span>
+                      </div>
+                      <span className="text-sm text-textSecondary">•</span>
+                      <span className="text-sm text-textSecondary">{platform.users} users</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-text mb-2">{platform.name}</h3>
-                <p className="text-textSecondary mb-4">{platform.description}</p>
-                
-                <ul className="space-y-2 mb-6">
+              {/* Description */}
+              <p className="text-textSecondary my-lg leading-relaxed">
+                {platform.description}
+              </p>
+
+              {/* Features */}
+              <div className="my-lg">
+                <h4 className="text-sm font-semibold text-text my-sm">Key Features</h4>
+                <div className="grid grid-cols-2 gap-2">
                   {platform.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-textSecondary">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
-                      {feature}
-                    </li>
+                    <div key={featureIndex} className="flex items-center text-sm text-textSecondary">
+                      <Icons.check className="w-3 h-3 text-success mr-2 flex-shrink-0" />
+                      <span className="truncate">{feature}</span>
+                    </div>
                   ))}
-                </ul>
-
-                <button className="group w-full bg-gradient-to-r from-primary to-secondary px-6 py-3 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 flex items-center justify-center">
-                  Download Now
-                  <Icon name="arrowRight" size="sm" className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
+                </div>
               </div>
+
+              {/* Action Button */}
+              <button className="btn-primary w-full group">
+                <span>Explore {platform.name}</span>
+                <Icons.arrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           ))}
         </div>
 
-        {/* Platform Features Grid */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-bold text-white">99.9%</span>
-            </div>
-            <h3 className="text-lg font-semibold text-text mb-2">Uptime</h3>
-            <p className="text-textSecondary">Reliable platform with minimal downtime</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-secondary to-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-bold text-white">{'<1ms'}</span>
-            </div>
-            <h3 className="text-lg font-semibold text-text mb-2">Latency</h3>
-            <p className="text-textSecondary">Lightning-fast order execution</p>
-          </div>
-
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-accent to-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl font-bold text-white">24/7</span>
-            </div>
-            <h3 className="text-lg font-semibold text-text mb-2">Support</h3>
-            <p className="text-textSecondary">Round-the-clock customer assistance</p>
+        {/* CTA Section */}
+        <div className="text-center my-3xl">
+          <div className="glass rounded-2xl p-xl border-primary/20">
+            <h3 className="text-2xl font-bold text-text my-md">
+              Ready to Start Trading?
+            </h3>
+            <p className="text-textSecondary my-lg content-wide">
+              Choose from our carefully curated list of trusted platforms and start your trading journey today.
+            </p>
+            <button className="btn-primary group">
+              <span>View All Platforms</span>
+              <Icons.arrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </div>
