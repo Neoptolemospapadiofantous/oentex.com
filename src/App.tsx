@@ -10,12 +10,12 @@ import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
 // ✅ FIXED: Import all missing components
 import ScrollToTop from '@components/ScrollToTop'
-import PageTransition from '@components/PageTransition'
 import { AuthLoader, PageLoader } from '@components/ui/LoadingSpinner'
 import { AuthErrorBoundary } from '@components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from '@components/ui/ErrorBoundary'
 
 import AuthLayout from './layouts/AuthLayout'
+import GuestLayout from './layouts/GuestLayout'
 
 // Lazy-loaded page components
 const Home = React.lazy(() => import('./pages/guest/Home'))
@@ -25,8 +25,7 @@ const FAQ = React.lazy(() => import('./pages/guest/FAQ'))
 const Contact = React.lazy(() => import('./pages/guest/Contact'))
 const Terms = React.lazy(() => import('./pages/guest/Terms'))
 const Privacy = React.lazy(() => import('./pages/guest/Privacy'))
-const Login = React.lazy(() => import('./pages/guest/Login'))
-const Register = React.lazy(() => import('./pages/guest/Register'))
+const Authentication = React.lazy(() => import('./pages/guest/Authentication'))
 const AuthCallback = React.lazy(() => import('./pages/guest/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/guest/ResetPassword'))
 const Unsubscribe = React.lazy(() => import('./pages/guest/Unsubscribe'))
@@ -42,6 +41,15 @@ const OAuthCallbackHandler: React.FC = () => {
     <Suspense fallback={<PageLoader message="Processing OAuth tokens..." />}>
       <AuthCallback />
     </Suspense>
+  )
+}
+
+// Custom wrapper for authentication pages with hidden header/footer
+const AuthPageWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <GuestLayout hideHeader={true} hideFooter={true}>
+      {children}
+    </GuestLayout>
   )
 }
 
@@ -68,47 +76,88 @@ const AuthenticatedApp: React.FC = () => {
 
 const PublicApp: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <main className="flex-1">
-        <ScrollToTop />
-        
-        <ErrorBoundary>
-          <Suspense fallback={<PageLoader message="Loading page..." />}>
-            <PageTransition>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/deals" element={<PublicDeals />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/unsubscribe" element={<Unsubscribe/>} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/auth/callback" element={<OAuthCallbackHandler />} />
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                
-                <Route path="*" element={
-                  <div className="min-h-screen flex items-center justify-center pt-20">
-                    <div className="text-center">
-                      <h1 className="text-4xl font-bold text-text mb-4">404</h1>
-                      <p className="text-textSecondary mb-6">Page not found</p>
-                      <a 
-                        href="/" 
-                        className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
-                      >
-                        Go Home
-                      </a>
-                    </div>
+    <>
+      <ScrollToTop />
+      
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader message="Loading page..." />}>
+          <Routes>
+            <Route path="/" element={
+              <GuestLayout>
+                <Home />
+              </GuestLayout>
+            } />
+            <Route path="/about" element={
+              <GuestLayout>
+                <About />
+              </GuestLayout>
+            } />
+            <Route path="/deals" element={
+              <GuestLayout>
+                <PublicDeals />
+              </GuestLayout>
+            } />
+            <Route path="/faq" element={
+              <GuestLayout>
+                <FAQ />
+              </GuestLayout>
+            } />
+            <Route path="/contact" element={
+              <GuestLayout>
+                <Contact />
+              </GuestLayout>
+            } />
+            <Route path="/terms" element={
+              <GuestLayout>
+                <Terms />
+              </GuestLayout>
+            } />
+            <Route path="/privacy" element={
+              <GuestLayout>
+                <Privacy />
+              </GuestLayout>
+            } />
+            <Route path="/unsubscribe" element={
+              <GuestLayout>
+                <Unsubscribe />
+              </GuestLayout>
+            } />
+            <Route path="/authentication" element={
+              <AuthPageWrapper>
+                <Authentication />
+              </AuthPageWrapper>
+            } />
+            <Route path="/auth/callback" element={
+              <GuestLayout>
+                <OAuthCallbackHandler />
+              </GuestLayout>
+            } />
+            <Route path="/auth/reset-password" element={
+              <GuestLayout>
+                <ResetPassword />
+              </GuestLayout>
+            } />
+            
+            <Route path="*" element={
+              <GuestLayout>
+                <div className="min-h-screen flex items-center justify-center pt-20">
+                  <div className="text-center">
+                    <h1 className="text-4xl font-bold text-text mb-4">404</h1>
+                    <p className="text-textSecondary mb-6">Page not found</p>
+                    <a 
+                      href="/" 
+                      className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                    >
+                      Go Home
+                    </a>
                   </div>
-                } />
-              </Routes>
-            </PageTransition>
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-    </div>
+                </div>
+              </GuestLayout>
+            } />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
+    </>
   )
 }
 
