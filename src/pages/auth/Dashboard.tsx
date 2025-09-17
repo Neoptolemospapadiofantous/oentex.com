@@ -208,7 +208,7 @@ const Dashboard = () => {
             {stats.map((stat) => (
               <div 
                 key={stat.title} 
-                className="group relative overflow-hidden bg-content1/60 backdrop-blur-xl rounded-3xl container-p-2xl border border-divider/30 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 transform hover:scale-[1.02]"
+                className="group relative overflow-hidden bg-content1/80 backdrop-blur-2xl rounded-3xl container-px-2xl container-py-lg border border-divider/40 hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 transform hover:scale-[1.02]"
               >
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-lg">
@@ -217,7 +217,7 @@ const Dashboard = () => {
                         <stat.icon className="w-7 h-7 text-white" />
                       </div>
                     </div>
-                    <div className="text-xs font-semibold px-sm py-xs rounded-lg bg-green-100 text-green-800 border border-green-200">
+                    <div className="text-xs font-semibold container-px-sm container-py-xs rounded-lg bg-success/20 text-success border border-success/30">
                       {stat.change}
                     </div>
                   </div>
@@ -246,7 +246,7 @@ const Dashboard = () => {
           <div className="xl:col-span-2 space-y-2xl">
             
             {/* Platform Overview */}
-            <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-2xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
+            <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-p-2xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2xl">
                   <div>
@@ -260,15 +260,15 @@ const Dashboard = () => {
                 
                 {/* Platform Statistics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-2xl">
-                  <div className="text-center container-p-lg bg-content2/30 rounded-2xl backdrop-blur-sm border border-divider/20 hover:border-primary/20 transition-all duration-300">
+                  <div className="text-center container-p-lg bg-content2/50 rounded-2xl backdrop-blur-sm border border-divider/30 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10">
                     <div className="text-3xl font-bold text-primary mb-sm">{companies.length}</div>
                     <div className="text-sm text-foreground/60 font-medium">Total Platforms</div>
                   </div>
-                  <div className="text-center container-p-lg bg-content2/30 rounded-2xl backdrop-blur-sm border border-divider/20 hover:border-secondary/20 transition-all duration-300">
+                  <div className="text-center container-p-lg bg-content2/50 rounded-2xl backdrop-blur-sm border border-divider/30 hover:border-secondary/30 transition-all duration-300 hover:shadow-lg hover:shadow-secondary/10">
                     <div className="text-3xl font-bold text-secondary mb-sm">{totalDeals}</div>
                     <div className="text-sm text-foreground/60 font-medium">Total Deals</div>
                   </div>
-                  <div className="text-center container-p-lg bg-content2/30 rounded-2xl backdrop-blur-sm border border-divider/20 hover:border-warning/20 transition-all duration-300">
+                  <div className="text-center container-p-lg bg-content2/50 rounded-2xl backdrop-blur-sm border border-divider/30 hover:border-warning/30 transition-all duration-300 hover:shadow-lg hover:shadow-warning/10">
                     <div className="text-3xl font-bold text-warning mb-sm">{avgPlatformRating}</div>
                     <div className="text-sm text-foreground/60 font-medium">Avg Rating</div>
                   </div>
@@ -276,10 +276,10 @@ const Dashboard = () => {
                 
                 <div className="flex items-center justify-between mt-2xl">
                   <div className="flex items-center gap-md">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <div className="w-3 h-3 bg-success rounded-full animate-pulse"></div>
                     <span className="text-sm font-medium text-foreground/80">{activePlatforms} Active Platforms</span>
                   </div>
-                  <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-sm transition-all duration-200">
+                  <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-sm transition-all duration-200 hover:gap-md">
                     View All <Icons.arrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -287,7 +287,7 @@ const Dashboard = () => {
             </div>
 
             {/* Enhanced Category Distribution */}
-            <div className="bg-content1/80 backdrop-blur-2xl my-2xl drounded-3xl border border-divider/40 container-p-2xl hover:shadow-2xl hover:shadow-secondary/5 transition-all duration-500 group overflow-hidden relative">
+            <div className="bg-content1/90 backdrop-blur-2xl my-2xl rounded-3xl border border-divider/50 container-p-2xl hover:shadow-2xl hover:shadow-secondary/5 transition-all duration-500 group overflow-hidden relative">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2xl">
                   <div>
@@ -301,7 +301,7 @@ const Dashboard = () => {
                 
                 <div className="space-y-lg">
                   {enhancedCategoryStats.map((category) => (
-                    <div key={category.category} className="hover:bg-content2/20 rounded-2xl container-p-lg transition-all duration-300">
+                    <div key={category.category} className="hover:bg-content2/30 rounded-2xl container-p-lg transition-all duration-300 hover:shadow-lg hover:shadow-secondary/5">
                       <div className="flex items-center justify-between mb-sm">
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground capitalize hover:text-secondary transition-colors duration-200">
@@ -318,7 +318,7 @@ const Dashboard = () => {
                       </div>
                       
                       {/* Enhanced progress bar */}
-                      <div className="w-full bg-content2/50 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-content2/60 rounded-full h-2 overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-secondary to-primary rounded-full transition-all duration-1000 ease-out"
                           style={{ width: `${category.percentage}%` }}
@@ -335,7 +335,7 @@ const Dashboard = () => {
           <div className="space-y-2xl">
             
             {/* Top Categories */}
-            <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
+            <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-p-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-2xl">
                   <div>
@@ -351,7 +351,7 @@ const Dashboard = () => {
                   {topCategories.map((category, index) => (
                     <div 
                       key={category.category} 
-                      className="flex items-center justify-between container-p-md rounded-2xl bg-content2/20 hover:bg-content2/40 transition-all duration-300"
+                      className="flex items-center justify-between container-p-md rounded-2xl bg-content2/30 hover:bg-content2/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
                     >
                       <div className="flex items-center gap-md">
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
@@ -387,7 +387,7 @@ const Dashboard = () => {
             </div> */}
 
             {/* Quick Actions */}
-            <div className="bg-content1/80 backdrop-blur-2xl my-2xl rounded-3xl border border-divider/40 container-p-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
+            <div className="bg-content1/90 backdrop-blur-2xl my-2xl rounded-3xl border border-divider/50 container-p-xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
               <div className="relative z-10">
                 <div className="mb-2xl">
                   <h2 className="text-xl font-bold text-foreground mb-sm group-hover:text-secondary transition-colors duration-300">
@@ -397,7 +397,7 @@ const Dashboard = () => {
                 </div>
                 
                 <div className="space-y-sm">
-                  <button className="w-full flex items-center gap-md container-p-md bg-content2/20 hover:bg-primary/10 rounded-2xl transition-all duration-300 group/action">
+                  <button className="w-full flex items-center gap-md container-p-md bg-content2/30 hover:bg-primary/10 rounded-2xl transition-all duration-300 group/action hover:shadow-lg hover:shadow-primary/10">
                     <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center group-hover/action:scale-110 transition-transform duration-200">
                       <Icons.add className="w-5 h-5 text-primary" />
                     </div>
@@ -406,7 +406,7 @@ const Dashboard = () => {
                     </span>
                   </button>
                   
-                  <button className="w-full flex items-center gap-md container-p-md bg-content2/20 hover:bg-secondary/10 rounded-2xl transition-all duration-300 group/action">
+                  <button className="w-full flex items-center gap-md container-p-md bg-content2/30 hover:bg-secondary/10 rounded-2xl transition-all duration-300 group/action hover:shadow-lg hover:shadow-secondary/10">
                     <div className="w-10 h-10 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-xl flex items-center justify-center group-hover/action:scale-110 transition-transform duration-200">
                       <Icons.refresh className="w-5 h-5 text-secondary" />
                     </div>
@@ -420,20 +420,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Enhanced Footer */}
-        <footer className="section-py-lg">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-lg mb-md">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <p className="text-sm text-foreground/60">
-                Dashboard data updates in real-time
-              </p>
-            </div>
-            <p className="text-xs text-foreground/40">
-              Last refresh: {new Date().toLocaleTimeString()}
-            </p>
-          </div>
-        </footer>
       </div>
     </div>
   );
