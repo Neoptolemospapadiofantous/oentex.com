@@ -125,31 +125,39 @@ export const ButtonLoader = ({
   )
 }
 
-// Skeleton loading for deals
+// Professional skeleton loading for deals
 export const DealsSkeleton = () => {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 pt-20">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header skeleton */}
         <div className="text-center mb-12">
           <div className="animate-pulse">
-            <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded w-96 mx-auto mb-4"></div>
-            <div className="h-6 bg-gray-200 dark:bg-gray-600 rounded w-128 mx-auto mb-2"></div>
-            <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-64 mx-auto"></div>
+            <div className="h-12 bg-content2/50 rounded-2xl w-96 mx-auto mb-6"></div>
+            <div className="h-6 bg-content2/30 rounded-xl w-128 mx-auto mb-3"></div>
+            <div className="h-4 bg-content2/20 rounded-lg w-64 mx-auto"></div>
           </div>
         </div>
 
-        {/* Filters skeleton */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="animate-pulse">
-              <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded w-64"></div>
+        {/* Professional filters skeleton */}
+        <div className="bg-content1/90 backdrop-blur-xl rounded-2xl border border-divider/40 mb-8 shadow-2xl">
+          <div className="p-8">
+            {/* Search and Sort Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="relative">
+                <div className="h-12 bg-content2/50 rounded-xl w-full"></div>
+              </div>
+              <div className="h-12 bg-content2/50 rounded-xl w-full"></div>
+              <div className="h-12 bg-content2/50 rounded-xl w-full"></div>
             </div>
-            <div className="animate-pulse">
-              <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded w-48"></div>
-            </div>
-            <div className="animate-pulse">
-              <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded w-32"></div>
+
+            {/* Category Quick Filters */}
+            <div className="flex flex-wrap gap-4 py-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-12 bg-content2/50 rounded-lg w-32"></div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -157,41 +165,85 @@ export const DealsSkeleton = () => {
         {/* Results summary skeleton */}
         <div className="flex items-center justify-between mb-8">
           <div className="animate-pulse">
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-32"></div>
+            <div className="h-5 bg-content2/50 rounded-lg w-40"></div>
           </div>
           <div className="animate-pulse">
-            <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-24"></div>
+            <div className="h-5 bg-content2/50 rounded-lg w-32"></div>
           </div>
         </div>
 
-        {/* Deals grid skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {/* Professional deals grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+            <div key={i} className="bg-content1/80 backdrop-blur-xl rounded-2xl border border-divider/40 p-6 shadow-lg">
               <div className="animate-pulse">
-                <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-2/3 mb-4"></div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-20"></div>
-                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-16"></div>
+                {/* Header with company info */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 bg-content2/50 rounded-xl"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-content2/50 rounded w-24"></div>
+                      <div className="h-3 bg-content2/30 rounded w-16"></div>
+                    </div>
+                  </div>
+                  <div className="w-20 h-6 bg-content2/50 rounded-full"></div>
                 </div>
-                <div className="h-10 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+
+                {/* Community Trust Section */}
+                <div className="my-4 p-3 bg-content2/50 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="h-4 bg-content2/30 rounded w-24"></div>
+                    <div className="h-3 bg-content2/30 rounded w-12"></div>
+                  </div>
+                </div>
+
+                {/* Deal title */}
+                <div className="my-4">
+                  <div className="h-5 bg-content2/50 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-content2/30 rounded w-1/2"></div>
+                </div>
+
+                {/* Description */}
+                <div className="my-4 space-y-2">
+                  <div className="h-3 bg-content2/30 rounded w-full"></div>
+                  <div className="h-3 bg-content2/30 rounded w-5/6"></div>
+                  <div className="h-3 bg-content2/30 rounded w-4/6"></div>
+                </div>
+
+                {/* Features */}
+                <div className="my-4">
+                  <div className="flex flex-wrap gap-2">
+                    <div className="h-6 bg-content2/30 rounded-full w-16"></div>
+                    <div className="h-6 bg-content2/30 rounded-full w-20"></div>
+                    <div className="h-6 bg-content2/30 rounded-full w-14"></div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3 mt-6">
+                  <div className="h-10 bg-content2/50 rounded-lg flex-1"></div>
+                  <div className="h-10 bg-content2/50 rounded-lg w-20"></div>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Stats skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="animate-pulse">
-                <div className="h-12 bg-gray-300 dark:bg-gray-700 rounded w-16 mx-auto mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-24 mx-auto"></div>
+        {/* Pagination skeleton */}
+        <div className="flex items-center justify-center gap-4 mb-12">
+          <div className="animate-pulse">
+            <div className="h-10 bg-content2/50 rounded-lg w-24"></div>
+          </div>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-10 bg-content2/50 rounded-lg w-10"></div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="animate-pulse">
+            <div className="h-10 bg-content2/50 rounded-lg w-24"></div>
+          </div>
         </div>
       </div>
     </div>
