@@ -213,6 +213,424 @@ export const useDealsQuery = () => {
   })
 }
 
+// Paginated deals query hook for better performance
+export const usePaginatedDealsQuery = (page: number = 1, limit: number = 12, filters: {
+  searchTerm?: string
+  category?: string
+  sortBy?: string
+} = {}) => {
+  const { isFullyReady } = useAuth()
+
+  return useQuery({
+    queryKey: ['paginated-deals', page, limit, filters],
+    queryFn: async (): Promise<DealsData> => {
+      try {
+        console.log('🔄 Fetching paginated deals...', { page, limit, filters })
+        
+        const offset = (page - 1) * limit
+        
+        // First try the paginated query
+        try {
+          return await fetchPaginatedDeals(page, limit, filters)
+        } catch (error) {
+          console.warn('⚠️ Paginated query failed, falling back to original query:', error)
+          // Fallback to original query and implement client-side pagination
+          return await fetchDealsWithClientPagination(page, limit, filters)
+        }
+        
+      } catch (error) {
+        console.error('❌ Failed to fetch paginated deals:', error)
+        throw error
+      }
+    },
+    enabled: isFullyReady,
+    staleTime: 2 * 60 * 1000, // 2 minutes for paginated data
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: (failureCount, error) => {
+      if (error.message?.includes('permission') || error.message?.includes('policy')) {
+        return false
+      }
+      return failureCount < 2
+    },
+  })
+}
+
+// Helper function for paginated query
+async function fetchPaginatedDeals(page: number, limit: number, filters: {
+  searchTerm?: string
+  category?: string
+  sortBy?: string
+}): Promise<DealsData> {
+  const offset = (page - 1) * limit
+        
+  // Build query with filters
+  let query = supabase
+    .from('company_deals')
+    .select(`
+      id,
+      company_id,
+      title,
+      description,
+      deal_type,
+      value,
+      terms,
+      start_date,
+      end_date,
+      is_active,
+      click_count,
+      conversion_rate,
+      affiliate_link,
+      created_at,
+      updated_at,
+      company:trading_companies!company_deals_company_id_fkey (
+        id,
+        name,
+        slug,
+        description,
+        logo_url,
+        website_url,
+        category,
+        affiliate_link,
+        overall_rating,
+        total_reviews,
+        status
+      )
+    `, { count: 'exact' })
+    .eq('is_active', true)
+    .not('company', 'is', null)
+
+  // Apply category filter
+  if (filters.category && filters.category !== 'all') {
+    query = query.eq('company.category', filters.category)
+  }
+
+  // Apply search filter - use a simpler approach that works with joins
+  if (filters.searchTerm) {
+    // For now, let's search only in the deal fields to avoid join issues
+    query = query.or(`title.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`)
+  }
+
+  // Apply sorting - use fields that exist on the main table
+  switch (filters.sortBy) {
+    case 'newest':
+      query = query.order('created_at', { ascending: false })
+      break
+    case 'popular':
+      query = query.order('click_count', { ascending: false })
+      break
+    case 'rating':
+      // For rating, we'll sort by created_at for now since company.overall_rating might not work with joins
+      query = query.order('created_at', { ascending: false })
+      break
+    case 'name':
+      // For name, we'll sort by created_at for now since company.name might not work with joins
+      query = query.order('created_at', { ascending: false })
+      break
+    default:
+      query = query.order('created_at', { ascending: false })
+  }
+
+  // Apply pagination
+  query = query.range(offset, offset + limit - 1)
+
+  const { data: dealsData, error: dealsError, count } = await query
+
+  console.log('📊 Paginated query result:', {
+    dealsCount: dealsData?.length || 0,
+    totalCount: count,
+    page,
+    limit,
+    offset,
+    filters
+  })
+
+  if (dealsError) {
+    console.error('❌ Paginated deals error:', dealsError)
+    throw new Error(`Failed to fetch deals: ${dealsError.message}`)
+  }
+
+  // Fetch all companies for category stats (cached)
+  const { data: companiesData, error: companiesError } = await supabase
+    .from('trading_companies')
+    .select(`
+      id,
+      name,
+      slug,
+      description,
+      logo_url,
+      website_url,
+      category,
+      affiliate_link,
+      overall_rating,
+      total_reviews,
+      status
+    `)
+    .eq('status', 'active')
+
+  if (companiesError) {
+    throw new Error(`Failed to fetch companies: ${companiesError.message}`)
+  }
+
+  if (!dealsData) {
+    console.warn('⚠️ No deals data returned from paginated query')
+    return {
+      deals: [],
+      companies: companiesData || [],
+      totalCount: 0,
+      totalCompaniesCount: companiesData?.length || 0,
+      totalDealsCount: 0
+    }
+  }
+
+  if (!companiesData) {
+    console.warn('⚠️ No companies data returned')
+    return {
+      deals: [],
+      companies: [],
+      totalCount: 0,
+      totalCompaniesCount: 0,
+      totalDealsCount: 0
+    }
+  }
+
+  // Process deals
+  const deals: Deal[] = dealsData
+    .filter(deal => deal.company && deal.company.status === 'active')
+    .map(deal => ({
+      id: deal.id,
+      company_id: deal.company_id,
+      title: deal.title,
+      description: deal.description,
+      deal_type: deal.deal_type as Deal['deal_type'],
+      value: deal.value,
+      terms: deal.terms,
+      start_date: deal.start_date || deal.created_at,
+      end_date: deal.end_date,
+      is_active: deal.is_active,
+      click_count: deal.click_count || 0,
+      conversion_rate: deal.conversion_rate || 0,
+      affiliate_link: deal.affiliate_link,
+      created_at: deal.created_at,
+      updated_at: deal.updated_at,
+      company: deal.company as Company,
+      // Compatibility fields for direct access
+      company_name: deal.company?.name || '',
+      merchant_name: deal.company?.name,
+      category: deal.company?.category,
+      rating: deal.company?.overall_rating,
+      bonus_amount: deal.value,
+      features: [],
+      tracking_link: deal.affiliate_link
+    }))
+
+  // Process companies
+  const companies: Company[] = companiesData.map(company => ({
+    id: company.id,
+    name: company.name,
+    slug: company.slug,
+    description: company.description,
+    logo_url: company.logo_url,
+    website_url: company.website_url,
+    category: company.category,
+    affiliate_link: company.affiliate_link,
+    overall_rating: company.overall_rating,
+    total_reviews: company.total_reviews,
+    status: company.status
+  }))
+
+  console.log('✅ Paginated deals fetched successfully:', {
+    dealsCount: deals.length,
+    companiesCount: companies.length,
+    totalCount: count || 0
+  })
+
+  return {
+    deals,
+    companies,
+    totalCount: count || 0,
+    totalCompaniesCount: companies.length,
+    totalDealsCount: count || 0
+  }
+}
+
+// Fallback function that uses the original query with client-side pagination
+async function fetchDealsWithClientPagination(page: number, limit: number, filters: {
+  searchTerm?: string
+  category?: string
+  sortBy?: string
+}): Promise<DealsData> {
+  console.log('🔄 Using fallback client-side pagination...', { page, limit, filters })
+  
+  // Use the original query to get all deals
+  const { data: dealsData, error: dealsError } = await supabase
+    .from('company_deals')
+    .select(`
+      id,
+      company_id,
+      title,
+      description,
+      deal_type,
+      value,
+      terms,
+      start_date,
+      end_date,
+      is_active,
+      click_count,
+      conversion_rate,
+      affiliate_link,
+      created_at,
+      updated_at,
+      company:trading_companies!company_deals_company_id_fkey (
+        id,
+        name,
+        slug,
+        description,
+        logo_url,
+        website_url,
+        category,
+        affiliate_link,
+        overall_rating,
+        total_reviews,
+        status
+      )
+    `)
+    .eq('is_active', true)
+    .not('company', 'is', null)
+    .order('created_at', { ascending: false })
+
+  if (dealsError) {
+    throw new Error(`Failed to fetch deals: ${dealsError.message}`)
+  }
+
+  // Fetch all companies
+  const { data: companiesData, error: companiesError } = await supabase
+    .from('trading_companies')
+    .select(`
+      id,
+      name,
+      slug,
+      description,
+      logo_url,
+      website_url,
+      category,
+      affiliate_link,
+      overall_rating,
+      total_reviews,
+      status
+    `)
+    .eq('status', 'active')
+
+  if (companiesError) {
+    throw new Error(`Failed to fetch companies: ${companiesError.message}`)
+  }
+
+  if (!dealsData || !companiesData) {
+    return {
+      deals: [],
+      companies: [],
+      totalCount: 0,
+      totalCompaniesCount: 0,
+      totalDealsCount: 0
+    }
+  }
+
+  // Process deals
+  let deals: Deal[] = dealsData
+    .filter(deal => deal.company && deal.company.status === 'active')
+    .map(deal => ({
+      id: deal.id,
+      company_id: deal.company_id,
+      title: deal.title,
+      description: deal.description,
+      deal_type: deal.deal_type as Deal['deal_type'],
+      value: deal.value,
+      terms: deal.terms,
+      start_date: deal.start_date || deal.created_at,
+      end_date: deal.end_date,
+      is_active: deal.is_active,
+      click_count: deal.click_count || 0,
+      conversion_rate: deal.conversion_rate || 0,
+      affiliate_link: deal.affiliate_link,
+      created_at: deal.created_at,
+      updated_at: deal.updated_at,
+      company: deal.company as Company,
+      // Compatibility fields for direct access
+      company_name: deal.company?.name || '',
+      merchant_name: deal.company?.name,
+      category: deal.company?.category,
+      rating: deal.company?.overall_rating,
+      bonus_amount: deal.value,
+      features: [],
+      tracking_link: deal.affiliate_link
+    }))
+
+  // Apply client-side filtering
+  if (filters.searchTerm) {
+    const searchLower = filters.searchTerm.toLowerCase()
+    deals = deals.filter(deal =>
+      deal.company_name.toLowerCase().includes(searchLower) ||
+      deal.title.toLowerCase().includes(searchLower) ||
+      deal.description.toLowerCase().includes(searchLower)
+    )
+  }
+
+  if (filters.category && filters.category !== 'all') {
+    deals = deals.filter(deal => deal.company?.category === filters.category)
+  }
+
+  // Apply client-side sorting
+  deals.sort((a, b) => {
+    switch (filters.sortBy) {
+      case 'rating':
+        return (b.company?.overall_rating || 0) - (a.company?.overall_rating || 0)
+      case 'newest':
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      case 'popular':
+        return (b.click_count || 0) - (a.click_count || 0)
+      case 'name':
+        return a.company_name.localeCompare(b.company_name)
+      default:
+        return 0
+    }
+  })
+
+  // Apply client-side pagination
+  const totalCount = deals.length
+  const startIndex = (page - 1) * limit
+  const endIndex = startIndex + limit
+  const paginatedDeals = deals.slice(startIndex, endIndex)
+
+  // Process companies
+  const companies: Company[] = companiesData.map(company => ({
+    id: company.id,
+    name: company.name,
+    slug: company.slug,
+    description: company.description,
+    logo_url: company.logo_url,
+    website_url: company.website_url,
+    category: company.category,
+    affiliate_link: company.affiliate_link,
+    overall_rating: company.overall_rating,
+    total_reviews: company.total_reviews,
+    status: company.status
+  }))
+
+  console.log('✅ Client-side paginated deals fetched successfully:', {
+    dealsCount: paginatedDeals.length,
+    totalCount,
+    page,
+    limit
+  })
+
+  return {
+    deals: paginatedDeals,
+    companies,
+    totalCount,
+    totalCompaniesCount: companies.length,
+    totalDealsCount: totalCount
+  }
+}
+
 // Hook for fetching user ratings
 export const useUserRatingsQuery = (userId: string | undefined, companyIds: string[]) => {
   const { isFullyReady } = useAuth()
