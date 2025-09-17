@@ -200,8 +200,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         startContent={isProviderLoading ? <Spinner size="sm" /> : icon}
         isLoading={isProviderLoading}
         classNames={{
-          base: "h-14",
-          startContent: "flex items-center justify-center w-6 h-6"
+          base: "h-12",
+          startContent: "flex items-center justify-center w-5 h-5"
         }}
       >
         {isProviderLoading ? 'Connecting...' : label}
@@ -218,16 +218,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       hideCloseButton={state.isLoading}
       classNames={{
         base: "bg-background text-foreground shadow-2xl border border-divider",
-        header: "border-b border-divider px-8 py-8 bg-gradient-to-r from-background to-default-50",
-        body: "px-8 py-12 bg-background",
-        footer: "border-t border-divider px-8 py-8 bg-gradient-to-r from-default-50 to-background"
+        header: "border-b border-divider px-6 py-4 bg-gradient-to-r from-background to-default-50",
+        body: "px-6 py-6 bg-background",
+        footer: "border-t border-divider px-6 py-4 bg-gradient-to-r from-default-50 to-background"
       }}
     >
       <ModalContent>
         {() => (
           <>
             <ModalHeader className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold text-foreground">
+              <h2 className="text-xl font-bold text-foreground">
                 {mode === 'login' ? 'Welcome Back' : 'Join Oentex'}
               </h2>
               <p className="text-sm text-foreground-500">
@@ -272,10 +272,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   )}
 
                   {/* ✅ OPTIMIZED: OAuth Buttons */}
-                  <div className="space-y-8 py-4">
+                  <div className="space-y-4 py-2">
                     <ProviderButton
                       provider="google"
-                      icon={<Icons.globe className="w-6 h-6 flex-shrink-0" />}
+                      icon={<Icons.globe className="w-5 h-5 flex-shrink-0" />}
                       label="Continue with Google"
                       variant="bordered"
                       color="default"
@@ -283,7 +283,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                     <ProviderButton
                       provider="microsoft"
-                      icon={<div className="w-6 h-6 flex-shrink-0"><MicrosoftIcon /></div>}
+                      icon={<div className="w-5 h-5 flex-shrink-0"><MicrosoftIcon /></div>}
                       label="Continue with Microsoft"
                       variant="solid"
                       color="primary"
