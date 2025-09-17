@@ -49,11 +49,11 @@ const AppToast: React.FC<AppToastProps> = ({
       </div>
       <div className="flex-1 min-w-0">
         {title && <div className="font-semibold text-sm mb-1">{title}</div>}
-        <div className={`${title ? "text-sm" : "text-sm font-medium"} ${type === 'error' ? 'text-red-100' : ''}`}>
+        <div className={`${title ? "text-sm" : "text-sm font-medium"}`}>
           {message}
         </div>
         {details && (
-          <div className="text-xs opacity-75 mt-1 text-gray-300">
+          <div className="text-xs opacity-75 mt-1 text-foreground/60">
             {details}
           </div>
         )}
@@ -97,10 +97,10 @@ const AppToast: React.FC<AppToastProps> = ({
           position: 'top-right' as const,
           style: {
             ...baseStyle,
-            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            color: '#ffffff',
-            border: '1px solid #991b1b',
-            boxShadow: '0 10px 40px rgba(220, 38, 38, 0.4), 0 4px 16px rgba(185, 28, 28, 0.2)',
+            background: 'hsl(var(--heroui-danger) / 0.1)',
+            color: 'hsl(var(--heroui-danger))',
+            border: '1px solid hsl(var(--heroui-danger) / 0.2)',
+            boxShadow: '0 10px 40px hsl(var(--heroui-danger) / 0.15), 0 4px 16px hsl(var(--heroui-danger) / 0.08)',
             maxWidth: '400px',
             minWidth: '300px',
           },
