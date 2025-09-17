@@ -381,31 +381,31 @@
   }
 }
 
-/* Enhanced responsive grid for deals/features */
+/* Enhanced responsive grid for deals/features - 3 items per row */
 .grid-deals {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+  grid-template-columns: 1fr;
   gap: var(--heroui-padding-lg);
   justify-content: center;
 }
 
 @media (min-width: 640px) {
   .grid-deals {
-    grid-template-columns: repeat(auto-fit, minmax(380px, 420px));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--heroui-padding-xl);
   }
 }
 
 @media (min-width: 1024px) {
   .grid-deals {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 450px));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--heroui-padding-xl);
   }
 }
 
 @media (min-width: 1280px) {
   .grid-deals {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 450px));
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--heroui-padding-xl);
     max-width: 1400px;
     margin: 0 auto;
@@ -633,6 +633,11 @@
 /* ===========================
    📏 SPACING UTILITIES
    ========================== */
+
+/* Enhanced padding utilities for buttons */
+.px-3xl { padding-left: var(--heroui-padding-3xl); padding-right: var(--heroui-padding-3xl); }
+.py-xl { padding-top: var(--heroui-padding-xl); padding-bottom: var(--heroui-padding-xl); }
+.px-md { padding-left: var(--heroui-padding-md); padding-right: var(--heroui-padding-md); }
 
 /* Space utilities using theme padding */
 .space-y-xs > * + * { margin-top: var(--heroui-padding-xs); }
