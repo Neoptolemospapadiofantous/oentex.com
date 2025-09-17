@@ -369,7 +369,7 @@ const MyDeals: React.FC = () => {
 
         {/* Enhanced Filters */}
         <section className="mb-xl">
-          <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
+          <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500">
             <div className="flex items-center gap-md mb-lg">
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center">
                 <Icons.filter className="w-4 h-4 text-white" />
@@ -383,7 +383,7 @@ const MyDeals: React.FC = () => {
                 <select
                   value={filterRating}
                   onChange={(e) => setFilterRating(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-background/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50"
+                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-content1 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-content2 hover:shadow-lg hover:shadow-primary/10"
                 >
                   <option value="all">All Ratings</option>
                   <option value={5}>5 Stars ⭐⭐⭐⭐⭐</option>
@@ -399,7 +399,7 @@ const MyDeals: React.FC = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-background/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50"
+                  className="w-full container-px-lg container-py-md border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none text-foreground bg-content1 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-content2 hover:shadow-lg hover:shadow-primary/10"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>
@@ -418,7 +418,7 @@ const MyDeals: React.FC = () => {
               {filteredAndSortedRatings.map((rating: any, index) => (
                 <div 
                   key={rating.id} 
-                  className="group bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 hover:border-primary/20 transform hover:scale-[1.01]"
+                  className="group bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-p-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 hover:border-primary/30 transform hover:scale-[1.01]"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-start justify-between">
@@ -453,7 +453,7 @@ const MyDeals: React.FC = () => {
 
                       {/* Review Content */}
                       {rating.review && (
-                        <div className="bg-content2/30 rounded-2xl container-p-lg mb-lg border border-divider/20">
+                        <div className="bg-content2/50 rounded-2xl container-p-lg mb-lg border border-divider/30">
                           <p className="text-foreground/80 leading-relaxed italic">
                             "{rating.review}"
                           </p>
@@ -512,20 +512,6 @@ const MyDeals: React.FC = () => {
           )}
         </section>
 
-        {/* Enhanced Footer */}
-        <footer className="section-py-lg">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-lg mb-md">
-              <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-              <p className="text-sm text-foreground/60">
-                Your ratings help improve our platform recommendations
-              </p>
-            </div>
-            <p className="text-xs text-foreground/40">
-              Keep rating platforms to build your profile • {totalRatings} ratings and counting
-            </p>
-          </div>
-        </footer>
 
         {/* Rating Modal */}
         {isModalOpen && activeCompanyId && (
