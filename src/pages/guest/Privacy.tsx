@@ -456,15 +456,22 @@ const Privacy = () => {
   return (
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Privacy Policy
-            </h1>
-            <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-4">
-              Your privacy is important to us. Learn how we protect and use your information.
-            </p>
-            <p className="text-foreground/70">Last updated: January 30, 2025</p>
+        <section className="section-py-3xl relative">
+          {/* Component-specific accent */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/4 to-primary/8 accent-transition" />
+          
+          <div className="container-page relative z-10 flex flex-col items-center justify-center">
+            <div className="text-center max-w-4xl mx-auto">
+              <h1 className="text-4xl lg:text-5xl font-bold text-foreground my-lg text-center">
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Privacy Policy
+                </span>
+              </h1>
+              <p className="text-xl text-foreground/70 max-w-3xl mx-auto text-center">
+                Your privacy is important to us. Learn how we protect and use your information.
+              </p>
+              <p className="text-foreground/70">Last updated: January 30, 2025</p>
+            </div>
           </div>
         </section>
 
