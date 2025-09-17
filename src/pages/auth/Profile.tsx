@@ -118,8 +118,8 @@ const Profile: React.FC = () => {
         </div>
           
         {/* Profile Information Card */}
-        <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-2xl hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group mb-2xl">
-          <div className="flex items-center justify-between mb-2xl">
+        <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-px-2xl container-py-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group mb-2xl">
+          <div className="flex items-center justify-between mb-lg">
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-sm group-hover:text-primary transition-colors duration-300">
                 Profile Information
@@ -141,11 +141,11 @@ const Profile: React.FC = () => {
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className="w-full container-px-lg container-py-lg border border-divider rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary text-base bg-content2/50 transition-all duration-300"
+                  className="w-full container-px-lg container-py-lg border border-divider/50 rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary text-base bg-content2/80 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
                   placeholder="Enter your full name"
                 />
               ) : (
-                <p className="text-lg text-foreground container-p-lg bg-content2/30 rounded-2xl">
+                <p className="text-lg text-foreground container-p-lg bg-content2/50 rounded-2xl border border-divider/20">
                   {user?.user_metadata?.full_name || 'Not set'}
                 </p>
               )}
@@ -155,7 +155,7 @@ const Profile: React.FC = () => {
               <label className="block text-sm font-semibold text-foreground mb-sm">
                 Email Address
               </label>
-              <div className="container-p-lg bg-content2/30 rounded-2xl">
+              <div className="container-p-lg bg-content2/50 rounded-2xl border border-divider/20">
                 <p className="text-lg text-foreground flex items-center gap-md">
                   <Icons.mail className="w-5 h-5 text-primary" />
                   {user?.email}
@@ -171,9 +171,9 @@ const Profile: React.FC = () => {
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="bg-gradient-to-r from-primary to-primary/80 text-white container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 hover:scale-105"
+                  className="bg-primary text-primary-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20"
                 >
-                  <Icons.edit className="w-5 h-5 mr-sm" />
+                  <Icons.edit className="w-4 h-4 mr-sm" />
                   Edit Profile
                 </button>
               ) : (
@@ -181,14 +181,14 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleSaveProfile}
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-primary to-primary/80 text-white container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary/25 disabled:opacity-50 hover:scale-105"
+                    className="bg-primary text-primary-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 disabled:opacity-50"
                   >
-                    <Icons.check className="w-5 h-5 mr-sm" />
+                    <Icons.check className="w-4 h-4 mr-sm" />
                     {isLoading ? 'Saving...' : 'Save Changes'}
                   </button>
                   <button
                     onClick={cancelEdit}
-                    className="bg-content2 hover:bg-content3 text-foreground container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300"
+                    className="bg-content2 hover:bg-content3 text-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300"
                   >
                     Cancel
                   </button>
@@ -199,23 +199,23 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Security Settings Card */}
-        <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-2xl hover:shadow-2xl hover:shadow-success/5 transition-all duration-500 group mb-2xl">
-          <div className="flex items-center justify-between mb-2xl">
+        <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-px-2xl container-py-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group mb-2xl">
+          <div className="flex items-center justify-between mb-lg">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-sm group-hover:text-success transition-colors duration-300">
+              <h2 className="text-2xl font-bold text-foreground mb-sm group-hover:text-primary transition-colors duration-300">
                 Security Settings
               </h2>
               <p className="text-foreground/60">Manage your account security</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-success/20 to-success/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-              <Icons.shield className="w-6 h-6 text-success" />
+            <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+              <Icons.shield className="w-6 h-6 text-primary" />
             </div>
           </div>
 
           {!isChangingPassword ? (
             <div className="space-y-lg">
               {/* Password Info */}
-              <div className="flex items-center justify-between container-p-lg bg-content2/30 rounded-2xl hover:bg-content2/50 transition-all duration-300">
+              <div className="flex items-center justify-between container-p-lg bg-content2/50 rounded-2xl hover:bg-content2/70 transition-all duration-300 border border-divider/20 hover:border-primary/20">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Password</h3>
                   <p className="text-sm text-foreground/60">Last changed: Never</p>
@@ -226,12 +226,12 @@ const Profile: React.FC = () => {
               </div>
 
               {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between container-p-lg bg-content2/30 rounded-2xl hover:bg-content2/50 transition-all duration-300">
+              <div className="flex items-center justify-between container-p-lg bg-content2/50 rounded-2xl hover:bg-content2/70 transition-all duration-300 border border-divider/20 hover:border-primary/20">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Two-Factor Authentication</h3>
                   <p className="text-sm text-foreground/60">Add an extra layer of security</p>
                 </div>
-                <div className="text-sm text-foreground/60 bg-content1/50 container-px-lg container-py-sm rounded-xl">
+                <div className="text-sm text-foreground/60 bg-content1/80 container-px-lg container-py-sm rounded-xl border border-divider/20">
                   Not enabled
                 </div>
               </div>
@@ -240,9 +240,9 @@ const Profile: React.FC = () => {
               <div className="pt-xl border-t border-divider/30">
                 <button
                   onClick={() => setIsChangingPassword(true)}
-                  className="bg-gradient-to-r from-success to-success/80 text-white container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-success/25 hover:scale-105"
+                  className="bg-primary text-primary-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20"
                 >
-                  <Icons.key className="w-5 h-5 mr-sm" />
+                  <Icons.key className="w-4 h-4 mr-sm" />
                   Change Password
                 </button>
               </div>
@@ -258,7 +258,7 @@ const Profile: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={passwordData.currentPassword}
                     onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
-                    className="w-full container-px-lg container-py-lg pr-12 border border-divider rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/50 transition-all duration-300"
+                    className="w-full container-px-lg container-py-lg pr-12 border border-divider/50 rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/80 backdrop-blur-sm transition-all duration-300 hover:border-success/30 hover:shadow-lg hover:shadow-success/10"
                     placeholder="Enter current password"
                   />
                   <button
@@ -280,7 +280,7 @@ const Profile: React.FC = () => {
                     type={showNewPassword ? 'text' : 'password'}
                     value={passwordData.newPassword}
                     onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
-                    className="w-full container-px-lg container-py-lg pr-12 border border-divider rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/50 transition-all duration-300"
+                    className="w-full container-px-lg container-py-lg pr-12 border border-divider/50 rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/80 backdrop-blur-sm transition-all duration-300 hover:border-success/30 hover:shadow-lg hover:shadow-success/10"
                     placeholder="Enter new password"
                   />
                   <button
@@ -304,7 +304,7 @@ const Profile: React.FC = () => {
                   type="password"
                   value={passwordData.confirmPassword}
                   onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
-                  className="w-full container-px-lg container-py-lg border border-divider rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/50 transition-all duration-300"
+                  className="w-full container-px-lg container-py-lg border border-divider/50 rounded-2xl focus:ring-2 focus:ring-success focus:border-success text-base bg-content2/80 backdrop-blur-sm transition-all duration-300 hover:border-success/30 hover:shadow-lg hover:shadow-success/10"
                   placeholder="Confirm new password"
                 />
               </div>
@@ -313,14 +313,14 @@ const Profile: React.FC = () => {
                 <button
                   onClick={handleChangePassword}
                   disabled={isLoading}
-                  className="bg-gradient-to-r from-success to-success/80 text-white container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300 hover:shadow-lg hover:shadow-success/25 disabled:opacity-50 hover:scale-105"
+                  className="bg-primary text-primary-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20 disabled:opacity-50"
                 >
-                  <Icons.key className="w-5 h-5 mr-sm" />
+                  <Icons.key className="w-4 h-4 mr-sm" />
                   {isLoading ? 'Changing...' : 'Change Password'}
                 </button>
                 <button
                   onClick={cancelPasswordChange}
-                  className="bg-content2 hover:bg-content3 text-foreground container-px-2xl container-py-lg rounded-2xl font-semibold text-lg transition-all duration-300"
+                  className="bg-content2 hover:bg-content3 text-foreground container-px-lg container-py-md rounded-xl font-semibold text-sm transition-all duration-300"
                 >
                   Cancel
                 </button>
@@ -330,46 +330,46 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Account Information Card */}
-        <div className="bg-content1/80 backdrop-blur-2xl rounded-3xl border border-divider/40 container-p-2xl hover:shadow-2xl hover:shadow-secondary/5 transition-all duration-500 group">
-          <div className="flex items-center justify-between mb-2xl">
+        <div className="bg-content1/90 backdrop-blur-2xl rounded-3xl border border-divider/50 container-px-2xl container-py-lg hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 group">
+          <div className="flex items-center justify-between mb-lg">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-sm group-hover:text-secondary transition-colors duration-300">
+              <h2 className="text-2xl font-bold text-foreground mb-sm group-hover:text-primary transition-colors duration-300">
                 Account Information
               </h2>
               <p className="text-foreground/60">View your account details</p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-              <Icons.user className="w-6 h-6 text-secondary" />
+            <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+              <Icons.user className="w-6 h-6 text-primary" />
             </div>
           </div>
 
           <div className="space-y-lg">
-            <div className="flex items-center justify-between container-p-lg bg-content2/30 rounded-2xl hover:bg-content2/50 transition-all duration-300">
+            <div className="flex items-center justify-between container-p-lg bg-content2/50 rounded-2xl hover:bg-content2/70 transition-all duration-300 border border-divider/20 hover:border-primary/20">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">User ID</h3>
                 <p className="text-sm text-foreground/60">Unique identifier for your account</p>
               </div>
-              <div className="text-lg text-foreground/80 font-mono bg-content1/50 container-px-lg container-py-sm rounded-xl">
+              <div className="text-lg text-foreground/80 font-mono bg-content1/80 container-px-lg container-py-sm rounded-xl border border-divider/20">
                 {user?.id?.slice(0, 8)}...
               </div>
             </div>
 
-            <div className="flex items-center justify-between container-p-lg bg-content2/30 rounded-2xl hover:bg-content2/50 transition-all duration-300">
+            <div className="flex items-center justify-between container-p-lg bg-content2/50 rounded-2xl hover:bg-content2/70 transition-all duration-300 border border-divider/20 hover:border-primary/20">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Account Created</h3>
                 <p className="text-sm text-foreground/60">When you joined Oentex</p>
               </div>
-              <div className="text-lg text-foreground/80 bg-content1/50 container-px-lg container-py-sm rounded-xl">
+              <div className="text-lg text-foreground/80 bg-content1/80 container-px-lg container-py-sm rounded-xl border border-divider/20">
                 {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
               </div>
             </div>
 
-            <div className="flex items-center justify-between container-p-lg bg-content2/30 rounded-2xl hover:bg-content2/50 transition-all duration-300">
+            <div className="flex items-center justify-between container-p-lg bg-content2/50 rounded-2xl hover:bg-content2/70 transition-all duration-300 border border-divider/20 hover:border-primary/20">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Last Sign In</h3>
                 <p className="text-sm text-foreground/60">Most recent authentication</p>
               </div>
-              <div className="text-lg text-foreground/80 bg-content1/50 container-px-lg container-py-sm rounded-xl">
+              <div className="text-lg text-foreground/80 bg-content1/80 container-px-lg container-py-sm rounded-xl border border-divider/20">
                 {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : 'Unknown'}
               </div>
             </div>
