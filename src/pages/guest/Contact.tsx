@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Icons } from '@components/icons'
 import { emailService } from '../../lib/email'
 import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
+import { Button, Input } from '@components/ui-kit'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -117,10 +118,13 @@ const Contact = () => {
         <section className="section-py-3xl relative">
           {/* Component-specific accent */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/4 to-primary/8 accent-transition" />
+          
           <div className="container-page relative z-10 flex flex-col items-center justify-center">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl lg:text-5xl font-bold text-foreground my-lg text-center">
-                Get in Touch
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Get in Touch
+                </span>
               </h1>
               <p className="text-xl text-foreground/70 max-w-3xl mx-auto text-center">
                 Have questions about our platform or need assistance? We're here to help you navigate your investment journey with expert guidance and support.
@@ -232,116 +236,128 @@ const Contact = () => {
               </p>
             </div>
             
-            <div>
+            <div className="flex justify-center">
               {isSubmitted ? (
-                <div className="text-center py-12">
-                  <div >
-                    <Icons.success className="w-10 h-10 text-success" />
+                <div className="text-center container-py-3xl container-px-2xl bg-content1/40 backdrop-blur-md rounded-3xl border border-divider/50 container-p-2xl max-w-md mx-auto shadow-large">
+                  <div className="my-lg">
+                    <Icons.success className="w-16 h-16 text-success mx-auto drop-shadow-lg" />
                   </div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-2">Message Sent Successfully!</h3>
-                  <p className="text-foreground/70 mb-6">We'll get back to you as soon as possible.</p>
+                  <h3 className="text-2xl font-semibold text-foreground my-md">Message Sent Successfully!</h3>
+                  <p className="text-foreground/70 my-xl text-base">We'll get back to you as soon as possible.</p>
                   <div className="flex items-center justify-center gap-2 text-sm text-foreground/60">
                     <Icons.time className="w-4 h-4" />
                     <span>Expected response time: 24 hours</span>
                   </div>
                 </div>
               ) : (
-                <div className="flex justify-center items-center">
-                  <form onSubmit={handleSubmit} className="space-y-8 w-full max-w-2xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="text-center">
-                        <label htmlFor="name" className="block text-xs font-medium text-foreground mb-1 text-center">
-                          Your Name *
+                <div className="w-full max-w-3xl">
+                  <form onSubmit={handleSubmit} className="bg-content1/40 backdrop-blur-md rounded-3xl border border-content1/40 container-p-2xl shadow-large hover:shadow-large hover:border-primary/30 transition-all duration-500">
+                    <div className="space-y-xl">
+                      {/* Name and Email Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+                        <div className="space-y-md">
+                          <label htmlFor="name" className="block text-sm font-semibold text-foreground">
+                            Your Name <span className="text-danger">*</span>
+                          </label>
+                          <Input
+                            id="name"
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Enter your full name"
+                            isRequired
+                            className="w-full"
+                            classNames={{
+                              input: "text-center container-py-md text-base",
+                              inputWrapper: "bg-background/60 border-background/60 focus-within:border-primary shadow-medium transition-all duration-300"
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="space-y-md">
+                          <label htmlFor="email" className="block text-sm font-semibold text-foreground">
+                            Email Address <span className="text-danger">*</span>
+                          </label>
+                          <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Enter your email address"
+                            isRequired
+                            className="w-full"
+                            classNames={{
+                              input: "text-center container-py-md text-base",
+                              inputWrapper: "bg-background/60 border-background/60 focus-within:border-primary shadow-medium transition-all duration-300"
+                            }}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Subject Row */}
+                      <div className="space-y-md">
+                        <label htmlFor="subject" className="block text-sm font-semibold text-foreground">
+                          Subject <span className="text-danger">*</span>
                         </label>
-                        <input
+                        <Input
+                          id="subject"
                           type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
+                          name="subject"
+                          value={formData.subject}
                           onChange={handleChange}
-                          placeholder="Enter your full name"
-                          required
-                          className="w-full container-px-md container-py-sm bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300 text-center"
+                          placeholder="What's this about?"
+                          isRequired
+                          className="w-full"
+                          classNames={{
+                            input: "text-center container-py-md text-base",
+                            inputWrapper: "bg-background/60 border-border/60 focus-within:border-primary shadow-medium transition-all duration-300"
+                          }}
                         />
                       </div>
                       
-                      <div className="text-center">
-                        <label htmlFor="email" className="block text-xs font-medium text-foreground mb-1 text-center">
-                          Email Address *
+                      {/* Message Row */}
+                      <div className="space-y-md">
+                        <label htmlFor="message" className="block text-sm font-semibold text-foreground">
+                          Message <span className="text-danger">*</span>
                         </label>
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          value={formData.email}
+                        <textarea
+                          id="message"
+                          name="message"
+                          value={formData.message}
                           onChange={handleChange}
-                          placeholder="Enter your email address"
+                          rows={6}
+                          className="w-full container-px-lg container-py-md bg-background/60 border border-background/60 rounded-large text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary shadow-medium transition-all duration-300 resize-none text-center text-base"
+                          placeholder="Tell us more about your inquiry..."
                           required
-                          className="w-full container-px-md container-py-sm bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300 text-center"
                         />
                       </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <label htmlFor="subject" className="block text-xs font-medium text-foreground mb-1 text-center">
-                        Subject *
-                      </label>
-                      <input
-                        type="text"
-                        id="subject"
-                        name="subject"
-                        value={formData.subject}
-                        onChange={handleChange}
-                        placeholder="What's this about?"
-                        required
-                        className="w-full container-px-md container-py-sm bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300 text-center"
-                      />
-                    </div>
-                    
-                    <div className="text-center">
-                      <label htmlFor="message" className="block text-xs font-medium text-foreground mb-1 text-center">
-                        Message *
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        value={formData.message}
-                        onChange={handleChange}
-                        rows={6}
-                        className="w-full container-px-md container-py-sm bg-background border border-border rounded-lg text-foreground placeholder-foreground/50 focus:outline-none focus:border-primary transition-colors duration-300 resize-none text-center"
-                        placeholder="Tell us more about your inquiry..."
-                        required
-                      />
-                    </div>
-                    
-                    <div className="flex justify-center pt-4">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="bg-gradient-to-r from-primary to-secondary container-px-xl container-py-sm rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                      >
-                        {isSubmitting ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                            Sending...
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            Send Message
-                            <Icons.paperAirplane className="w-5 h-5" />
-                          </div>
-                        )}
-                      </button>
-                    </div>
-                    
-                    <div className="text-xs text-foreground/50 text-center pt-2 flex items-center justify-center gap-1">
-                      <div className="w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Icons.document className="w-2 h-2 text-primary" />
+                      
+                      {/* Submit Button */}
+                      <div className="flex justify-center my-xl">
+                        <Button
+                          type="submit"
+                          color="primary"
+                          loading={isSubmitting}
+                          rightIcon={!isSubmitting ? <Icons.paperAirplane className="w-5 h-5" /> : undefined}
+                          className="container-px-2xl container-py-lg text-lg font-bold shadow-large hover:shadow-large transform hover:scale-105 transition-all duration-300"
+                          size="lg"
+                        >
+                          {isSubmitting ? 'Sending...' : 'Send Message'}
+                        </Button>
                       </div>
-                      By submitting this form, you agree to our 
-                      <a href="/terms" className="text-primary hover:text-primary/80 underline">privacy policy</a> 
-                      and 
-                      <a href="/terms" className="text-primary hover:text-primary/80 underline">terms of service</a>.
+                      
+                      {/* Privacy Notice */}
+                      <div className="text-sm text-foreground/60 text-center my-lg flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center">
+                          <Icons.document className="w-3 h-3 text-primary" />
+                        </div>
+                        By submitting this form, you agree to our 
+                        <a href="/terms" className="text-primary hover:text-primary/80 underline font-medium">privacy policy</a> 
+                        and 
+                        <a href="/terms" className="text-primary hover:text-primary/80 underline font-medium">terms of service</a>.
+                      </div>
                     </div>
                   </form>
                 </div>
