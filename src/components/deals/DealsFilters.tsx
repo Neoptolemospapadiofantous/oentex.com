@@ -39,25 +39,25 @@ export const DealsFilters: React.FC<DealsFiltersProps> = React.memo(({
   setSortBy
 }) => {
   return (
-    <div className="bg-surface border border-border rounded-xl p-6 mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="bg-content1/90 backdrop-blur-xl border border-divider/40 rounded-xl container-p-3xl mb-2xl shadow-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-xl">
         <div className="relative">
-          <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+          <Icons.search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground/60 w-5 h-5 z-10" />
           <input
             type="text"
             placeholder="Search deals..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text"
+            className="w-full pl-12 pr-6 py-3 bg-content2/50 border border-divider/50 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none text-foreground text-base font-medium backdrop-blur-sm transition-all duration-300 hover:border-divider/70 placeholder:text-foreground/60 h-12"
           />
         </div>
 
         <div className="relative">
-          <Icons.filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-textSecondary w-5 h-5" />
+          <Icons.filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground/60 w-5 h-5 z-10" />
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text appearance-none"
+            className="w-full pl-12 pr-6 py-3 bg-content2/50 border border-divider/50 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none text-foreground backdrop-blur-sm transition-all duration-300 hover:border-divider/70 h-12 appearance-none"
           >
             {categories.map(category => (
               <option key={category.value} value={category.value}>
@@ -71,7 +71,7 @@ export const DealsFilters: React.FC<DealsFiltersProps> = React.memo(({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-text appearance-none"
+            className="w-full px-4 py-3 bg-content2/50 border border-divider/50 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary/50 outline-none text-foreground backdrop-blur-sm transition-all duration-300 hover:border-divider/70 h-12 appearance-none"
           >
             {sortOptions.map(option => (
               <option key={option.value} value={option.value}>
