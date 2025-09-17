@@ -80,16 +80,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen, isColl
 
             {/* User Profile Section */}
             <div className={`${isCollapsed ? 'flex justify-center' : ''} container-p-sm border-b border-border flex-shrink-0 mb-md`}>
-              <button 
-                onClick={handleProfileClick}
-                className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-xs'} container-p-sm rounded-lg transition-colors duration-200 hover:bg-content2`}
-                aria-label="View profile"
-                title={isCollapsed ? (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User') : undefined}
-              >
-                {/* avatar/icon – same visual weight as nav icons */}
-                <div className={`${isCollapsed ? 'w-12 h-12' : 'w-8 h-8'} flex items-center justify-center flex-shrink-0 ${isCollapsed ? 'rounded-lg' : 'rounded-full bg-content2'}`}>
-                  <Icons.user className={`${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'} text-foreground/70`} />
-                </div>
+                <button 
+                  onClick={handleProfileClick}
+                  className={`w-full flex items-center ${isCollapsed ? 'justify-center group' : 'gap-xs'} container-p-sm rounded-lg transition-colors duration-200 hover:bg-content2`}
+                  aria-label="View profile"
+                  title={isCollapsed ? (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User') : undefined}
+                >
+                  {/* avatar/icon – same visual weight as nav icons */}
+                  <div className={`${isCollapsed ? 'w-12 h-12' : 'w-8 h-8'} flex items-center justify-center flex-shrink-0 ${isCollapsed ? 'rounded-lg' : 'rounded-full bg-content2'}`}>
+                    <Icons.user className={`${isCollapsed ? 'w-6 h-6 group-hover:text-primary group-focus:text-primary' : 'w-4 h-4'} text-foreground/70`} />
+                  </div>
 
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0 text-left container-p-xs">
@@ -110,27 +110,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setIsMobileOpen, isColl
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <a
-                    key={item.id}
-                    href={item.path}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate(item.path);
-                      setIsMobileOpen(false);
-                    }}
-                    className={`${isCollapsed ? 'w-12 h-12' : 'w-full'} flex items-center ${isCollapsed ? 'justify-center' : 'gap-xs'} ${isCollapsed ? 'container-p-sm' : 'container-px-sm container-py-xs'} rounded-lg text-left transition-colors duration-200 ${
-                      isActive 
-                        ? 'text-white bg-primary' 
-                        : 'hover:bg-content2 text-foreground/60'
-                    }`}
-                    aria-label={`Navigate to ${item.name}`}
-                    title={isCollapsed ? item.name : undefined}
-                  >
-                    <item.icon className="w-6 h-6" />
-                    {!isCollapsed && (
-                      <span className="font-medium text-xs container-p-xs">{item.name}</span>
-                    )}
-                  </a>
+                    <a
+                      key={item.id}
+                      href={item.path}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(item.path);
+                        setIsMobileOpen(false);
+                      }}
+                      className={`${isCollapsed ? 'w-12 h-12' : 'w-full'} flex items-center ${isCollapsed ? 'justify-center' : 'gap-xs'} ${isCollapsed ? 'container-p-sm' : 'container-px-sm container-py-xs'} rounded-lg text-left transition-colors duration-200 ${
+                        isActive 
+                          ? isCollapsed
+                            ? 'text-primary'
+                            : 'text-primary'
+                          : isCollapsed
+                            ? 'hover:text-primary hover:bg-content2 text-foreground/60'
+                            : 'hover:text-primary hover:bg-content2 text-foreground/60'
+                      }`}
+                      aria-label={`Navigate to ${item.name}`}
+                      title={isCollapsed ? item.name : undefined}
+                    >
+                      <item.icon className="w-6 h-6" />
+                      {!isCollapsed && (
+                        <span className="font-medium text-xs container-p-xs">{item.name}</span>
+                      )}
+                    </a>
                 );
               })}
             </nav>
