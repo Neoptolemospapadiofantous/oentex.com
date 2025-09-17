@@ -1,7 +1,10 @@
-// src/pages/guest/Terms.tsx - Terms and Conditions Page
+// src/pages/guest/Terms.tsx - Professional Terms and Conditions Page
+import React, { useState } from 'react';
 import { Icons } from '@components/icons';
 
 const Terms = () => {
+  const [activeSection, setActiveSection] = useState('overview');
+
   const sections = [
     {
       id: 'overview',
@@ -28,6 +31,109 @@ const Terms = () => {
                   We may update these Terms from time to time, and your continued use constitutes acceptance of any changes.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'definitions',
+      title: 'Definitions and Interpretation',
+      icon: <Icons.book className="w-6 h-6" />,
+      content: (
+        <div className="space-y-6">
+          <p className="text-foreground/70 leading-relaxed text-lg">
+            For the purposes of these Terms, the following definitions apply:
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-content1/50 border border-divider/30 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Key Terms</h4>
+              <dl className="space-y-3 text-foreground/70 text-base">
+                <div>
+                  <dt className="font-medium text-foreground">"Platform"</dt>
+                  <dd>Our website, mobile applications, and all related services</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"User"</dt>
+                  <dd>Any person who accesses or uses our platform</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"Content"</dt>
+                  <dd>All information, data, text, reviews, and materials on our platform</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"Services"</dt>
+                  <dd>All features, functionality, and services provided through our platform</dd>
+                </div>
+              </dl>
+            </div>
+            
+            <div className="bg-content1/50 border border-divider/30 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Legal Terms</h4>
+              <dl className="space-y-3 text-foreground/70 text-base">
+                <div>
+                  <dt className="font-medium text-foreground">"Affiliate"</dt>
+                  <dd>Third-party trading platforms and financial service providers</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"Commission"</dt>
+                  <dd>Fees we may receive from affiliate partners</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"Intellectual Property"</dt>
+                  <dd>All trademarks, copyrights, and proprietary rights</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-foreground">"Personal Data"</dt>
+                  <dd>Information that identifies or relates to an individual</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'governing-law',
+      title: 'Governing Law and Jurisdiction',
+      icon: <Icons.scale className="w-6 h-6" />,
+      content: (
+        <div className="space-y-6">
+          <div className="bg-warning/10 border border-warning/20 rounded-2xl p-6">
+            <div className="flex items-start space-x-4">
+              <Icons.warning className="w-6 h-6 text-warning mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-foreground mb-3 text-lg">Legal Jurisdiction</h3>
+                <p className="text-foreground/70 text-base">
+                  These Terms are governed by and construed in accordance with the laws of the State of California, 
+                  United States, without regard to conflict of law principles.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-content1/50 border border-divider/30 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Dispute Resolution</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Disputes subject to binding arbitration</li>
+                <li>• Arbitration conducted in San Francisco, CA</li>
+                <li>• Individual claims only (no class actions)</li>
+                <li>• 30-day notice period before arbitration</li>
+                <li>• Right to opt-out within 30 days of agreement</li>
+              </ul>
+            </div>
+            
+            <div className="bg-content1/50 border border-divider/30 rounded-2xl p-6">
+              <h4 className="font-semibold text-foreground mb-4 text-lg">Legal Rights</h4>
+              <ul className="text-foreground/70 space-y-2 text-base">
+                <li>• Right to legal representation</li>
+                <li>• Right to discovery process</li>
+                <li>• Right to appeal arbitration decisions</li>
+                <li>• Right to small claims court (under $10,000)</li>
+                <li>• Right to injunctive relief</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -411,61 +517,194 @@ const Terms = () => {
     }
   ];
 
-  return (
-      <div className="min-h-screen pb-12">
-        {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Terms & Conditions
-            </h1>
-            <p className="text-xl text-foreground/70 max-w-3xl mx-auto mb-4">
-              Please read these terms carefully before using our platform.
-            </p>
-            <p className="text-foreground/70">Last updated: January 30, 2025</p>
-          </div>
-        </section>
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
-        {/* Content */}
-        <section className="py-20">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="space-y-12">
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Enhanced Hero Section */}
+      <section className="relative py-20 lg:py-32 overflow-hidden">
+        {/* Professional background effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-secondary/10 to-transparent rounded-full blur-3xl" />
+        
+        <div className="container-page relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <Icons.shield className="w-4 h-4" />
+              Legal Document
+            </div>
+            
+            <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6">
+              <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+                Terms & Conditions
+              </span>
+            </h1>
+            
+            <p className="text-xl lg:text-2xl text-foreground/70 max-w-4xl mx-auto mb-8 leading-relaxed">
+              Comprehensive terms governing your use of our trading platform rating and affiliate services
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-foreground/60">
+              <div className="flex items-center gap-2">
+                <Icons.calendar className="w-4 h-4" />
+                <span>Last updated: January 30, 2025</span>
+              </div>
+              <div className="hidden sm:block w-1 h-1 bg-foreground/30 rounded-full" />
+              <div className="flex items-center gap-2">
+                <Icons.clock className="w-4 h-4" />
+                <span>Effective immediately</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Table of Contents */}
+      <section className="py-12 bg-content1/30">
+        <div className="container-page">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Table of Contents</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sections.map((section, index) => (
-                <div key={section.id} className="bg-content1 rounded-2xl border border-divider overflow-hidden shadow-lg">
-                  <div className="p-8">
-                    <div className="flex items-center space-x-6 mb-8">
-                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white">
+                <button
+                  key={section.id}
+                  onClick={() => scrollToSection(section.id)}
+                  className={`p-4 rounded-xl border text-left transition-all duration-300 hover:scale-105 ${
+                    activeSection === section.id
+                      ? 'bg-primary/10 border-primary/30 text-primary shadow-lg'
+                      : 'bg-content1 border-divider/50 hover:border-primary/30 hover:bg-content2/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <span className="font-medium text-sm">{section.title}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Content Section */}
+      <section className="py-20">
+        <div className="container-page">
+          <div className="max-w-5xl mx-auto">
+            <div className="space-y-16">
+              {sections.map((section, index) => (
+                <div 
+                  key={section.id} 
+                  id={section.id}
+                  className="scroll-mt-24 bg-content1/60 backdrop-blur-xl rounded-3xl border border-divider/30 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500"
+                >
+                  <div className="p-8 lg:p-12">
+                    <div className="flex items-start gap-6 mb-10">
+                      <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white shadow-lg">
                         {section.icon}
                       </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground">
-                          {index + 1}. {section.title}
-                        </h2>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-3xl font-bold text-primary">{index + 1}</span>
+                          <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
+                            {section.title}
+                          </h2>
+                        </div>
+                        <div className="w-20 h-1 bg-gradient-to-r from-primary to-secondary rounded-full"></div>
                       </div>
                     </div>
-                    {section.content}
+                    <div className="prose prose-lg max-w-none">
+                      {section.content}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Footer Notice */}
-            <div className="mt-20 bg-secondary/10 border border-secondary/20 rounded-2xl p-8">
-              <div className="flex items-start space-x-4">
-                <Icons.shield className="w-6 h-6 text-secondary flex-shrink-0 mt-1" />
-                <div>
-                  <h3 className="font-semibold text-foreground mb-3 text-lg">Your Agreement Matters</h3>
-                  <p className="text-foreground/70 text-base leading-relaxed">
-                    By using our platform, you acknowledge that you have read, understood, and agree to be bound 
-                    by these Terms of Service. If you have any questions or concerns, please don't hesitate to 
-                    contact our support team. We're committed to providing a transparent and fair service.
+            {/* Enhanced Footer Notice */}
+            <div className="mt-20 bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/10 border border-primary/20 rounded-3xl p-8 lg:p-12 shadow-2xl">
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white shadow-lg">
+                  <Icons.shield className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-foreground mb-4">Legal Acknowledgment</h3>
+                  <p className="text-foreground/80 text-lg leading-relaxed mb-6">
+                    By accessing or using our platform, you acknowledge that you have read, understood, and agree to be bound 
+                    by these Terms of Service and our Privacy Policy. This agreement constitutes a legally binding contract 
+                    between you and RateWise LLC.
                   </p>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-content1/50 rounded-2xl p-6 border border-divider/30">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Icons.check className="w-5 h-5 text-success" />
+                        Your Rights
+                      </h4>
+                      <ul className="text-foreground/70 space-y-2 text-sm">
+                        <li>• Right to terminate your account at any time</li>
+                        <li>• Right to request data deletion</li>
+                        <li>• Right to dispute charges or fees</li>
+                        <li>• Right to access your personal data</li>
+                      </ul>
+                    </div>
+                    <div className="bg-content1/50 rounded-2xl p-6 border border-divider/30">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Icons.warning className="w-5 h-5 text-warning" />
+                        Important Notes
+                      </h4>
+                      <ul className="text-foreground/70 space-y-2 text-sm">
+                        <li>• Terms may be updated with 30 days notice</li>
+                        <li>• Continued use constitutes acceptance</li>
+                        <li>• Disputes subject to binding arbitration</li>
+                        <li>• Governing law: California, USA</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="mt-12 bg-content1/30 rounded-3xl p-8 lg:p-12 border border-divider/30">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-bold text-foreground mb-4">Questions About These Terms?</h3>
+                <p className="text-foreground/70 text-lg">
+                  Our legal team is here to help clarify any questions you may have.
+                </p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-content1/50 rounded-2xl border border-divider/30">
+                  <Icons.mail className="w-8 h-8 text-primary mx-auto mb-4" />
+                  <h4 className="font-semibold text-foreground mb-2">General Support</h4>
+                  <p className="text-foreground/70 text-sm mb-2">support@oentex.com</p>
+                  <p className="text-foreground/60 text-xs">24-48 hour response</p>
+                </div>
+                <div className="text-center p-6 bg-content1/50 rounded-2xl border border-divider/30">
+                  <Icons.shield className="w-8 h-8 text-secondary mx-auto mb-4" />
+                  <h4 className="font-semibold text-foreground mb-2">Legal Inquiries</h4>
+                  <p className="text-foreground/70 text-sm mb-2">legal@oentex.com</p>
+                  <p className="text-foreground/60 text-xs">48-72 hour response</p>
+                </div>
+                <div className="text-center p-6 bg-content1/50 rounded-2xl border border-divider/30">
+                  <Icons.phone className="w-8 h-8 text-success mx-auto mb-4" />
+                  <h4 className="font-semibold text-foreground mb-2">Phone Support</h4>
+                  <p className="text-foreground/70 text-sm mb-2">+1 (555) 123-4567</p>
+                  <p className="text-foreground/60 text-xs">Mon-Fri, 9AM-6PM EST</p>
                 </div>
               </div>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+    </div>
   );
 };
 
