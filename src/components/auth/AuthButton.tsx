@@ -154,11 +154,7 @@ export const AuthButton: React.FC = () => {
         color="primary"
         variant="solid"
         onPress={handleShowAuthentication}
-        className="bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-all rounded-2xl"
-        classNames={{
-          base: "px-lg py-md",
-          innerWrapper: "gap-sm"
-        }}
+        className="bg-gradient-to-r from-primary to-secondary text-white font-medium hover:opacity-90 transition-all rounded-2xl container-px-lg container-py-md"
       >
         Launch App
       </Button>
