@@ -316,7 +316,7 @@ const Features = () => {
                     </div>
                     <div className="text-right">
                       <div className="flex items-center justify-end my-xs">
-                        <Icons.star className="w-4 h-4 text-warning fill-current mr-1" />
+                        <Icons.star className="w-4 h-4 text-warning fill-current mr-xs" />
                         <span className="text-sm font-semibold text-text">
                           {(deal.company.overall_rating || 0).toFixed(1)}
                         </span>
@@ -337,7 +337,7 @@ const Features = () => {
                     <div className={`inline-flex items-center container-px-md container-py-sm bg-gradient-to-r border rounded-xl text-sm font-semibold ${
                       DEAL_TYPE_STYLES[deal.deal_type] || DEAL_TYPE_STYLES.bonus
                     }`}>
-                      <Icons.gift className="w-4 h-4 mr-sm" />
+                      <Icons.gift className="w-4 h-4 mr-xs" />
                       {deal.value || deal.title}
                     </div>
                   </div>
@@ -421,35 +421,43 @@ const Features = () => {
             {/* Enhanced Statistics Grid */}
             <div className="grid-stats-4 my-2xl">
               <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
-                <div className="flex-center my-sm">
-                  <Icons.shield className="w-6 h-6 text-primary mr-3" />
-                  <span className="text-3xl font-bold text-text">{stats.companies}</span>
+                <div className="text-center">
+                  <div className="flex-center my-sm mb-2">
+                    <Icons.shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-3xl font-bold text-text block">{stats.companies}</span>
                 </div>
-                <p className="text-sm text-textSecondary font-medium">Trading Platforms</p>
+                <p className="text-sm text-textSecondary font-medium text-center">Trading Platforms</p>
               </div>
               
               <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
-                <div className="flex-center my-sm">
-                  <Icons.gift className="w-6 h-6 text-secondary mr-3" />
-                  <span className="text-3xl font-bold text-text">{stats.deals}</span>
+                <div className="text-center">
+                  <div className="flex-center my-sm mb-2">
+                    <Icons.gift className="w-6 h-6 text-secondary" />
+                  </div>
+                  <span className="text-3xl font-bold text-text block">{stats.deals}</span>
                 </div>
-                <p className="text-sm text-textSecondary font-medium">Exclusive Deals</p>
+                <p className="text-sm text-textSecondary font-medium text-center">Exclusive Deals</p>
               </div>
               
               <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
-                <div className="flex-center my-sm">
-                  <Icons.chart className="w-6 h-6 text-primary mr-3" />
-                  <span className="text-3xl font-bold text-text">{stats.categories}</span>
+                <div className="text-center">
+                  <div className="flex-center my-sm mb-2">
+                    <Icons.chart className="w-6 h-6 text-primary" />
+                  </div>
+                  <span className="text-3xl font-bold text-text block">{stats.categories}</span>
                 </div>
-                <p className="text-sm text-textSecondary font-medium">Market Categories</p>
+                <p className="text-sm text-textSecondary font-medium text-center">Market Categories</p>
               </div>
               
               <div className="glass rounded-xl p-lg hover:bg-content1/50 transition-colors">
-                <div className="flex-center my-sm">
-                  <Icons.users className="w-6 h-6 text-secondary mr-3" />
-                  <span className="text-3xl font-bold text-text">{stats.totalReviews}</span>
+                <div className="text-center">
+                  <div className="flex-center my-sm mb-2">
+                    <Icons.users className="w-6 h-6 text-secondary" />
+                  </div>
+                  <span className="text-3xl font-bold text-text block">{stats.totalReviews}</span>
                 </div>
-                <p className="text-sm text-textSecondary font-medium">User Reviews</p>
+                <p className="text-sm text-textSecondary font-medium text-center">User Reviews</p>
               </div>
             </div>
 
@@ -463,22 +471,22 @@ const Features = () => {
 
             {/* Enhanced Trust Indicators */}
             <div className="py-xl border-t border-divider/30">
-              <div className="flex flex-wrap items-center justify-center gap-md text-sm text-textSecondary">
-                <div className="flex items-center">
-                  <Icons.shield className="w-4 h-4 text-primary mr-2" />
+              <div className="flex flex-wrap items-center justify-center gap-md text-sm text-foreground/70">
+                <div className="flex items-center container-px-sm container-py-xs">
+                  <Icons.shield className="w-4 h-4 text-primary mr-sm" />
                   <span className="font-medium">{stats.companies} verified platforms</span>
                 </div>
-                <div className="flex items-center">
-                  <Icons.gift className="w-4 h-4 text-secondary mr-2" />
+                <div className="flex items-center container-px-sm container-py-xs">
+                  <Icons.gift className="w-4 h-4 text-secondary mr-sm" />
                   <span className="font-medium">{stats.deals} active offers</span>
                 </div>
-                <div className="flex items-center">
-                  <Icons.refresh className="w-4 h-4 text-primary mr-2" />
+                <div className="flex items-center container-px-sm container-py-xs">
+                  <Icons.refresh className="w-4 h-4 text-primary mr-sm" />
                   <span className="font-medium">Updated daily</span>
                 </div>
                 {stats.avgRating > 0 && (
-                  <div className="flex items-center">
-                    <Icons.star className="w-4 h-4 text-warning fill-current mr-2" />
+                  <div className="flex items-center container-px-sm container-py-xs">
+                    <Icons.star className="w-4 h-4 text-warning fill-current mr-sm" />
                     <span className="font-medium">{stats.avgRating.toFixed(1)} platform rating</span>
                   </div>
                 )}
