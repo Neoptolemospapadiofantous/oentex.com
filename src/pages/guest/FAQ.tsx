@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
+import { Button } from '@components/ui-kit'
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
@@ -71,6 +72,7 @@ const FAQ = () => {
         <section className="section-py-3xl relative">
           {/* Component-specific accent */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/4 to-primary/8 accent-transition" />
+          
           <div className="container-page relative z-10 flex flex-col items-center justify-center">
             <div className="text-center max-w-4xl mx-auto">
               <h1 className="text-4xl lg:text-5xl font-bold text-foreground my-lg text-center">
@@ -142,13 +144,14 @@ const FAQ = () => {
               <p className="text-foreground/70 my-xl max-w-2xl text-center p-4">
                 Can't find the answer you're looking for? Our support team is here to help you navigate our platform and find the best deals.
               </p>
-              <button 
+              <Button 
+                color="primary"
+                rightIcon={<Icons.externalLink className="w-4 h-4" />}
                 onClick={handleContactSupport}
-                className="bg-gradient-to-r from-primary to-secondary container-px-xl container-py-sm rounded-full text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
+                className="container-px-xl container-py-sm"
               >
                 Contact Support
-                <Icons.externalLink className="w-4 h-4 ml-sm" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
