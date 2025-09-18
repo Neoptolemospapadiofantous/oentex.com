@@ -40,9 +40,9 @@ const About = () => {
   ]
 
   return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col items-center">
         {/* Hero Section */}
-        <section className="section-py-3xl relative">
+        <section className="section-py-3xl relative w-full">
           {/* Component-specific accent */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-secondary/4 to-primary/8 accent-transition" />
           
@@ -61,9 +61,9 @@ const About = () => {
           </div>
         </section>
 
-        <div className="container-page section-py-lg">
+        <div className="container-page section-py-lg w-full flex flex-col items-center">
           {/* Stats Grid */}
-          <section className="mb-2xl">
+          <section className="mb-2xl w-full flex flex-col items-center">
             <div className="text-center mb-2xl">
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-lg">
                 <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
@@ -75,7 +75,7 @@ const About = () => {
               </p>
             </div>
             
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-lg max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-lg max-w-6xl mx-auto w-full">
               {stats.map((stat, index) => (
                 <div key={index} className="group text-center container-p-lg bg-content1/80 backdrop-blur-xl rounded-2xl border border-divider/40 hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 transform hover:scale-[1.02] flex flex-col items-center justify-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-md mx-auto shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -89,8 +89,8 @@ const About = () => {
           </section>
 
           {/* Mission Section */}
-          <section className="mb-2xl">
-            <div className="bg-content1/90 backdrop-blur-2xl rounded-2xl container-p-2xl border border-divider/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative">
+          <section className="mb-2xl w-full flex flex-col items-center">
+            <div className="bg-content1/90 backdrop-blur-2xl rounded-2xl container-p-2xl border border-divider/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 group overflow-hidden relative w-full max-w-6xl">
               <div className="grid lg:grid-cols-2 gap-2xl items-center">
                 <div className="flex flex-col text-center">
                   <div className="inline-flex items-center gap-sm container-px-md container-py-xs bg-primary/10 rounded-full border border-primary/20 mb-lg w-fit mx-auto">
@@ -134,7 +134,7 @@ const About = () => {
           </section>
 
           {/* Services */}
-          <section className="mb-2xl">
+          <section className="mb-2xl w-full flex flex-col items-center">
             <div className="text-center mb-2xl">
               <div className="inline-flex items-center gap-sm container-px-md container-py-xs bg-primary/10 rounded-full border border-primary/20 mb-lg">
                 <Icons.star className="w-4 h-4 text-primary" />
@@ -147,7 +147,7 @@ const About = () => {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-lg max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-lg max-w-6xl mx-auto w-full">
               {services.map((service, index) => (
                 <div key={index} className="group bg-content1/80 backdrop-blur-xl rounded-2xl container-p-lg border border-divider/40 hover:border-primary/30 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 transform hover:scale-[1.02] flex flex-col">
                   <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-lg mx-auto shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -172,9 +172,9 @@ const About = () => {
 
 
           {/* Affiliate Disclosure */}
-          <section className="mb-2xl">
-            <div className="flex justify-center">
-              <div className="bg-gradient-to-r from-warning/15 to-primary/15 border border-warning/40 rounded-2xl container-p-2xl max-w-4xl backdrop-blur-sm">
+          <section className="mb-2xl w-full flex flex-col items-center">
+            <div className="flex justify-center w-full">
+              <div className="bg-gradient-to-r from-warning/15 to-primary/15 border border-warning/40 rounded-2xl container-p-2xl max-w-4xl backdrop-blur-sm w-full">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-12 h-12 bg-gradient-to-br from-warning/20 to-warning/10 rounded-xl flex items-center justify-center mb-lg">
                     <Icons.warning className="w-6 h-6 text-warning" />
@@ -198,8 +198,8 @@ const About = () => {
           </section>
 
           {/* CTA */}
-          <section>
-            <div className="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-2xl container-p-2xl border border-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 group overflow-hidden relative">
+          <section className="w-full flex flex-col items-center">
+            <div className="bg-gradient-to-r from-primary/15 to-secondary/15 rounded-2xl container-p-2xl border border-primary/30 hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 group overflow-hidden relative w-full max-w-4xl">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5"></div>
               <div className="relative z-10 flex flex-col items-center text-center">
                 <div className="inline-flex items-center gap-sm container-px-md container-py-xs bg-primary/20 rounded-full border border-primary/30 mb-lg">
