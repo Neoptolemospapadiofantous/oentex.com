@@ -174,12 +174,13 @@ export const useCategoriesQuery = () => {
 
 export const useCategoryStatsQuery = (deals: any[]) => {
   return useQuery({
-    queryKey: ['category-stats', deals.length],
+    queryKey: ['category-stats', deals?.length || 0],
     queryFn: () => {
       const stats = new Map()
-      stats.set('all', deals.length)
+      const dealsArray = deals || []
+      stats.set('all', dealsArray.length)
       
-      deals.forEach(deal => {
+      dealsArray.forEach(deal => {
         const category = deal.company?.category || deal.category
         if (category) {
           stats.set(category, (stats.get(category) || 0) + 1)
@@ -189,17 +190,18 @@ export const useCategoryStatsQuery = (deals: any[]) => {
       console.log('Category stats calculated:', Object.fromEntries(stats))
       return stats
     },
-    enabled: deals.length > 0
+    enabled: deals && deals.length > 0
   })
 }
 
 export const useCategoryInfoQuery = (companies: any[]) => {
   return useQuery({
-    queryKey: ['category-info', companies.length],
+    queryKey: ['category-info', companies?.length || 0],
     queryFn: () => {
       const categoryInfo = new Map()
+      const companiesArray = companies || []
       
-      const categoryGroups = companies.reduce((acc, company) => {
+      const categoryGroups = companiesArray.reduce((acc, company) => {
         const category = company.category
         if (category) {
           if (!acc[category]) {
@@ -220,6 +222,6 @@ export const useCategoryInfoQuery = (companies: any[]) => {
       console.log('Category info calculated:', Object.fromEntries(categoryInfo))
       return categoryInfo
     },
-    enabled: companies.length > 0
+    enabled: companies && companies.length > 0
   })
 }
