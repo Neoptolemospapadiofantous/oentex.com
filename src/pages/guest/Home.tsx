@@ -3,6 +3,7 @@ import Features from '@components/Features'
 import Stats from '@components/Stats'
 import Newsletter from '@components/Newsletter'
 import CTA from '@components/CTA'
+import AdUnit from '@components/AdUnit'
 
 const Home = () => {
   return (
@@ -11,6 +12,12 @@ const Home = () => {
       <div className="section-py-xl">
         <Features />
       </div>
+      
+      {/* Ad Unit */}
+      <div className="container mx-auto px-4">
+        <AdUnit />
+      </div>
+      
       <div className="section-py-xl">
         <Stats />
       </div>

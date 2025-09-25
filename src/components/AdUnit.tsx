@@ -1,34 +1,24 @@
-// src/components/AdSenseAd.tsx - Google AdSense Ad Component
+// src/components/AdUnit.tsx - Specific AdSense Ad Unit Component
 import React, { useEffect, useRef } from 'react'
 import { adSenseManager } from '../lib/adsense'
 
-interface AdSenseAdProps {
-  adSlot?: string
-  adFormat?: 'auto' | 'rectangle' | 'vertical' | 'horizontal'
-  adStyle?: React.CSSProperties
+interface AdUnitProps {
   className?: string
-  responsive?: boolean
 }
 
-const AdSenseAd: React.FC<AdSenseAdProps> = ({
-  adSlot = '3413714242', // Default to your ad slot
-  adFormat = 'auto',
-  adStyle = { display: 'block' },
-  className = '',
-  responsive = true
-}) => {
+const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
   const adRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (adRef.current && adSenseManager.canShowAds()) {
-      // Add the ad unit to the page
+      // Use the exact ad unit code you provided
       adRef.current.innerHTML = `
         <ins class="adsbygoogle"
-             style="${Object.entries(adStyle).map(([key, value]) => `${key}: ${value}`).join('; ')}"
+             style="display:block"
              data-ad-client="ca-pub-9090270214622092"
-             data-ad-slot="${adSlot}"
-             data-ad-format="${adFormat}"
-             ${responsive ? 'data-full-width-responsive="true"' : ''}></ins>
+             data-ad-slot="3413714242"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
       `
       
       // Push the ad to AdSense
@@ -43,20 +33,24 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({
           text-align: center; 
           color: #666;
           font-size: 14px;
+          min-height: 90px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         ">
           Advertisement
         </div>
       `
     }
-  }, [adSlot, adFormat, adStyle, responsive])
+  }, [])
 
   return (
     <div 
       ref={adRef}
-      className={`adsense-ad ${className}`}
-      style={{ minHeight: '90px' }}
+      className={`ad-unit ${className}`}
+      style={{ minHeight: '90px', margin: '20px 0' }}
     />
   )
 }
 
-export default AdSenseAd
+export default AdUnit

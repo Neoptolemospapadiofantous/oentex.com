@@ -18,6 +18,7 @@ import {
   useCategoryInfoQuery 
 } from '../../hooks/queries/useCategoriesQuery'
 import GuestLayout from '../../layouts/GuestLayout'
+import AdUnit from '@components/AdUnit'
 
 interface Filters {
   searchTerm: string
@@ -252,6 +253,13 @@ const Deals: React.FC<DealsProps> = ({ isInDashboard = false }) => {
             setCurrentPage(1)
           }}
         />
+      )}
+
+      {/* Ad Unit */}
+      {!isDashboardContext && (
+        <div className="my-4xl">
+          <AdUnit />
+        </div>
       )}
 
       {/* Deal Cards */}

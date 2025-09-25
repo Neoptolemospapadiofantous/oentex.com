@@ -432,8 +432,6 @@ class AuthService {
           return this.createError(AuthErrorType.RATE_LIMIT_EXCEEDED, 'Too many signup attempts. Please wait before trying again')
         case 'email_provider_disabled':
           return this.createError(AuthErrorType.PROVIDER_DISABLED, 'Email signups are currently disabled. Please contact support or use social login.')
-        case 'user_already_exists':
-          return this.createError(AuthErrorType.USER_ALREADY_EXISTS, 'An account with this email already exists. Please try signing in instead.')
         default:
           console.warn('🔧 Unhandled auth error code:', authError.code, authError.message)
           return this.createError(AuthErrorType.UNKNOWN_ERROR, authError.message || 'An unexpected error occurred. Please try again')
