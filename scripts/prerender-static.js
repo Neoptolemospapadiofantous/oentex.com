@@ -88,11 +88,28 @@ async function prerender() {
   const { server, port } = await startStaticServer()
   console.log(`📡 Static server running on port ${port}`)
   
-  // Launch browser
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  })
+  let browser
+  try {
+    // Launch browser with Vercel-compatible settings
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+    })
+  } catch (error) {
+    console.warn('⚠️ Could not launch browser for prerendering:', error.message)
+    console.log('📄 Skipping prerendering - using static HTML files without enhanced SEO')
+    server.close()
+    return
+  }
 
   try {
     for (const route of routes) {

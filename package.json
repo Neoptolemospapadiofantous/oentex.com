@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:prerender": "npm run build && npm run prerender:static",
+    "build:prerender": "npm run build && npm run install:chrome && npm run prerender:static",
     "prerender": "node scripts/prerender.js",
     "prerender:static": "node scripts/prerender-static.js",
+    "install:chrome": "npx puppeteer browsers install chrome",
     "lint": "eslint .",
     "preview": "vite preview"
   },
