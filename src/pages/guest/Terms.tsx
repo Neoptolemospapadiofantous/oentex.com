@@ -1,6 +1,8 @@
 // src/pages/guest/Terms.tsx - Professional Terms and Conditions Page
 import React, { useState } from 'react';
 import { Icons } from '@components/icons';
+import SEO from '@components/SEO';
+import { seoData } from '@lib/seoData';
 
 const Terms = () => {
   const [activeSection, setActiveSection] = useState('overview');
@@ -526,7 +528,9 @@ const Terms = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SEO {...seoData.terms} />
+      <div className="min-h-screen bg-background">
       {/* Enhanced Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         {/* Professional background effects */}
@@ -704,7 +708,8 @@ const Terms = () => {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 

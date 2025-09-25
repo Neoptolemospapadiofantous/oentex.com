@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://oentex.com/sitemap.xml
+
+# Disallow private pages
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /my-deals
+Disallow: /auth/callback
+Disallow: /auth/reset-password

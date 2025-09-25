@@ -2,6 +2,7 @@ import { Icons } from '@components/icons'
 import AnimatedInnovation from '@components/AnimatedInnovation'
 import '@components/AnimatedInnovation.css'
 import { Button } from '@components/ui-kit'
+import SEO from '@components/SEO'
 
 
 const About = () => {
@@ -40,7 +41,25 @@ const About = () => {
   ]
 
   return (
-      <div className="min-h-screen flex flex-col items-center">
+      <>
+        <SEO 
+          title="About Oentex - Expert Crypto Exchange Reviews & Investment Platform Ratings"
+          description="Oentex provides comprehensive reviews, ratings, and exclusive affiliate deals for the best cryptocurrency exchanges, trading platforms, and investment apps. Get expert analysis of crypto platforms, compare fees, and discover the best crypto investment opportunities with our trusted affiliate recommendations."
+          keywords="crypto exchange reviews, cryptocurrency platform ratings, crypto investment platform reviews, best crypto exchange comparison, cryptocurrency trading platform analysis, crypto affiliate links, exchange ratings and reviews, cryptocurrency investment guides, crypto platform recommendations, trusted crypto reviews"
+          url="https://oentex.com/about"
+          structuredData={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Oentex",
+            "url": "https://oentex.com",
+            "description": "Trusted reviews and exclusive deals platform",
+            "sameAs": [
+              "https://twitter.com/oentex",
+              "https://facebook.com/oentex"
+            ]
+          }}
+        />
+        <div className="min-h-screen flex flex-col items-center">
         {/* Hero Section */}
         <section className="section-py-3xl relative w-full">
           {/* Component-specific accent */}
@@ -240,7 +259,7 @@ const About = () => {
             </div>
           </section>
         </div>
-      </div>
+      </>
   )
 }
 

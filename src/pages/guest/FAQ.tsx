@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Icons } from '@components/icons'
 import { Button } from '@components/ui-kit'
+import SEO from '@components/SEO'
+import { seoData } from '@lib/seoData'
 
 const FAQ = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
@@ -67,6 +69,25 @@ const FAQ = () => {
   }
 
   return (
+    <>
+      <SEO 
+        title="Cryptocurrency Investment FAQ - How to Invest in Crypto Safely | Oentex"
+        description="Get answers to common cryptocurrency investment questions. Learn how to invest in crypto safely, choose the best crypto exchange, understand trading fees, and discover the best crypto investment strategies for beginners and advanced investors."
+        keywords="how to invest in cryptocurrency, crypto investment strategies, cryptocurrency for beginners, bitcoin investment guide, crypto market analysis, cryptocurrency investment tips, crypto portfolio diversification, altcoin investment opportunities, crypto investment platform with lowest fees, best crypto exchange for beginners, automated crypto investment platform, crypto staking rewards, DeFi investment platforms, NFT investment opportunities, cryptocurrency retirement accounts, crypto dollar-cost averaging, institutional crypto investment"
+        url="https://oentex.com/faq"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": faq.answer
+            }
+          }))
+        }}
+      />
       <div className="min-h-screen pb-12 text-center">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -156,6 +177,7 @@ const FAQ = () => {
           </div>
         </div>
       </div>
+    </>
   )
 }
 

@@ -19,6 +19,7 @@ import {
 } from '../../hooks/queries/useCategoriesQuery'
 import GuestLayout from '../../layouts/GuestLayout'
 import AdUnit from '@components/AdUnit'
+import SEO from '@components/SEO'
 
 interface Filters {
   searchTerm: string
@@ -221,7 +222,21 @@ const Deals: React.FC<DealsProps> = ({ isInDashboard = false }) => {
 
   // Main content
   const mainContent = (
-    <PageWrapper isDashboard={isDashboardContext}>
+    <>
+      <SEO 
+        title="Best Cryptocurrency Exchange Deals & Bonuses 2025 | Compare Top Crypto Platforms"
+        description="Compare the best cryptocurrency exchanges with exclusive bonuses and deals. Get detailed reviews, ratings, and comparison of top crypto trading platforms including Binance, Coinbase, Kraken, and more. Find the best crypto exchange for beginners with lowest fees and highest rewards."
+        keywords="best cryptocurrency exchanges, crypto exchange comparison, coinbase vs binance, crypto trading fees comparison, best crypto exchange for beginners, cryptocurrency platform reviews, crypto investment platform with lowest fees, top cryptocurrency exchanges, cryptocurrency trading platform, crypto staking rewards, DeFi investment platforms, automated crypto investment platform, crypto trading bot review, bitcoin vs ethereum investment, crypto exchange deals, cryptocurrency exchange bonuses"
+        url="https://oentex.com/deals"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "name": "Trading Deals and Bonuses",
+          "description": "Exclusive trading deals and bonuses from top financial platforms",
+          "url": "https://oentex.com/deals"
+        }}
+      />
+      <PageWrapper isDashboard={isDashboardContext}>
       
       {/* Header Section */}
       <HeaderSection 
@@ -337,6 +352,7 @@ const Deals: React.FC<DealsProps> = ({ isInDashboard = false }) => {
         />
       )}
     </PageWrapper>
+    </>
   )
 
   // Return with appropriate layout wrapper

@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { HelmetProvider } from 'react-helmet-async'
 
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
@@ -193,21 +194,22 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        {/* ✅ FIXED: HeroUIProvider from @heroui/system */}
-        <HeroUIProvider
-          navigate={(path) => {
-            // Simple navigation - you can improve this with proper router integration
-            window.location.href = path
-          }}
-          locale="en-US"
-          disableAnimation={false}
-          disableRipple={false}
-          validationBehavior="native"
-          reducedMotion="user"
-        >
-          <AuthProvider>
-            <Router>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          {/* ✅ FIXED: HeroUIProvider from @heroui/system */}
+          <HeroUIProvider
+            navigate={(path) => {
+              // Simple navigation - you can improve this with proper router integration
+              window.location.href = path
+            }}
+            locale="en-US"
+            disableAnimation={false}
+            disableRipple={false}
+            validationBehavior="native"
+            reducedMotion="user"
+          >
+            <AuthProvider>
+              <Router>
               <Routes>
                 <Route 
                   path="/unsubscribe" 
@@ -231,10 +233,11 @@ function App() {
                   position="bottom"
                 />
               )}
-            </Router>
-          </AuthProvider>
-        </HeroUIProvider>
-      </QueryClientProvider>
+              </Router>
+            </AuthProvider>
+          </HeroUIProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
     </ErrorBoundary>
   )
 }

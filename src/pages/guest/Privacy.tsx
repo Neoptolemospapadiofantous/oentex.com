@@ -1,5 +1,7 @@
 import React from 'react';
 import { Icons } from '@components/icons';
+import SEO from '@components/SEO';
+import { seoData } from '@lib/seoData';
 
 const Privacy = () => {
   const sections = [
@@ -454,6 +456,8 @@ const Privacy = () => {
   ];
 
   return (
+    <>
+      <SEO {...seoData.privacy} />
       <div className="min-h-screen pb-12">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -515,6 +519,7 @@ const Privacy = () => {
           </div>
         </section>
       </div>
+    </>
   );
 };
 

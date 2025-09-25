@@ -12,6 +12,8 @@ import { Icons } from '../../components/icons'
 import { useAuth } from '../../lib/authContext'
 import { showSuccessToast, showErrorToast } from '../../components/ui/AppToast'
 import logo from '../../assets/logo.png'
+import SEO from '@components/SEO'
+import { seoData } from '@lib/seoData'
 
 
 export const Authentication: React.FC = () => {
@@ -478,7 +480,9 @@ export const Authentication: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background section-px-md py-md">
+    <>
+      <SEO {...seoData.authentication} />
+      <div className="min-h-screen flex items-center justify-center bg-background section-px-md py-md">
       <div className="w-full max-w-sm border border-divider rounded-large bg-content1 shadow-medium p-lg">
         {/* Header with Logo and Title */}
         <div className="text-center mb-lg">
@@ -799,7 +803,8 @@ export const Authentication: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

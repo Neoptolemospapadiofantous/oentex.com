@@ -3,6 +3,8 @@ import { Icons } from '@components/icons'
 import { emailService } from '../../lib/email'
 import { showErrorToast, showSuccessToast } from '../../components/ui/AppToast'
 import { Button, Input } from '@components/ui-kit'
+import SEO from '@components/SEO'
+import { seoData } from '@lib/seoData'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -113,6 +115,26 @@ const Contact = () => {
   ]
 
   return (
+    <>
+      <SEO 
+        title="Contact Oentex - Get Crypto Investment Platform Support & Expert Advice"
+        description="Contact Oentex for expert advice on cryptocurrency exchanges, crypto investment platforms, and trading strategies. Get support with platform recommendations, affiliate deals, and crypto investment guidance from our experienced team."
+        keywords="crypto investment support, cryptocurrency platform help, crypto exchange customer service, crypto investment advice, cryptocurrency trading support, crypto platform recommendations, crypto affiliate support, cryptocurrency investment guidance"
+        url="https://oentex.com/contact"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact Oentex",
+          "url": "https://oentex.com/contact",
+          "description": "Get support and expert advice on cryptocurrency investments and platform recommendations",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "support@oentex.com",
+            "availableLanguage": "English"
+          }
+        }}
+      />
       <div className="min-h-screen">
         {/* Hero Section */}
         <section className="section-py-3xl relative">
@@ -410,6 +432,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
+    </>
   )
 }
 

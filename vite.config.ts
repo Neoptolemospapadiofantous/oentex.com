@@ -8,12 +8,17 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// Import prerender plugin
+import { prerenderPlugin } from './scripts/vite-prerender-plugin.js'
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(), // Tailwind CSS v4 plugin
-  ],
+    // Add prerender plugin only for production builds
+    process.env.NODE_ENV === 'production' && prerenderPlugin(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
