@@ -1,4 +1,4 @@
-import{r as o,j as d}from"./heroui-0ik-TEjB.js";import{c as n}from"./index-B7y_UsvS.js";const l=({className:t=""})=>{const e=o.useRef(null);return o.useEffect(()=>{console.log("AdSense: AdUnit useEffect triggered"),console.log("AdSense: canShowAds:",n.canShowAds()),console.log("AdSense: window.adsbygoogle exists:",!!window.adsbygoogle),console.log("AdSense: adRef.current exists:",!!e.current),e.current&&n.canShowAds()?(e.current.innerHTML="",e.current.innerHTML=`
+import{r as o,j as d}from"./heroui-0ik-TEjB.js";import{c as n}from"./index-xfTcSX6L.js";const l=({className:t=""})=>{const e=o.useRef(null);return o.useEffect(()=>{console.log("AdSense: AdUnit useEffect triggered"),console.log("AdSense: canShowAds:",n.canShowAds()),console.log("AdSense: window.adsbygoogle exists:",!!window.adsbygoogle),console.log("AdSense: adRef.current exists:",!!e.current),e.current&&n.canShowAds()?(e.current.innerHTML="",e.current.innerHTML=`
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-client="ca-pub-9090270214622092"
