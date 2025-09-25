@@ -1,5 +1,4 @@
-import React from 'react'
-import { Helmet } from 'react-helmet-async'
+import React, { useEffect } from 'react'
 
 interface SEOProps {
   title?: string
@@ -35,44 +34,80 @@ const SEO: React.FC<SEOProps> = ({
   if (nofollow) robotsContent.push('nofollow')
   if (!noindex && !nofollow) robotsContent.push('index', 'follow')
 
-  return (
-    <Helmet>
-      {/* Basic Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
-      <meta name="robots" content={robotsContent.join(', ')} />
-      {canonical && <link rel="canonical" href={canonical} />}
+  useEffect(() => {
+    // Update document title
+    document.title = fullTitle
 
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={fullUrl} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={fullImage} />
-      <meta property="og:site_name" content="Oentex" />
-      <meta property="og:locale" content="en_US" />
-
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={fullUrl} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={fullImage} />
-
-      {/* Additional SEO Meta Tags */}
-      <meta name="author" content="Oentex" />
-      <meta name="theme-color" content="#000000" />
-      <meta name="msapplication-TileColor" content="#000000" />
+    // Helper function to update or create meta tags
+    const updateMetaTag = (property: string, content: string, isProperty = false) => {
+      const selector = isProperty ? `meta[property="${property}"]` : `meta[name="${property}"]`
+      let meta = document.querySelector(selector) as HTMLMetaElement
       
-      {/* Structured Data */}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
-    </Helmet>
-  )
+      if (!meta) {
+        meta = document.createElement('meta')
+        if (isProperty) {
+          meta.setAttribute('property', property)
+        } else {
+          meta.setAttribute('name', property)
+        }
+        document.head.appendChild(meta)
+      }
+      meta.setAttribute('content', content)
+    }
+
+    // Update basic meta tags
+    updateMetaTag('description', description)
+    updateMetaTag('keywords', keywords)
+    updateMetaTag('robots', robotsContent.join(', '))
+    updateMetaTag('author', 'Oentex')
+    updateMetaTag('theme-color', '#000000')
+    updateMetaTag('msapplication-TileColor', '#000000')
+
+    // Update Open Graph tags
+    updateMetaTag('og:type', type, true)
+    updateMetaTag('og:url', fullUrl, true)
+    updateMetaTag('og:title', fullTitle, true)
+    updateMetaTag('og:description', description, true)
+    updateMetaTag('og:image', fullImage, true)
+    updateMetaTag('og:site_name', 'Oentex', true)
+    updateMetaTag('og:locale', 'en_US', true)
+
+    // Update Twitter Card tags
+    updateMetaTag('twitter:card', 'summary_large_image')
+    updateMetaTag('twitter:url', fullUrl)
+    updateMetaTag('twitter:title', fullTitle)
+    updateMetaTag('twitter:description', description)
+    updateMetaTag('twitter:image', fullImage)
+
+    // Update canonical URL
+    if (canonical) {
+      let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement
+      if (!canonicalLink) {
+        canonicalLink = document.createElement('link')
+        canonicalLink.setAttribute('rel', 'canonical')
+        document.head.appendChild(canonicalLink)
+      }
+      canonicalLink.setAttribute('href', canonical)
+    }
+
+    // Add structured data
+    if (structuredData) {
+      // Remove existing structured data script
+      const existingScript = document.querySelector('script[type="application/ld+json"]')
+      if (existingScript) {
+        existingScript.remove()
+      }
+
+      // Add new structured data script
+      const script = document.createElement('script')
+      script.type = 'application/ld+json'
+      script.textContent = JSON.stringify(structuredData)
+      document.head.appendChild(script)
+    }
+  }, [fullTitle, description, keywords, fullUrl, fullImage, type, canonical, structuredData, robotsContent])
+
+  // This component doesn't render anything visible
+  return null
 }
 
 export default SEO

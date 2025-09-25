@@ -5,7 +5,6 @@ import { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { HelmetProvider } from 'react-helmet-async'
 
 import { AuthProvider, useAuth } from './lib/authContext'
 import { queryClient } from './lib/queryClient'
@@ -193,9 +192,8 @@ const AppContent: React.FC = () => {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
+        <ErrorBoundary>
+          <QueryClientProvider client={queryClient}>
           {/* ✅ FIXED: HeroUIProvider from @heroui/system */}
           <HeroUIProvider
             navigate={(path) => {
@@ -237,8 +235,7 @@ function App() {
             </AuthProvider>
           </HeroUIProvider>
         </QueryClientProvider>
-      </HelmetProvider>
-    </ErrorBoundary>
+      </ErrorBoundary>
   )
 }
 
