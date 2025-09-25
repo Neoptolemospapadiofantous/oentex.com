@@ -13,6 +13,7 @@ import ScrollToTop from '@components/ScrollToTop'
 import { AuthLoader, PageLoader } from '@components/ui/LoadingSpinner'
 import { AuthErrorBoundary } from '@components/ui/AuthErrorBoundary'
 import { ErrorBoundary } from '@components/ui/ErrorBoundary'
+import ConsentManager from '@components/ConsentManager'
 
 import AuthLayout from './layouts/AuthLayout'
 import GuestLayout from './layouts/GuestLayout'
@@ -218,6 +219,9 @@ function App() {
                 />
                 <Route path="/*" element={<AppContent />} />
               </Routes>
+              
+              {/* Cookie Consent Manager */}
+              <ConsentManager />
               
               {/* Toasts are rendered inside layouts via ToastContainer */}
               
