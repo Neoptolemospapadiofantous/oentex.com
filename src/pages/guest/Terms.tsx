@@ -1,6 +1,6 @@
 // src/pages/guest/Terms.tsx - Professional Terms and Conditions Page
 import React, { useState } from 'react';
-import { Icons } from '@components/icons';
+import { Icons } from '@components/icons/index';
 import SEO from '@components/SEO';
 import { seoData } from '@lib/seoData';
 
@@ -545,13 +545,13 @@ const Terms = () => {
               Legal Document
             </div>
             
-            <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
               <span className="bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
                 Terms & Conditions
               </span>
             </h1>
             
-            <p className="text-xl lg:text-2xl text-foreground/70 max-w-4xl mx-auto mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-foreground/70 max-w-4xl mx-auto mb-8 leading-relaxed px-4">
               Comprehensive terms governing your use of our trading platform rating and affiliate services
             </p>
             
@@ -575,12 +575,12 @@ const Terms = () => {
         <div className="container-page">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-foreground mb-8 text-center">Table of Contents</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {sections.map((section, index) => (
                 <button
                   key={section.id}
                   onClick={() => scrollToSection(section.id)}
-                  className={`p-4 rounded-xl border text-left transition-all duration-300 hover:scale-105 ${
+                  className={`p-3 sm:p-4 rounded-xl border text-left transition-all duration-300 hover:scale-105 ${
                     activeSection === section.id
                       ? 'bg-primary/10 border-primary/30 text-primary shadow-lg'
                       : 'bg-content1 border-divider/50 hover:border-primary/30 hover:bg-content2/50'
@@ -590,7 +590,7 @@ const Terms = () => {
                     <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center text-white text-sm font-bold">
                       {index + 1}
                     </div>
-                    <span className="font-medium text-sm">{section.title}</span>
+                    <span className="font-medium text-xs sm:text-sm">{section.title}</span>
                   </div>
                 </button>
               ))}
@@ -610,15 +610,15 @@ const Terms = () => {
                   id={section.id}
                   className="scroll-mt-24 bg-content1/60 backdrop-blur-xl rounded-3xl border border-divider/30 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500"
                 >
-                  <div className="p-8 lg:p-12">
-                    <div className="flex items-start gap-6 mb-10">
-                      <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white shadow-lg">
+                  <div className="p-4 sm:p-6 md:p-8 lg:p-12">
+                    <div className="flex items-start gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10">
+                      <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white shadow-lg">
                         {section.icon}
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-3xl font-bold text-primary">{index + 1}</span>
-                          <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                          <span className="text-2xl sm:text-3xl font-bold text-primary">{index + 1}</span>
+                          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
                             {section.title}
                           </h2>
                         </div>

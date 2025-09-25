@@ -25,7 +25,6 @@ const Footer: React.FC = () => {
       links: [
         { name: 'Deals', to: '/deals' },
         { name: 'FAQ', to: '/faq' },
-        { name: 'Platforms', to: '/platforms' },
       ],
     },
     company: {
@@ -33,7 +32,6 @@ const Footer: React.FC = () => {
       links: [
         { name: 'About', to: '/about' },
         { name: 'Contact', to: '/contact' },
-        { name: 'Careers', to: '/careers' },
       ],
     },
   }

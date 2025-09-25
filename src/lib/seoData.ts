@@ -167,3 +167,31 @@ export const generateDealsStructuredData = (deals: any[]) => {
     }))
   }
 }
+
+// Add cookies SEO data separately
+export const cookiesSEOData = {
+  title: 'Cookie Policy - How We Use Cookies | Oentex',
+  description: 'Learn about how Oentex uses cookies and similar technologies to enhance your browsing experience. Understand your cookie preferences and manage your privacy settings.',
+  keywords: 'cookie policy, privacy, cookies, data protection, user preferences, tracking, analytics, oentex privacy',
+  url: 'https://oentex.com/cookies',
+  structuredData: {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Cookie Policy',
+    description: 'Oentex Cookie Policy explaining how we use cookies and similar technologies',
+    url: 'https://oentex.com/cookies',
+    mainEntity: {
+      '@type': 'TextDigitalDocument',
+      name: 'Cookie Policy',
+      description: 'Comprehensive information about cookie usage, types, and management options',
+      author: {
+        '@type': 'Organization',
+        name: 'Oentex',
+        url: 'https://oentex.com'
+      }
+    }
+  }
+}
+
+// Add cookies to the main seoData object
+seoData.cookies = cookiesSEOData

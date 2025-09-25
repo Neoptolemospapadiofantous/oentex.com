@@ -61,6 +61,10 @@ import {
     VideoCameraIcon,
     SpeakerWaveIcon,
     SpeakerXMarkIcon,
+    BookOpenIcon,
+    ScaleIcon,
+    ClockIcon,
+    CalendarIcon,
     
     // Actions & Tools
     MagnifyingGlassIcon,
@@ -187,6 +191,10 @@ import {
     video: VideoCameraIcon,
     volume: SpeakerWaveIcon,
     mute: SpeakerXMarkIcon,
+    book: BookOpenIcon,
+    scale: ScaleIcon,
+    clock: ClockIcon,
+    calendar: CalendarIcon,
     
     // Actions & Tools
     search: MagnifyingGlassIcon,
@@ -204,7 +212,6 @@ import {
     alert: ExclamationCircleIcon,
     check: CheckIcon,
     time: ClockIcon,
-    calendar: CalendarIcon,
     star: StarIcon,
     heart: HeartIcon,
     gift: GiftIcon,

@@ -26,6 +26,7 @@ const FAQ = React.lazy(() => import('./pages/guest/FAQ'))
 const Contact = React.lazy(() => import('./pages/guest/Contact'))
 const Terms = React.lazy(() => import('./pages/guest/Terms'))
 const Privacy = React.lazy(() => import('./pages/guest/Privacy'))
+const Cookies = React.lazy(() => import('./pages/guest/Cookies'))
 const Authentication = React.lazy(() => import('./pages/guest/Authentication'))
 const AuthCallback = React.lazy(() => import('./pages/guest/AuthCallback'))
 const ResetPassword = React.lazy(() => import('./pages/guest/ResetPassword'))
@@ -116,6 +117,11 @@ const PublicApp: React.FC = () => {
             <Route path="/privacy" element={
               <GuestLayout>
                 <Privacy />
+              </GuestLayout>
+            } />
+            <Route path="/cookies" element={
+              <GuestLayout>
+                <Cookies />
               </GuestLayout>
             } />
             <Route path="/unsubscribe" element={
