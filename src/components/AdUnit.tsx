@@ -10,6 +10,12 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
   const adRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    // Debug logging
+    console.log('AdSense: AdUnit useEffect triggered')
+    console.log('AdSense: canShowAds:', adSenseManager.canShowAds())
+    console.log('AdSense: window.adsbygoogle exists:', !!window.adsbygoogle)
+    console.log('AdSense: adRef.current exists:', !!adRef.current)
+    
     if (adRef.current && adSenseManager.canShowAds()) {
       // Clear any existing content first
       adRef.current.innerHTML = ''
@@ -25,9 +31,7 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
       `
       
       // Debug logging
-      console.log('AdSense: Pushing ad to Google')
-      console.log('AdSense: canShowAds:', adSenseManager.canShowAds())
-      console.log('AdSense: window.adsbygoogle exists:', !!window.adsbygoogle)
+      console.log('AdSense: Ad unit HTML inserted')
       
       // Wait a bit for the DOM to update, then push
       setTimeout(() => {
@@ -48,6 +52,7 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
       }, 100)
     } else if (adRef.current) {
       // Show placeholder if ads are disabled
+      console.log('AdSense: Showing placeholder - ads disabled')
       adRef.current.innerHTML = `
         <div style="
           background: #f5f5f5; 

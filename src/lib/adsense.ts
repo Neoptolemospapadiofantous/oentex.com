@@ -32,22 +32,12 @@ class AdSenseManager {
   private initializeAdSense() {
     if (typeof window === 'undefined') return
 
-    // Load Google AdSense script
-    const script = document.createElement('script')
-    script.async = true
-    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
-    script.setAttribute('data-ad-client', 'ca-pub-9090270214622092')
-    
-    // Only load if user has consented to marketing cookies
-    if (this.consentPreferences?.marketing) {
-      document.head.appendChild(script)
-      this.isInitialized = true
-    }
-
-    // Initialize adsbygoogle array
+    // Initialize adsbygoogle array (script is already loaded in HTML)
     if (!window.adsbygoogle) {
       window.adsbygoogle = []
     }
+    
+    this.isInitialized = true
   }
 
   public updateConsent(preferences: ConsentPreferences) {
