@@ -80,7 +80,14 @@ class AdSenseManager {
   public pushAd(adElement: HTMLElement) {
     if (this.consentPreferences?.marketing && window.adsbygoogle) {
       try {
-        window.adsbygoogle.push({})
+        // Check if the element already has ads
+        const insElement = adElement.querySelector('.adsbygoogle')
+        if (insElement && !insElement.hasAttribute('data-adsbygoogle-status')) {
+          window.adsbygoogle.push({})
+          console.log('AdSense: Manager push successful')
+        } else {
+          console.log('AdSense: Manager - Ad already loaded')
+        }
       } catch (error) {
         console.warn('AdSense error:', error)
       }

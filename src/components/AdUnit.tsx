@@ -11,6 +11,9 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
 
   useEffect(() => {
     if (adRef.current && adSenseManager.canShowAds()) {
+      // Clear any existing content first
+      adRef.current.innerHTML = ''
+      
       // Use the exact ad unit code you provided
       adRef.current.innerHTML = `
         <ins class="adsbygoogle"
@@ -26,18 +29,23 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
       console.log('AdSense: canShowAds:', adSenseManager.canShowAds())
       console.log('AdSense: window.adsbygoogle exists:', !!window.adsbygoogle)
       
-      // Push the ad to AdSense
-      adSenseManager.pushAd(adRef.current)
-      
-      // Also try direct push as fallback
-      if (window.adsbygoogle) {
-        try {
-          window.adsbygoogle.push({})
-          console.log('AdSense: Direct push successful')
-        } catch (error) {
-          console.error('AdSense: Direct push failed:', error)
+      // Wait a bit for the DOM to update, then push
+      setTimeout(() => {
+        if (window.adsbygoogle && adRef.current) {
+          try {
+            // Find the ins element and push only if it doesn't have ads yet
+            const insElement = adRef.current.querySelector('.adsbygoogle')
+            if (insElement && !insElement.hasAttribute('data-adsbygoogle-status')) {
+              window.adsbygoogle.push({})
+              console.log('AdSense: Push successful')
+            } else {
+              console.log('AdSense: Ad already loaded or element not found')
+            }
+          } catch (error) {
+            console.error('AdSense: Push failed:', error)
+          }
         }
-      }
+      }, 100)
     } else if (adRef.current) {
       // Show placeholder if ads are disabled
       adRef.current.innerHTML = `
