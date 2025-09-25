@@ -21,8 +21,23 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
              data-full-width-responsive="true"></ins>
       `
       
+      // Debug logging
+      console.log('AdSense: Pushing ad to Google')
+      console.log('AdSense: canShowAds:', adSenseManager.canShowAds())
+      console.log('AdSense: window.adsbygoogle exists:', !!window.adsbygoogle)
+      
       // Push the ad to AdSense
       adSenseManager.pushAd(adRef.current)
+      
+      // Also try direct push as fallback
+      if (window.adsbygoogle) {
+        try {
+          window.adsbygoogle.push({})
+          console.log('AdSense: Direct push successful')
+        } catch (error) {
+          console.error('AdSense: Direct push failed:', error)
+        }
+      }
     } else if (adRef.current) {
       // Show placeholder if ads are disabled
       adRef.current.innerHTML = `
