@@ -20,7 +20,7 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
       // Clear any existing content first
       adRef.current.innerHTML = ''
       
-      // Use the exact ad unit code from Google documentation
+      // Use the exact ad unit code you provided
       adRef.current.innerHTML = `
         <ins class="adsbygoogle"
              style="display:block"
@@ -28,14 +28,28 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
              data-ad-slot="3413714242"
              data-ad-format="auto"
              data-full-width-responsive="true"></ins>
-        <script>
-          (adsbygoogle = window.adsbygoogle || []).push({});
-        </script>
       `
       
       // Debug logging
-      console.log('AdSense: Ad unit HTML with push script inserted')
+      console.log('AdSense: Ad unit HTML inserted')
       
+      // Wait a bit for the DOM to update, then push
+      setTimeout(() => {
+        if (window.adsbygoogle && adRef.current) {
+          try {
+            // Find the ins element and push only if it doesn't have ads yet
+            const insElement = adRef.current.querySelector('.adsbygoogle')
+            if (insElement && !insElement.hasAttribute('data-adsbygoogle-status')) {
+              window.adsbygoogle.push({})
+              console.log('AdSense: Push successful')
+            } else {
+              console.log('AdSense: Ad already loaded or element not found')
+            }
+          } catch (error) {
+            console.error('AdSense: Push failed:', error)
+          }
+        }
+      }, 100)
     } else if (adRef.current) {
       // Show placeholder if ads are disabled
       console.log('AdSense: Showing placeholder - ads disabled')
