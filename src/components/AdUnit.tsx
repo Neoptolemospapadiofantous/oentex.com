@@ -48,7 +48,14 @@ const AdUnit: React.FC<AdUnitProps> = ({ className = '' }) => {
     <div 
       ref={adRef}
       className={`ad-unit ${className}`}
-      style={{ minHeight: '90px', margin: '20px 0' }}
+      style={{ 
+        minHeight: '90px', 
+        margin: '20px auto',
+        maxWidth: '728px',
+        width: '100%',
+        display: 'block',
+        textAlign: 'center'
+      }}
     />
   )
 }

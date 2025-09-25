@@ -14,8 +14,10 @@ const Home = () => {
       </div>
       
       {/* Ad Unit */}
-      <div className="container mx-auto px-4">
-        <AdUnit />
+      <div className="w-full flex justify-center items-center py-8">
+        <div className="w-full max-w-4xl px-4">
+          <AdUnit />
+        </div>
       </div>
       
       <div className="section-py-xl">
